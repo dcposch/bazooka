@@ -1,0 +1,107 @@
+@font-face {
+  font-family: 'pxl';
+  src: url('pixel/pxl.ttf');
+}
+
+body {
+  position: relative;
+  font-family: pxl;
+  letter-spacing: 0.15em;
+  font-size: 30px;
+  width: 600px;
+  margin: 40px auto;
+  background: #fff;
+}
+
+.hero {
+  width: 600px;
+}
+
+label {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  top: 154px;
+  left: 101px;
+  color: #fff;
+}
+
+input {
+  position: absolute;
+  margin: 0;
+  border: 0;
+  padding: 40px 0 10px;
+  top: 180px;
+  left: 100px;
+  width: 400px;
+  font: 30px pxl;
+  letter-spacing: 0.12em;
+  color: #000;
+  background-color: transparent;
+}
+
+input:focus,
+button:focus {
+  outline: none;
+}
+
+button {
+  display: none;
+  position: absolute;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  top: 340px;
+  left: 100px;
+  width: 140px;
+  height: 80px;
+  background: url(pixel/go.png);
+  background-position: 0 80px;
+  cursor: pointer;
+}
+
+button.show {
+  display: block;
+}
+
+button:hover,
+button:focus {
+  background-position: 0 0;
+}
+
+.controls {
+  display: none;
+  position: absolute;
+  left: 20px;
+  top: 500px;
+  color: #ffccf0;
+}
+
+.controls.show {
+  display: block;
+}
+
+.error {
+  display: none;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 20px;
+  padding: 190px 0;
+  color: #ff89dc;
+  text-align: center;
+  background: rgba(0, 255, 255, 0.2);
+}
+
+.error.show {
+  display: block;
+}
+
+canvas {
+  position: absolute;
+  top: 0;
+}
+
+canvas.fullscreen {
+  width: 100%;
+}
