@@ -10,4 +10,6 @@
 
 forked from https://github.com/dcposch/p9
 
-see https://ldjam.com/users/dc-posch/feed
+dev log - https://ldjam.com/users/dc-posch/feed
+
+shitty pixel art - https://www.piskelapp.com/user/5044217405505536/public
