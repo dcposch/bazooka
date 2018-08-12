@@ -34,14 +34,14 @@ function init (st) {
   // First, the player has to type in their name...
   inputName.addEventListener('keyup', updateSplash)
   window.setInterval(updateSplash, 500)
-
+ 
   // Once they click start, drop them into the game
   btnStart.addEventListener('click', enterLobby)
 }
 
 function updateSplash (e) {
   if (state.startTime > 0) return // Splash screen already gone
- 
+
   var name = inputName.value.replace(/[^A-Za-z0-9 ]/g, '')
   name = name.toLowerCase()
   if (name !== inputName.value) inputName.value = name

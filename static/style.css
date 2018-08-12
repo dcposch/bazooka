@@ -3,7 +3,6 @@
  */
 
 body {
-  position: relative;
   font-family: "Andale Mono", "Lucida Console", monospace;
   font-size: 20px;
   letter-spacing: 0.02em;
@@ -96,7 +95,12 @@ button:focus {
 
 .error {
   display: none;
+  position: absolute;
+  top: 200px;
+  width: 100vw;
+  text-align: center;
   color: #ff89dc;
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .error.show {
@@ -108,8 +112,8 @@ button:focus {
  */
 
 canvas {
-  position: absolute;
-  top: 60px;
+  display: block;
+  margin: 60px auto;
 }
 
 canvas.fullscreen {

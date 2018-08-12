@@ -66,11 +66,11 @@ function handleClose () {
   this.emit('close')
 }
 
-function handleMessage (data, flags) {
+function handleMessage (data) {
   try {
     this.perf.messagesReceived++
     this.perf.bytesReceived += data.length // Approximate. Doesn't count overhead or non-ASCII chars
-    if (flags.binary) handleBinaryMessage(this, data)
+    if (typeof data !== 'string') handleBinaryMessage(this, data)
     else handleJsonMessage(this, JSON.parse(data))
   } catch (e) {
     console.error('error handling client message', e)
