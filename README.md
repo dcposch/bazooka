@@ -6,6 +6,10 @@
   <br>
 </h1>
 
+## play it!
+
+**https://bazooka.city coming soon**
+
 ## dev
 
 forked from https://github.com/dcposch/p9
