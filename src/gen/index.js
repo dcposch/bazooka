@@ -84,7 +84,7 @@ function generateChunk (x, y, z) {
   // Generate a Perlin heightmap
   // https://web.archive.org/web/20160421115558/
   // http://freespace.virgin.net/hugo.elias/models/m_perlin.htm
-  var perlinGroundAmplitudes = [0, 0, 0, 0, 5, 0, 10, 0, 0, 100]
+  var perlinGroundAmplitudes = [0, 0, 0, 0, 5, 0, 10, 0, 100]
   var perlinLayer2Amplitudes = [0, 5, 0, 0, 0, 10]
   var perlinLayer3Amplitudes = [0, 0, 0, 5, 0, 10]
   perlin.generate2D(perlin1, x - PAD, y - PAD, CS + PAD2, perlinGroundAmplitudes)

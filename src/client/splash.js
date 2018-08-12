@@ -40,6 +40,10 @@ function init (st) {
 
   // Once they click start, drop them into the game
   btnStart.addEventListener('click', enterLobby)
+
+  // DBG: dev quickstart
+  inputName.value = 'test'
+  btnStart.click()
 }
 
 function updateSplash (e) {

@@ -26,7 +26,7 @@ var state = {
   paused: true,
   player: {
     // Block coordinates of the player's head. +Z is up. When facing +X, +Y is left.
-    location: { x: -68, y: 0, z: 30 },
+    location: { x: 0, y: 0, z: 100 },
     // Azimuth ranges from 0 (looking at +X) to 2*pi. Azimuth pi/2 looks at +Y.
     // Altitude ranges from -pi/2 (looking straight down) to pi/2 (up, +Z). 0 looks straight ahead.
     direction: { azimuth: 0, altitude: 0 },
