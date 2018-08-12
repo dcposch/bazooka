@@ -1,43 +1,23 @@
-@font-face {
-  font-family: 'pxl';
-  src: url('pixel/pxl.ttf');
-}
-
 body {
   position: relative;
-  font-family: pxl;
-  letter-spacing: 0.15em;
+  font-family: "Andale Mono","Lucida Console",monospace;
   font-size: 30px;
-  width: 600px;
-  margin: 40px auto;
-  background: #fff;
-}
-
-.hero {
-  width: 600px;
-}
-
-label {
-  position: absolute;
+  letter-spacing: 0.15em;
+  color: #fff;
   margin: 0;
   padding: 0;
-  top: 154px;
-  left: 101px;
-  color: #fff;
 }
 
-input {
+.splash {
+  background-image: url('img/bazooka-city-title.png');
+  background-color: #008080;
+  background-size: 100%;
+  background-repeat: no-repeat;
   position: absolute;
-  margin: 0;
-  border: 0;
-  padding: 40px 0 10px;
-  top: 180px;
-  left: 100px;
-  width: 400px;
-  font: 30px pxl;
-  letter-spacing: 0.12em;
-  color: #000;
-  background-color: transparent;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
 }
 
 input:focus,
@@ -47,16 +27,6 @@ button:focus {
 
 button {
   display: none;
-  position: absolute;
-  margin: 0;
-  border: 0;
-  padding: 0;
-  top: 340px;
-  left: 100px;
-  width: 140px;
-  height: 80px;
-  background: url(pixel/go.png);
-  background-position: 0 80px;
   cursor: pointer;
 }
 
@@ -71,10 +41,6 @@ button:focus {
 
 .controls {
   display: none;
-  position: absolute;
-  left: 20px;
-  top: 500px;
-  color: #ffccf0;
 }
 
 .controls.show {
@@ -83,14 +49,7 @@ button:focus {
 
 .error {
   display: none;
-  position: absolute;
-  top: 0;
-  width: 100%;
-  height: 20px;
-  padding: 190px 0;
   color: #ff89dc;
-  text-align: center;
-  background: rgba(0, 255, 255, 0.2);
 }
 
 .error.show {
@@ -99,7 +58,7 @@ button:focus {
 
 canvas {
   position: absolute;
-  top: 0;
+  top: 60px;
 }
 
 canvas.fullscreen {
