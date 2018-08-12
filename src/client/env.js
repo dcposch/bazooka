@@ -2,7 +2,7 @@ var regl = require('regl')
 var shell = require('game-shell')
 var config = require('../config')
 
-var canvas = document.querySelector('#gl')
+var canvas = document.querySelector('canvas')
 var INITIAL_W = canvas.width
 var INITIAL_H = canvas.height
 var FULLSCREEN_W = 960

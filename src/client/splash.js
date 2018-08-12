@@ -36,7 +36,7 @@ function init (st) {
   window.setInterval(updateSplash, 500)
 
   // Once they click start, drop them into the game
-  btnStart.addEventListener('click', startGame)
+  btnStart.addEventListener('click', enterLobby)
 }
 
 function updateSplash () {
@@ -49,6 +49,14 @@ function updateSplash () {
   var ready = name.length >= 3 && name.length < 20
   btnStart.classList.toggle('show', ready)
   divControls.classList.toggle('show', ready)
+}
+
+function enterLobby () {
+  var bgImg = "url('img/bazooka-city-dark.gif')"
+  divSplash.style.setProperty('background-image', bgImg)
+
+  // TODO: get lobby / game  state from server
+  window.setInterval(startGame, 3000)
 }
 
 // ...then, click to start
