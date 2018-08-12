@@ -6,10 +6,12 @@ body {
   position: relative;
   font-family: "Andale Mono", "Lucida Console", monospace;
   font-size: 20px;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.02em;
+  line-height: 1.4em;
   color: #fff;
   margin: 0;
   padding: 0;
+  min-width: 640px;
 }
 
 input {
@@ -30,7 +32,8 @@ button {
   font-size: 20px;
 }
 
-button:hover {
+button:hover,
+button:focus {
   border-color: #eee;
   color: #eee;
 }
@@ -50,7 +53,7 @@ button:focus {
  */
 
 .splash {
-  background-image: url('img/bazooka-city-title.png');
+  background-image: url(img/bazooka-city-title.png);
   background-color: #008080;
   background-size: 100%;
   background-repeat: no-repeat;
@@ -58,16 +61,17 @@ button:focus {
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 .splash-start {
-  margin: 51vw auto 0 22vw;
+  margin: 40vw auto 0 calc(50vw - 170px);
   width: 500px;
 }
 
 .splash-input-name {
-  width: 200px;
+  width: 128px;
+  margin-bottom: 16px;
 }
 
 .splash-btn-start {
@@ -78,11 +82,11 @@ button:focus {
   display: inline-block;
 }
 
-.controls {
+.splash-controls {
   display: none;
 }
 
-.controls.show {
+.splash-controls.show {
   display: block;
 }
 

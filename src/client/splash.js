@@ -39,9 +39,9 @@ function init (st) {
   btnStart.addEventListener('click', enterLobby)
 }
 
-function updateSplash () {
+function updateSplash (e) {
   if (state.startTime > 0) return // Splash screen already gone
-
+ 
   var name = inputName.value.replace(/[^A-Za-z0-9 ]/g, '')
   name = name.toLowerCase()
   if (name !== inputName.value) inputName.value = name
@@ -49,18 +49,23 @@ function updateSplash () {
   var ready = name.length >= 3 && name.length < 20
   btnStart.classList.toggle('show', ready)
   divControls.classList.toggle('show', ready)
+
+  if (ready && e.key === 'Enter') enterLobby()
 }
 
 function enterLobby () {
-  var bgImg = "url('img/bazooka-city-dark.gif')"
+  var bgImg = 'url(img/bazooka-city-dark.gif), url(img/bazooka-city-title.png)'
   divSplash.style.setProperty('background-image', bgImg)
+  document.querySelector('.splash-start').remove()
 
   // TODO: get lobby / game  state from server
-  window.setInterval(startGame, 3000)
+  window.setTimeout(startGame, 2000)
 }
 
 // ...then, click to start
 function startGame () {
+  divSplash.remove()
+
   env.shell.fullscreen = true
   env.shell.pointerLock = true
 
@@ -68,7 +73,6 @@ function startGame () {
   state.objects.self = new Player(state.player.name)
   state.startTime = new Date().getTime()
 
-  divSplash.remove()
   canvas.addEventListener('click', function () {
     if (state.error) return
     env.shell.fullscreen = true
