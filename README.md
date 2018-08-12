@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="https://i.imgur.com/U8GAqWC.png" alt="bazooka city>
+  <img src="https://i.imgur.com/U8GAqWC.png" alt="bazooka city">
   <br>
   bazooka city - ludum dare 42
   <br>
