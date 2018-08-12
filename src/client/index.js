@@ -1,4 +1,3 @@
-var sound = require('./sound')
 var playerControls = require('./player-controls')
 var picker = require('./picker')
 var mesher = require('./mesher')
@@ -8,6 +7,7 @@ var World = require('../world')
 var ChunkIO = require('../protocol/chunk-io')
 var vox = require('../vox')
 var textures = require('./textures')
+var splash = require('./splash')
 
 // Find the canvas, initialize regl and game-shell
 var env = require('./env')
@@ -59,36 +59,50 @@ var state = {
   error: null
 }
 
-// Load resources
-textures.loadAll(function (err) {
-  if (err) {
-    console.error('failed to load textures', err)
-    handleError('failed to load textures')
-  }
-})
+main()
 
-// Handle server messages
-state.socket.on('binary', function (msg) {
-  state.pendingChunkUpdates = ChunkIO.read(msg)
-  console.log('Read %d chunks, %s KB', state.pendingChunkUpdates.length, msg.byteLength >> 10)
-})
+function main () {
+  splash.init(state)
+  loadTextures()
+  initWebsocket()
+  env.shell.on('tick', tick)
+  env.regl.frame(frame)
+  // For debugging
+  window.state = state
+  window.config = config
+}
 
-state.socket.on('json', function (msg) {
-  switch (msg.type) {
-    case 'config':
-      return handleConfig(msg)
-    case 'objects':
-      return handleObjects(msg)
-    case 'error':
-      return handleError(msg.error.message)
-    default:
-      console.error('Ignoring unknown message type ' + msg.type)
-  }
-})
+function loadTextures () {
+  // Load resources
+  textures.loadAll(function (err) {
+    if (err) splash.showError('failed to load textures', err)
+  })
+}
 
-state.socket.on('close', function () {
-  handleError('connection lost')
-})
+function initWebsocket () {
+  // Handle server messages
+  state.socket.on('binary', function (msg) {
+    state.pendingChunkUpdates = ChunkIO.read(msg)
+    console.log('Read %d chunks, %s KB', state.pendingChunkUpdates.length, msg.byteLength >> 10)
+  })
+
+  state.socket.on('json', function (msg) {
+    switch (msg.type) {
+      case 'config':
+        return handleConfig(msg)
+      case 'objects':
+        return handleObjects(msg)
+      case 'error':
+        return splash.showError(msg.error.message)
+      default:
+        console.error('Ignoring unknown message type ' + msg.type)
+    }
+  })
+
+  state.socket.on('close', function () {
+    splash.showError('connection lost')
+  })
+}
 
 function handleConfig (msg) {
   state.config = msg.config
@@ -129,71 +143,8 @@ function createObject (info) {
   }
 }
 
-// Runs once: initialization
-env.shell.on('init', function () {
-  console.log('WELCOME ~ VOXEL WORLD')
-})
-
-// Spash screen
-var label = document.querySelector('label')
-var input = document.querySelector('input')
-var button = document.querySelector('button')
-var canvas = document.querySelector('canvas')
-var controls = document.querySelector('.controls')
-var error = document.querySelector('.error')
-var splash = document.querySelector('.splash')
-
-// First, the player has to type in their name...
-input.addEventListener('keyup', updateSplash)
-setInterval(updateSplash, 500)
-
-function updateSplash () {
-  if (state.startTime > 0) return // Splash screen already gone
-
-  var name = input.value.replace(/[^A-Za-z ]/g, '')
-  if (name !== input.value) label.innerHTML = 'letters only'
-  name = name.toLowerCase()
-  if (name !== input.value) input.value = name
-
-  var ready = name.length >= 3 && name.length < 20
-  button.classList.toggle('show', ready)
-  controls.classList.toggle('show', ready)
-}
-
-// ...then, click to start
-button.addEventListener('click', function () {
-  env.shell.fullscreen = true
-  env.shell.pointerLock = true
-
-  state.player.name = input.value
-  state.objects.self = new Player(state.player.name)
-  state.startTime = new Date().getTime()
-
-  splash.remove()
-  canvas.addEventListener('click', function () {
-    if (state.error) return
-    env.shell.fullscreen = true
-    env.shell.pointerLock = true
-  })
-
-  var music = state.config && state.config.music
-  if (music) sound.play(music.url, music.time)
-})
-
-// Kill the game on error (eg 'connection lost'). Player has to refresh the page.
-function handleError (message) {
-  console.log('Error: ' + message)
-  if (state.error) return
-  state.error = {message: message}
-  if (splash) splash.remove()
-  error.classList.add('show')
-  error.innerText = message
-  env.shell.fullscreen = false
-  env.shell.pointerLock = false
-}
-
 // Runs regularly, independent of frame rate
-env.shell.on('tick', function () {
+function tick () {
   env.resizeCanvasIfNeeded()
   if (state.error) return
 
@@ -224,11 +175,11 @@ env.shell.on('tick', function () {
 
   var elapsedMs = Math.round(new Date().getTime() - startMs)
   if (elapsedMs > 1000 * config.TICK_INTERVAL) console.log('Slow tick: %d ms', elapsedMs)
-})
+}
 
 // Renders each frame. Should run at 60Hz.
 // Stops running if the canvas is not visible, for example because the window is minimized.
-env.regl.frame(function (context) {
+function frame (context) {
   // Track FPS
   var now = new Date().getTime()
   var dt = Math.max(now - state.perf.lastFrameTime, 1) / 1000
@@ -248,7 +199,7 @@ env.regl.frame(function (context) {
   }
 
   state.paused = !env.shell.fullscreen
-})
+}
 
 function predictObjects (dt, now) {
   // Our own player object gets special treatment
@@ -305,7 +256,3 @@ function applyChunkUpdates () {
     // TODO: prediction, so that blocks don't pop into and out of existence
   }
 }
-
-// Power user tools
-window.state = state
-window.config = config

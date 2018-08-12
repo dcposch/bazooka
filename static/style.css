@@ -1,12 +1,53 @@
+/**
+ * SHARED
+ */
+
 body {
   position: relative;
-  font-family: "Andale Mono","Lucida Console",monospace;
-  font-size: 30px;
+  font-family: "Andale Mono", "Lucida Console", monospace;
+  font-size: 20px;
   letter-spacing: 0.15em;
   color: #fff;
   margin: 0;
   padding: 0;
 }
+
+input {
+  background: transparent;
+  border: none;
+  border-bottom: solid 2px #fff;
+  color: #fff;
+  font-family: "Andale Mono", "Lucida Console", monospace;
+  font-size: 20px;
+}
+
+input:focus,
+button:focus {
+  outline: none;
+}
+
+button {
+  background: transparent;
+  border: 2px solid #ccc;
+  color: #ccc;
+  cursor: pointer;
+  font-family: "Andale Mono", "Lucida Console", monospace;
+  font-size: 20px;
+}
+
+button:hover {
+  border-color: #eee;
+  color: #eee;
+}
+
+button:active {
+  border-color: #fff;
+  color: #fff;
+}
+
+/**
+ * SPLASH SCREEN
+ */
 
 .splash {
   background-image: url('img/bazooka-city-title.png');
@@ -20,23 +61,21 @@ body {
   height: 100vh;
 }
 
-input:focus,
-button:focus {
-  outline: none;
+.splash-start {
+  margin: 51vw auto 0 22vw;
+  width: 500px;
 }
 
-button {
+.splash-input-name {
+  width: 200px;
+}
+
+.splash-btn-start {
   display: none;
-  cursor: pointer;
 }
 
-button.show {
-  display: block;
-}
-
-button:hover,
-button:focus {
-  background-position: 0 0;
+.splash-btn-start.show {
+  display: inline-block;
 }
 
 .controls {
@@ -47,6 +86,10 @@ button:focus {
   display: block;
 }
 
+/**
+ * ERROR OVERLAY
+ */
+
 .error {
   display: none;
   color: #ff89dc;
@@ -55,6 +98,10 @@ button:focus {
 .error.show {
   display: block;
 }
+
+/**
+ * GAME
+ */
 
 canvas {
   position: absolute;
