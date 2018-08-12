@@ -5,7 +5,7 @@ module.exports = FlexBuffer
 // A buffer that resizes automatically.
 // You can truncate it, append to it, then use slice() to get a Buffer.
 function FlexBuffer () {
-  this.buf = new Buffer(1 << 20)
+  this.buf = Buffer.alloc(1 << 20)
   this.n = 0
 }
 
@@ -42,7 +42,7 @@ FlexBuffer.prototype.slice = function () {
 function resize (self, m) {
   var n = self.n
   if (n + m <= self.buf.length) return
-  var newBuf = new Buffer(nextPow2(n + m))
+  var newBuf = Buffer.alloc(nextPow2(n + m))
   newBuf.set(self.buf.slice(0, n))
   self.buf = newBuf
 }

@@ -50,8 +50,7 @@ function load (url) {
       resolve(tex)
     }
     image.onerror = function () {
-      console.log('Failed to load ' + url)
-      reject()
+      reject(new Error('failed to load' + url))
     }
   })
 }

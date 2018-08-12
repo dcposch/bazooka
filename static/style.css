@@ -21,11 +21,6 @@ input {
   font-size: 20px;
 }
 
-input:focus,
-button:focus {
-  outline: none;
-}
-
 button {
   background: transparent;
   border: 2px solid #ccc;
@@ -43,6 +38,11 @@ button:hover {
 button:active {
   border-color: #fff;
   color: #fff;
+}
+
+input:focus,
+button:focus {
+  outline: none;
 }
 
 /**

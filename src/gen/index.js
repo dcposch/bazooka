@@ -142,9 +142,9 @@ function placeTrees (ret) {
       var isShore = i1 >= 15 && i1 <= 18
       var palmJuice = (h2 > 14.0 || h2 < 10.0) ? 2.0 : (h2 % 1.0) * 50.0 // range [0, 50)
       if (!isShore || palmJuice > 1.0) continue
-      if (i1 >= z + CS || i1 + palmHeight < z) continue
       // If we're here, we're placing a palm tree, and palmJuice is in [0, 1)
       var palmHeight = Math.floor(palmJuice * 10.0) + 4
+      if (i1 >= z + CS || i1 + palmHeight < z) continue
       for (var iz = i1 - z; iz < i1 + palmHeight - z; iz++) {
         // First, place the leaves
         var crown = i1 + palmHeight - z - iz - 1

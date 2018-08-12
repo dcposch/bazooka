@@ -31,8 +31,8 @@ test('create a new world, fill it with hills', function (t) {
   })
   t.equal(world.chunks.length, 56, 'should fill chunks sparsely')
 
-  var actual = new Buffer(heightmap.length * 60)
-  var expected = new Buffer(heightmap.length * 60)
+  var actual = Buffer.alloc(heightmap.length * 60)
+  var expected = Buffer.alloc(heightmap.length * 60)
   i = 0
   heightmap.forEach(function (p) {
     for (var k = -5; k < 55; k++) {
