@@ -10,8 +10,10 @@ var api = require('./api')
 var compression = require('compression')
 
 var state = {
+  // TODO: move to BazookaGame
   clients: [],
   world: new World(),
+
   tick: 0,
   perf: {
     lastTickTime: new Date().getTime(),

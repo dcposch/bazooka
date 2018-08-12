@@ -23,7 +23,7 @@ module.exports = {
   MAX_PICK_DISTANCE: 10, // Can place or break blocks up to 10 blocks away
   MAX_EXTRAPOLATE_MS: 100,
   GRAPHICS: {
-    CHUNK_DRAW_RADIUS: 15, // Draw this many chunks in every direction from the player
+    CHUNK_DRAW_RADIUS: 10, // Draw this many chunks in every direction from the player
     MAX_ANISOTROPIC: 0 // Disable anisotropic filtering
   },
   PHYSICS: {

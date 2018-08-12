@@ -4,13 +4,29 @@ var interp = require('./interp')
 // Generates deterministic 2D Perlin noise
 // TODO: publish this as its own NPM module
 module.exports = {
-  generate2D: generate2D
+  generate2D: generate2D,
+  apply: apply
 }
 
 // Avoid run-time allocations, reduce GC pressure
 var MAX_WIDTH = 128
 var perlin = new Float32Array(MAX_WIDTH * MAX_WIDTH)
 var RAND_SEED = 2892
+
+// Modify Perlin noise by applying a function.
+//
+// Func takes func(sx, sy, val) where (sx, sy) are world coords
+// and val is the current value at the corresponding loc in arr.
+function apply (arr, x, y, width, func) {
+  for (var u = 0; u < width; u++) {
+    for (var v = 0; v < width; v++) {
+      // (sx, sy) are world coords
+      var sx = x + u
+      var sy = y + v
+      arr[u * width + v] = func(sx, sy, arr[u * width + v])
+    }
+  }
+}
 
 // Generates a n-by-n grid of deterministic perlin noise in [0, sum(amplitudes))
 // Cosine interpolated. Samples from a continuous, infinite plane.

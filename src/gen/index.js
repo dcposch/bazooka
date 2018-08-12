@@ -84,16 +84,15 @@ function generateChunk (x, y, z) {
   // Generate a Perlin heightmap
   // https://web.archive.org/web/20160421115558/
   // http://freespace.virgin.net/hugo.elias/models/m_perlin.htm
-  var mountainAmp = function (rand, sx, sy) {
-    var splash = 0.5 - 0.5 * Math.cos(Math.sqrt(sx * sx + sy * sy) / 50)
-    return 100 * splash * (rand + 0.5)
-  }
-  var perlinGroundAmplitudes = [0, 0, 0, 0, 5, 0, 10, 0, 0, mountainAmp]
+  var perlinGroundAmplitudes = [0, 0, 0, 0, 5, 0, 10, 0, 0, 100]
   var perlinLayer2Amplitudes = [0, 5, 0, 0, 0, 10]
   var perlinLayer3Amplitudes = [0, 0, 0, 5, 0, 10]
   perlin.generate2D(perlin1, x - PAD, y - PAD, CS + PAD2, perlinGroundAmplitudes)
   perlin.generate2D(perlin2, x - PAD, y - PAD, CS + PAD2, perlinLayer2Amplitudes)
   perlin.generate2D(perlin3, x, y, CS, perlinLayer3Amplitudes)
+
+  // Sky island: force positive near (0,0), clamp to zero toward (+/-1k, +/-1k)
+  perlin.apply(perlin1, x - PAD, y - PAD, CS + PAD2, islandFunc)
 
   // Go from Perlin noise to voxels
   placeLand(ret)
@@ -101,6 +100,11 @@ function generateChunk (x, y, z) {
 
   // Go from flat array of voxels to list-of-quads, save 90+% space
   return ret.pack()
+}
+
+function islandFunc (sx, sy, val) {
+  const island = val - (sx * sx + sy * sy) * 1e-4
+  return Math.max(island, 0)
 }
 
 function placeLand (ret) {

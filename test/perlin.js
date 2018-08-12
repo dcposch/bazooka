@@ -28,23 +28,34 @@ test('perlin-amplitudes', function (t) {
 test('perlin-plane', function (t) {
   // amplitudes sum to 1.0
   var amplitudes = [1 / 128, 2 / 128, 4 / 128, 8 / 128, 16 / 128, 32 / 128, 64 / 128]
-  testPerlinPlane(t, amplitudes, 'img/perlin-plane.png')
+  testPerlinPlane(t, 'img/perlin-plane.png', amplitudes)
 })
 
 // Sample perlin noise where the amplitudes vary across the plane
 test('perlin-function', function (t) {
   // mountainFn produces an amplitude in [0, 0.75) over our domain (0, 0) to (1000, 1000)
-  var mountainFn = function (rand, x, y, scale) {
+  var mountainFn = function (rand, x, y) {
     return rand * Math.sin((x + y) * Math.PI / 2000.0) * 0.75
   }
   // amplitudes sum to 1.0
   var amplitudes = [1 / 128, 2 / 128, 4 / 128, 8 / 128, 16 / 128, 0, mountainFn]
-  testPerlinPlane(t, amplitudes, 'img/perlin-function.png')
+  testPerlinPlane(t, 'img/perlin-function.png', amplitudes)
+})
+
+// Sample perlin noise where the amplitudes vary across the plane
+test('perlin-apply', function (t) {
+  var amplitudes = [0, 0, 0, 0, 5, 0, 10, 0, 0, 100]
+  function islandFunc (sx, sy, val) {
+    const island = val - (sx * sx + sy * sy) * 1e-4
+    return Math.max(island, 0)
+  }
+
+  testPerlinPlane(t, 'img/perlin-apply.png', amplitudes, islandFunc)
 })
 
 // Sample perlin noise over the plane from (x, y) = (0, 0) to (1000, 1000)
 // Compare resulting image to reference PNG, or create reference PNG if new
-function testPerlinPlane (t, amplitudes, filepath) {
+function testPerlinPlane (t, filepath, amplitudes, optFunc) {
   var width = 1000
   var height = 1000
   var stride = 40
@@ -53,6 +64,7 @@ function testPerlinPlane (t, amplitudes, filepath) {
   for (var x = 0; x < width; x += stride) {
     for (var y = 0; y < height; y += stride) {
       perlin.generate2D(noise, x, y, stride, amplitudes)
+      if (optFunc) perlin.apply(noise, x, y, stride, optFunc)
       copyToPNG(png, x, y, noise, 1.0, stride, stride)
     }
   }

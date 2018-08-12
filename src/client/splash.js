@@ -2,7 +2,10 @@ var sound = require('./sound')
 var env = require('./env')
 var Player = require('./models/player')
 
-module.exports = {init, showError}
+module.exports = {
+  init: init,
+  showError: showError
+}
 
 // Spash screen
 var divSplash
@@ -34,7 +37,7 @@ function init (st) {
   // First, the player has to type in their name...
   inputName.addEventListener('keyup', updateSplash)
   window.setInterval(updateSplash, 500)
- 
+
   // Once they click start, drop them into the game
   btnStart.addEventListener('click', enterLobby)
 }
