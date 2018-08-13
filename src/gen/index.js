@@ -5,11 +5,12 @@ var Chunk = require('../chunk')
 
 // Generate the world
 module.exports = {
-  generateWorldAt
+  generateChunk
 }
 
 var CS = config.CHUNK_SIZE
-var CB = config.CHUNK_BITS
+
+var GEN_RAD = config.BAZOOKA.GEN_RADIUS_CHUNKS * CS
 
 // Sample Perlin noise a few voxels around each chunk.
 // That tells us if we need to eg. place leaves for a tree rooted in an adjacent chunk.
@@ -21,44 +22,11 @@ var perlin1 = new Float32Array((CS + PAD2) * (CS + PAD2))
 var perlin2 = new Float32Array((CS + PAD2) * (CS + PAD2))
 var perlin3 = new Float32Array(CS * CS)
 
-// Keep track of every chunk location that's had a player in it
-var chunksTravelled = {}
-
-// Generate any missing chunks in a radius around a point
-function generateWorldAt (world, loc) {
-  // First, check whether we've already generated the world around this chunk
-  var cx = loc.x >> CB << CB
-  var cy = loc.y >> CB << CB
-  var cz = loc.z >> CB << CB
-  var key = cx + ',' + cy + ',' + cz
-  if (chunksTravelled[key]) return
-  chunksTravelled[key] = true
-
-  // If not, fill in any missing chunks
-  var radius = config.WORLD_GEN.CHUNK_RADIUS
-  for (var dx = -radius; dx < radius; dx++) {
-    for (var dy = -radius; dy < radius; dy++) {
-      for (var dz = -radius; dz < radius; dz++) {
-        var d2 = dx * dx + dy * dy + dz * dz
-        if (d2 > radius * radius) continue
-        var ix = cx + (dx << CB)
-        var iy = cy + (dy << CB)
-        var iz = cz + (dz << CB)
-        var chunk = world.getChunk(ix, iy, iz)
-        if (chunk) continue
-        chunk = generateChunk(ix, iy, iz)
-        world.addChunk(chunk)
-      }
-    }
-  }
-}
-
 // World generation. Generates one chunk of voxels.
 // Returns a newly allocated Chunk: { x, y, z, data: UInt8Array }
 // Skips {data} if the chunk would be completely empty
 function generateChunk (x, y, z) {
   var ret = new Chunk(x, y, z)
-  if (z >= 128 || z < 0) return ret.pack()
 
   // Generate a Perlin heightmap
   // https://web.archive.org/web/20160421115558/
@@ -82,7 +50,7 @@ function generateChunk (x, y, z) {
 }
 
 function islandFunc (sx, sy, val) {
-  const island = val - (sx * sx + sy * sy) * 1e-4
+  const island = val - (GEN_RAD - Math.sqrt(GEN_RAD * GEN_RAD - sx * sx - sy * sy)) * 0.1
   return Math.max(island, 0)
 }
 
@@ -99,10 +67,10 @@ function placeLand (ret) {
         var voxz = z + iz
         var voxtype
         if (voxz < height1 && voxz > 40.0 + height2) {
-          voxtype = vox.INDEX.PINK
+          voxtype = vox.INDEX.STONE
         } else if (voxz < height1 && voxz > 20.0 + height3) {
-          voxtype = vox.INDEX.LIGHT_PURPLE
-        } else if (voxz < height1) {
+          voxtype = vox.INDEX.GRASS
+        } else if (voxz < height1 && voxz > -height1) {
           voxtype = vox.INDEX.DARK_PURPLE
         } else {
           voxtype = vox.INDEX.AIR

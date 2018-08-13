@@ -26,9 +26,12 @@ BazookaGame.prototype.generate = function generate () {
   console.log('generating island...')
   var cs = config.CHUNK_SIZE
   var genRad = config.BAZOOKA.GEN_RADIUS_CHUNKS
-  for (var x = -cs * genRad; x < cs * genRad; x++) {
-    for (var y = -cs * genRad; y < cs * genRad; y++) {
-      gen.generateWorldAt(this.world, x, y)
+  for (var x = -cs * genRad; x < cs * genRad; x += cs) {
+    for (var y = -cs * genRad; y < cs * genRad; y += cs) {
+      for (var z = -cs * 5; z < cs * 5; z += cs) {
+        var chunk = gen.generateChunk(x, y, z)
+        this.world.addChunk(chunk)
+      }
     }
   }
   console.log('generated ' + this.world.chunks.length + ' chunks')
@@ -145,10 +148,10 @@ BazookaGame.prototype._handleUpdate = function _handleUpdate (pc, obj) {
   if (!pc.player.name && obj.player.name) console.log('Player %s joined', obj.player.name)
   Object.assign(pc.player, obj.player)
 
-  obj.commands.forEach(function (command) {
+  obj.commands.forEach((command) => {
     switch (command.type) {
       case 'set':
-        return this.handleSet(command)
+        return this._handleSet(command)
       default:
         console.error('Ignoring unknown command type ' + command.type)
     }
