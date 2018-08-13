@@ -57,7 +57,7 @@ function updateSplash (e) {
   btnStart.classList.toggle('show', ready)
   divControls.classList.toggle('show', ready)
 
-  if (ready && e.key === 'Enter') enterLobby()
+  if (ready && e && e.key === 'Enter') enterLobby()
 }
 
 function enterLobby () {

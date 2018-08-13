@@ -1,7 +1,13 @@
 var EventEmitter = require('events')
+var FlexBuffer = require('../protocol/flex-buffer')
+var ChunkIO = require('../protocol/chunk-io')
+var config = require('../config')
 
 // Creates a new client handle from a new websocket connection
 module.exports = Conn
+
+// Allocate once and re-use
+var buf = new FlexBuffer()
 
 // Represents one client (player / spectator / hasn't signed in yet / w/e) connected to this game server.
 // Responsibilities:
@@ -31,7 +37,7 @@ function Conn (ws) {
 
 Conn.prototype = Object.create(EventEmitter.prototype)
 
-Conn.prototype.send = function (message) {
+Conn.prototype.send = function send (message) {
   if (this.closed) return console.error('Ignoring message, socket closed')
   if (!(message instanceof Uint8Array)) message = JSON.stringify(message)
   try {
@@ -43,15 +49,34 @@ Conn.prototype.send = function (message) {
   }
 }
 
-Conn.prototype.die = function (error) {
+Conn.prototype.die = function die (error) {
   if (this.error) return
   this.error = error
   this.send({type: 'error', error: error})
   setTimeout(this.destroy.bind(this), 1000)
 }
 
-Conn.prototype.destroy = function () {
+Conn.prototype.destroy = function destroy () {
   this.ws.close()
+}
+
+Conn.prototype.sendHandshake = function sendHandshake () {
+  this.send({type: 'handshake', serverVersion: config.SERVER.VERSION})
+}
+
+Conn.prototype.sendObjects = function sendObjects (objects) {
+  if (!objects.length) return
+  this.send({
+    type: 'objects',
+    objects: objects
+  })
+}
+
+Conn.prototype.sendChunks = function sendChunks (chunks) {
+  if (!chunks.length) return
+  buf.reset()
+  ChunkIO.write(buf, chunks)
+  this.send(buf.slice())
 }
 
 function handleClose () {
@@ -79,7 +104,7 @@ function handleJsonMessage (conn, obj) {
     case 'handshake':
       return handleHandshake(conn, obj)
     case 'update':
-      return this.emit('update', obj)
+      return conn.emit('update', obj)
     default:
       console.error('Ignoring unknown message type ' + obj.type)
   }
@@ -87,12 +112,4 @@ function handleJsonMessage (conn, obj) {
 
 function handleHandshake (conn, obj) {
   conn.clientVersion = obj.clientVersion
-}
-
-function handleUpdate (conn, obj) {
-  // TODO: doing this 10x per second per client is not ideal. use binary.
-  // TODO: validation
-  if (!conn.player.name && obj.player.name) console.log('Player %s joined', obj.player.name)
-  Object.assign(conn.player, obj.player)
-  conn.emit('update', obj)
 }

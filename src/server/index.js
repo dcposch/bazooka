@@ -6,7 +6,6 @@ var BazookaGame = require('./bazooka-game')
 var Conn = require('./conn')
 var PlayerConn = require('./player-conn')
 var monitor = require('./monitor')
-var api = require('./api')
 var compression = require('compression')
 
 var state = {
@@ -15,25 +14,16 @@ var state = {
   perf: {
     lastTickTime: new Date().getTime(),
     tps: 0
-  },
-  config: {}
+  }
 }
 
 main()
 
 function main () {
   // Serve websocket API
-  api.init(state)
   var httpServer = http.createServer()
   var wsServer = new WebSocketServer({server: httpServer})
-  wsServer.on('connection', function (ws) {
-    var conn = new Conn(ws)
-    api.addConn(conn)
-
-    // For now, create a new player immediately for every conn, add to single game
-    var player = new PlayerConn(conn)
-    state.game.addPlayer(player)
-  })
+  wsServer.on('connection', addWebsocketConn)
 
   // Serve the client files
   var app = express()
@@ -63,15 +53,24 @@ function tick () {
   state.perf.lastTickTime = nowMs
 
   // Update the game
-  state.game.tick(nowMs)
-
-  // Talk to clients
-  api.tick()
-  api.updateChunks(nowMs)
-  api.updateObjects(nowMs)
+  state.game.tick(state.tick)
 
   // Run up to 10 ticks per second, depending on server load
   setTimeout(tick, 100)
   state.tick++
   if (state.tick % 100 === 0) console.log('tick %s, tps %s', state.tick, state.perf.tps)
+}
+
+// Handles a new websocket connection = a player opening the game
+function addWebsocketConn (ws) {
+  // Send handshake, maybe client config
+  var conn = new Conn(ws)
+  conn.sendHandshake()
+
+  // For now, create a new player immediately for every conn, add to single game
+  var player = new PlayerConn(conn)
+  state.game.addPlayer(player)
+  conn.on('close', function () {
+    state.game.removePlayer(player.id)
+  })
 }
