@@ -25,8 +25,8 @@ var perlin3 = new Float32Array(CS * CS)
 // Keep track of every chunk location that's had a player in it
 var chunksTravelled = {}
 
-// Generate chunks in a radius around each player
-function generateWorld (state) {
+// Generates the whole map
+function generateMap (state) {
   var startMs = new Date().getTime()
   var numChunks = state.world.chunks.length
 
@@ -115,7 +115,7 @@ function placeLand (ret) {
       var height2 = perlin2[(ix + PAD) * (CS + PAD2) + iy + PAD]
       var height3 = perlin3[ix * CS + iy]
 
-      // Place earth and water
+      // Place earth
       for (var iz = 0; iz < CS; iz++) {
         var voxz = z + iz
         var voxtype
@@ -125,8 +125,6 @@ function placeLand (ret) {
           voxtype = vox.INDEX.LIGHT_PURPLE
         } else if (voxz < height1) {
           voxtype = vox.INDEX.DARK_PURPLE
-        } else if (voxz < 15) {
-          voxtype = vox.INDEX.WATER
         } else {
           voxtype = vox.INDEX.AIR
         }

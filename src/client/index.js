@@ -5,7 +5,6 @@ var Socket = require('./socket')
 var config = require('../config')
 var World = require('../world')
 var ChunkIO = require('../protocol/chunk-io')
-var vox = require('../vox')
 var textures = require('./textures')
 var splash = require('./splash')
 
@@ -17,7 +16,6 @@ var drawScope = require('./draw-scope')
 var drawHitMarker = require('./draw-hit-marker')
 var drawWorld = require('./draw-world')
 var drawDebug = null // Created on-demand
-var HUD = require('./models/hud')
 var Player = require('./models/player')
 
 // All game state lives here
@@ -36,8 +34,6 @@ var state = {
     situation: 'airborne',
     // Which block we're looking at: {location: {x,y,z}, side: {nx,ny,nz}, voxel}
     lookAtBlock: null,
-    // Which kind of block we're placing
-    placing: vox.INDEX.STONE,
     // Camera can also be 'third-person'
     camera: 'first-person'
   },
@@ -243,7 +239,6 @@ function render (dt) {
   if (state.player.camera === 'first-person') {
     drawHitMarker({ color: [1, 1, 1, 0.5] })
   }
-  HUD.draw({selectedIndex: HUD.QUICKBAR_VOX.indexOf(state.player.placing)})
 }
 
 function applyChunkUpdates () {

@@ -5,7 +5,7 @@ var ChunkIO = require('../protocol/chunk-io')
 module.exports = {
   init: init,
   tick: tick,
-  addClient: addClient,
+  addConn: addConn,
   updateChunks: updateChunks,
   updateObjects: updateObjects
 }
@@ -20,38 +20,34 @@ function init (s) {
   state = s
 }
 
-function addClient (client) {
-  state.clients.push(client)
-  client.on('update', handleUpdate)
-  client.on('close', function () {
-    var index = state.clients.indexOf(client)
-    console.log('Removing client %d: %s', index, client.player.name)
-    state.clients.splice(index, 1)
+function addConn (conn) {
+  state.conns.push(conn)
+  conn.on('update', handleUpdate)
+  conn.on('close', function () {
+    var index = state.conns.indexOf(conn)
+    console.log('Removing conn %d: %s', index, conn.player.name)
+    state.conns.splice(index, 1)
   })
 
-  client.send({type: 'handshake', serverVersion: config.SERVER.VERSION})
-  if (state.config.client) client.send({type: 'config', config: state.config.client})
+  conn.send({type: 'handshake', serverVersion: config.SERVER.VERSION})
+  if (state.config.client) conn.send({type: 'config', config: state.config.client})
 }
 
 function tick () {
-  state.clients.forEach(function (client) {
-    var loc = client.player.location
-    if (loc && loc.z < -100) client.die({message: 'you fell'})
-  })
 }
 
-// Tell each client about objects around them, including other players
-function updateObjects (now) {
-  // TODO: this runs in O(numClients ^ 2). Needs a better algorithm.
-  var n = state.clients.length
+// Tell each conn about objects around them, including other players
+function updateObjects () {
+  // TODO: this runs in O(numConns ^ 2). Needs a better algorithm.
+  var n = state.conns.length
   for (var i = 0; i < n; i++) {
-    var client = state.clients[i]
-    var a = client.player
+    var conn = state.conns[i]
+    var a = conn.player
     var objsToSend = []
 
     for (var j = 0; j < n; j++) {
       if (j === i) continue
-      var b = state.clients[j].player
+      var b = state.conns[j].player
       if (!a.location || !b.location) continue
       if (!b.name) continue
       if (!isInRange(a.location, b.location)) continue
@@ -71,16 +67,16 @@ function updateObjects (now) {
       })
     }
 
-    sendObjects(client, objsToSend)
+    sendObjects(conn, objsToSend)
   }
 }
 
-// Tell each client about the blocks around them. Send chunks where a voxel has changed.
-function updateChunks (now) {
-  // Figure out which clients need which chunks.
-  // TODO: this runs in O(numClients * numChunks). Needs a better algorithm.
+// Tell each conn about the blocks around them. Send chunks where a voxel has changed.
+function updateChunks (tick) {
+  // Figure out which conns need which chunks.
+  // TODO: this runs in O(numConns * numChunks). Needs a better algorithm.
   var chunksToSend = []
-  for (var j = 0; j < state.clients.length; j++) {
+  for (var j = 0; j < state.conns.length; j++) {
     chunksToSend.push([])
   }
   var chunks = state.world.chunks
@@ -88,24 +84,24 @@ function updateChunks (now) {
     var chunk = chunks[i]
     if (chunk.dirty || !chunk.lastModified) {
       chunk.dirty = false
-      chunk.lastModified = now
+      chunk.lastModifiedTick = tick
     }
     var key = chunk.getKey()
-    for (j = 0; j < state.clients.length; j++) {
-      var client = state.clients[j]
+    for (j = 0; j < state.conns.length; j++) {
+      var conn = state.conns[j]
       var cts = chunksToSend[j]
-      var loc = client.player.location
+      var loc = conn.player.location
       if (!loc) continue
-      if (!isInRange(loc, chunk)) continue // client too far away
-      if (client.chunksSent[key] >= chunk.lastModified) continue // client up-to-date
+      if (!isInRange(loc, chunk)) continue // player too far away
+      if (conn.chunksSent[key] >= chunk.lastModified) continue // up-to-date
       cts.push(chunk)
-      client.chunksSent[key] = now
+      conn.chunksSent[key] = tick
     }
   }
 
   // Send chunk updates
-  for (j = 0; j < state.clients.length; j++) {
-    sendChunks(state.clients[j], chunksToSend[j])
+  for (j = 0; j < state.conns.length; j++) {
+    sendChunks(state.conns[j], chunksToSend[j])
   }
 }
 
@@ -118,20 +114,20 @@ function isInRange (a, b) {
   return r2 < rmax * rmax
 }
 
-function sendObjects (client, objects) {
+function sendObjects (conn, objects) {
   if (!objects.length) return
-  client.send({
+  conn.send({
     type: 'objects',
     objects: objects
   })
 }
 
-function sendChunks (client, chunks) {
+function sendChunks (conn, chunks) {
   if (!chunks.length) return
-  console.log('Sending %d chunks to %s', chunks.length, client.player.name)
+  console.log('Sending %d chunks to %s', chunks.length, conn.player.name)
   buf.reset()
   ChunkIO.write(buf, chunks)
-  client.send(buf.slice())
+  conn.send(buf.slice())
 }
 
 function handleUpdate (message) {

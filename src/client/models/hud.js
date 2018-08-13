@@ -1,26 +1,14 @@
 var env = require('../env')
 var shaders = require('../shaders')
 var textures = require('../textures')
-var vox = require('../../vox')
 
 var HUD_WIDTH = (8 * 16 + 2) * 4
 var HUD_HEIGHT = 16 * 4
 var HUD_BOTTOM_CLIP_Y = -0.9
 
-// Draws a Heads-Up Display.
-// Shows what kind of block the player is placing.
+// Draws a Heads-Up Display
 module.exports = {
-  draw: draw,
-  QUICKBAR_VOX: [
-    vox.INDEX.STONE,
-    vox.INDEX.STRIPE_WOOD,
-    vox.INDEX.LIGHT_PURPLE,
-    vox.INDEX.DARK_PURPLE,
-    vox.INDEX.DARK_GREEN,
-    vox.INDEX.PINK,
-    vox.INDEX.RED,
-    vox.INDEX.LIGHT_BLUE
-  ]
+  draw: draw
 }
 
 function draw (props) {

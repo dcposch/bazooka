@@ -1,0 +1,7 @@
+{
+  "editor.formatOnSave": false,
+  "javascript.format.enable": false,
+  "javascript.validate.enable": false,
+  "standard.autoFixOnSave": true,
+  "standard.usePackageJson": true
+}

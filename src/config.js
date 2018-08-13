@@ -40,5 +40,9 @@ module.exports = {
     CHUNK_SEND_RADIUS: 15,
     VERSION: 0,
     PORT: 8080
+  },
+  BAZOOKA: {
+    MAX_PLAYERS: 20,
+    GEN_RADIUS_CHUNKS: 15
   }
 }

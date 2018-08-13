@@ -36,6 +36,7 @@
     "gl-vec4": "^1.0.1",
     "murmurhash": "0.0.2",
     "regl": "^1.2.1",
+    "uuid": "^3.3.2",
     "ws": "^6.0.0"
   },
   "devDependencies": {

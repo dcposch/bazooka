@@ -2,18 +2,15 @@ var http = require('http')
 var WebSocketServer = require('ws').Server
 var express = require('express')
 var config = require('../config')
-var World = require('../world')
-var Client = require('./client')
-var gen = require('../gen')
+var BazookaGame = require('./bazooka-game')
+var Conn = require('./conn')
+var PlayerConn = require('./player-conn')
 var monitor = require('./monitor')
 var api = require('./api')
 var compression = require('compression')
 
 var state = {
-  // TODO: move to BazookaGame
-  clients: [],
-  world: new World(),
-
+  game: new BazookaGame(),
   tick: 0,
   perf: {
     lastTickTime: new Date().getTime(),
@@ -30,8 +27,12 @@ function main () {
   var httpServer = http.createServer()
   var wsServer = new WebSocketServer({server: httpServer})
   wsServer.on('connection', function (ws) {
-    var client = new Client(ws)
-    api.addClient(client)
+    var conn = new Conn(ws)
+    api.addConn(conn)
+
+    // For now, create a new player immediately for every conn, add to single game
+    var player = new PlayerConn(conn)
+    state.game.addPlayer(player)
   })
 
   // Serve the client files
@@ -46,25 +47,28 @@ function main () {
     console.log('Listening on ' + JSON.stringify(httpServer.address()))
   })
 
+  // Generate the world
+  state.game.generate()
+
+  // Start the tick
   process.nextTick(tick)
 }
 
 // Update the world, handle client commands, send client updates
 function tick () {
   // Track performance
-  var now = new Date()
-  var dt = (now.getTime() - state.perf.lastTickTime) / 1000
+  var nowMs = new Date().getTime()
+  var dt = (nowMs - state.perf.lastTickTime) / 1000
   state.perf.tps = 0.99 * state.perf.tps + 0.01 / dt // Exponential moving average
-  state.perf.lastTickTime = now.getTime()
+  state.perf.lastTickTime = nowMs
 
-  // Generate new areas of the world on demand, as players explore them
-  if (state.tick % 10 === 0) gen.generateWorld(state)
+  // Update the game
+  state.game.tick(nowMs)
 
   // Talk to clients
   api.tick()
-  // DBG only one chunk update per second to debug client side prediction
-  if (state.tick % 10 === 0) api.updateChunks(now.getTime())
-  api.updateObjects(now.getTime())
+  api.updateChunks(nowMs)
+  api.updateObjects(nowMs)
 
   // Run up to 10 ticks per second, depending on server load
   setTimeout(tick, 100)
