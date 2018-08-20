@@ -5,30 +5,9 @@ var HUD = require('./models/hud')
 var shell = env.shell
 
 module.exports = {
-  tick: tick,
+  navigate: navigate,
+  look: look,
   interact: interact
-}
-
-var EPS = 0.001
-var PW = config.PLAYER_WIDTH
-var PH = config.PLAYER_HEIGHT
-var HORIZONTAL_COLLISION_DIRS = [
-  [PW, 0, 0], [PW, 0, -1],
-  [-PW, 0, 0], [-PW, 0, -1],
-  [0, PW, 0], [0, PW, -1],
-  [0, -PW, 0], [0, -PW, -1]
-]
-
-// Calculates player physics. Lets the player move and look around.
-function tick (state, dt, isPaused) {
-  // If dt is too large, simulate in smaller increments
-  // This prevents glitches like jumping through a block, getting stuck inside a block, etc
-  for (var t = 0.0; t < dt; t += config.PHYSICS.MAX_DT) {
-    var stepDt = Math.min(config.PHYSICS.MAX_DT, dt - t)
-    if (!isPaused) navigate(state.player, stepDt)
-    if (!isPaused) simulate(state, stepDt)
-  }
-  if (!isPaused) look(state.player)
 }
 
 // Lets the player place and break blocks
@@ -102,59 +81,6 @@ function look (player) {
   dir.azimuth = (dir.azimuth + 2 * pi) % (2 * pi) // Wrap to [0, 2pi)
   dir.altitude -= dy * config.MOUSE_SENSITIVITY
   dir.altitude = Math.min(0.5 * pi, Math.max(-0.5 * pi, dir.altitude)) // Clamp to [-pi/2, pi/2]
-}
-
-// Apply gravity to the player, don't let them pass through blocks, etc
-function simulate (state, dt) {
-  var player = state.player
-  var loc = player.location
-  var vel = player.velocity
-
-  // Horizontal collision
-  HORIZONTAL_COLLISION_DIRS.forEach(function (dir) {
-    if (!collide(state, loc.x + dir[0], loc.y + dir[1], loc.z + dir[2])) return
-    // Back off just enough to avoid collision. Don't bounce.
-    if (dir[0] > 0) loc.x = Math.ceil(loc.x) - PW - EPS
-    if (dir[0] < 0) loc.x = Math.floor(loc.x) + PW + EPS
-    if (dir[1] > 0) loc.y = Math.ceil(loc.y) - PW - EPS
-    if (dir[1] < 0) loc.y = Math.floor(loc.y) + PW + EPS
-    if (dir[0] !== 0) vel.x = 0
-    if (dir[1] !== 0) vel.y = 0
-  })
-
-  // Gravity
-  vel.z -= config.PHYSICS.GRAVITY * dt
-
-  // Vertical collision
-  var underfoot = collide(state, loc.x, loc.y, loc.z - PH - EPS)
-  var legs = collide(state, loc.x, loc.y, loc.z - PW - EPS)
-  var head = collide(state, loc.x, loc.y, loc.z + PW - EPS)
-  if (head && underfoot) {
-    vel.z = 0
-    player.situation = 'suffocating'
-  } else if (head) {
-    vel.z = 0
-    player.situation = 'airborne'
-    loc.z = Math.floor(loc.z - PH - EPS) + PH
-  } else if (legs) {
-    vel.z = 0
-    player.situation = 'on-ground'
-    loc.z = Math.ceil(loc.z - PW - EPS) + PH
-  } else if (underfoot && vel.z <= 0) {
-    vel.z = 0
-    player.situation = 'on-ground'
-    loc.z = Math.ceil(loc.z - PH - EPS) + PH
-  } else {
-    player.situation = 'airborne'
-  }
-
-  loc.z += vel.z * dt
-}
-
-// Returns true if (x, y, z) is unpassable (either in a block or off the world)
-function collide (state, x, y, z) {
-  var v = state.world.getVox(Math.floor(x), Math.floor(y), Math.floor(z))
-  return v > 1
 }
 
 // Place a block onto the block face we're looking at

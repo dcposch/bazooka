@@ -1,18 +1,15 @@
-var regl = require('../env').regl
-var shaders = require('../shaders')
-var textures = require('../textures')
-var Poly8 = require('../geometry/poly8')
-var Mesh = require('../geometry/mesh')
-var coordinates = require('../geometry/coordinates')
-var config = require('../../config')
+var regl = require('./env').regl
+var shaders = require('./shaders')
+var textures = require('./textures')
+var Poly8 = require('./geometry/poly8')
+var Mesh = require('./geometry/mesh')
+var coordinates = require('./geometry/coordinates')
+var config = require('../config')
 var mat4 = {
   create: require('gl-mat4/create'),
   identity: require('gl-mat4/identity'),
   translate: require('gl-mat4/translate'),
-  rotateX: require('gl-mat4/rotateX'),
-  rotateY: require('gl-mat4/rotateY'),
-  rotateZ: require('gl-mat4/rotateZ'),
-  scale: require('gl-mat4/scale')
+  rotate: require('gl-mat4/rotate')
 }
 var mat3 = {
   create: require('gl-mat3/create'),
@@ -22,18 +19,17 @@ var mat3 = {
 module.exports = drawFallingBlocks
 
 var MAX_BLOCKS = 128
-var VERTS_PER_BLOCK = 12
+var VERTS_PER_BLOCK = 36
+var POINTS_PER_BLOCK = 8
 
 // Matrices to transform 
 var mat = mat4.create()
 var matN = mat3.create()
 
 // Vertex positions, normals, etc for each block
-var meshBlock = axisAligned(0, 0, 0, 1, 1, 1, 0, 0)
+var meshBlock = axisAligned(-0.5, -0.5, -0.5, 1, 1, 1, 0, 0)
 var mesh = Mesh.combine(new Array(MAX_BLOCKS).fill(0).map(x => meshBlock.clone()))
-
-window.meshBlock = meshBlock
-window.mesh = mesh
+// var arrPoints = new Float32Array(MAX_BLOCKS * POINTS_PER_BLOCK * 3);
 
 var bufVerts, bufNorms
 // var bufUV
@@ -47,16 +43,18 @@ function drawFallingBlocks (blocks) {
     throw new Error("MAX_BLOCKS exceeded: " + n)
   }
   for (var i = 0; i < n; i++) {
-    var loc = blocks[i].location
+    var block = blocks[i]
+    var loc = block.location
+
     mat4.identity(mat)
-    mat3.identity(matN)
     mat4.translate(mat, mat, [loc.x, loc.y, loc.z])
+    mat4.rotate(mat, mat, block.rotTheta, block.rotAxis)
     var dir = blocks[i].direction
     // mat4.rotateZ(mat, mat, dir.azimuth)
     // mat4.rotateY(mat, mat, -dir.altitude)
     // mat3.rotateZ(matN, matN, dir.azimuth)
     // mat3.rotateY(matN, matN, -dir.altitude)
-    Mesh.transformPart(mesh, meshBlock, mat, matN, i * VERTS_PER_BLOCK * 3)
+    Mesh.transformPart(mesh, meshBlock, mat, matN, i * VERTS_PER_BLOCK)
   }
 
   // bufVerts.subdata(mesh.verts)

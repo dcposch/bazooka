@@ -1,4 +1,5 @@
 var playerControls = require('./player-controls')
+var physics = require('./physics')
 var picker = require('./picker')
 var mesher = require('./mesher')
 var Socket = require('./socket')
@@ -7,6 +8,9 @@ var World = require('../world')
 var ChunkIO = require('../protocol/chunk-io')
 var textures = require('./textures')
 var splash = require('./splash')
+var vec3 = {
+  create: require('gl-vec3/create')
+}
 
 // Find the canvas, initialize regl and game-shell
 var env = require('./env')
@@ -16,7 +20,7 @@ var drawScope = require('./draw-scope')
 var drawHitMarker = require('./draw-hit-marker')
 var drawWorld = require('./draw-world')
 var drawDebug = null // Created on-demand
-var drawFallingBlocks = require('./models/falling-blocks')
+var drawFallingBlocks = require('./draw-falling-blocks')
 var Player = require('./models/player')
 
 // All game state lives here
@@ -50,6 +54,7 @@ var state = {
     showHUD: true
   },
   objects: {},
+  fallingBlocks: [],
   world: new World(),
   socket: new Socket(),
   config: null,
@@ -57,9 +62,8 @@ var state = {
 }
 
 // DBG:
-var blocks = []
 for (var i = 0; i < 100; i++) {
-  blocks.push({
+  state.fallingBlocks.push({
     location: { 
       x: Math.random() * 20 - 10,
       y: Math.random() * 20 - 10,
@@ -68,10 +72,9 @@ for (var i = 0; i < 100; i++) {
     velocity: {
       x: 0, y: 0, z: 0
     },
-    direction: {
-      azimuth: Math.random(),
-      altitude: Math.random()
-    }
+    rotAxis: randomRotAxis(),
+    rotTheta: 0,
+    rotVel: Math.random() * 5
   })
 }
 
@@ -83,6 +86,7 @@ function main () {
   initWebsocket()
   env.shell.on('tick', tick)
   env.regl.frame(frame)
+
   // For debugging
   window.state = state
   window.config = config
@@ -150,6 +154,18 @@ function handleObjects (msg) {
   })
 }
 
+function randomRotAxis () {
+  var ret = vec3.create()
+  ret[0] = Math.random()
+  ret[1] = Math.random()
+  ret[2] = Math.random()
+  var det = Math.sqrt(ret[0], ret[1], ret[2])
+  ret[0] /= det
+  ret[1] /= det
+  ret[2] /= det
+  return ret
+}
+
 function createObject (info) {
   switch (info.type) {
     case 'player':
@@ -173,9 +189,6 @@ function tick () {
   var command = null
   if (!state.paused) command = playerControls.interact(state)
   if (command) state.pendingCommands.push(command)
-
-  // Physics
-  // TODO: block physics, update all active chunks
 
   // Client / server
   // TODO: enqueue actions to send to the server
@@ -203,20 +216,31 @@ function frame (context) {
   var dt = Math.max(now - state.perf.lastFrameTime, 1) / 1000
   state.perf.fps = 0.99 * state.perf.fps + 0.01 / dt // Exponential moving average
   state.perf.lastFrameTime = now
+  state.paused = !env.shell.fullscreen
 
+  // Update the terrain
   applyChunkUpdates()
   mesher.meshWorld(state.world, state.player.location)
 
-  if (state.startTime > 0 && state.world.chunks.length > 0) {
-    // Handle player input, physics, update player position, direction, and velocity
-    playerControls.tick(state, dt, state.paused)
-    // Prediction: extrapolate object positions from latest server update
-    predictObjects(dt, now)
-    // Draw the frame
-    render(dt)
+  // If we're playing, update the objects too
+  if (state.startTime <= 0 || state.world.chunks.length === 0) {
+    return
   }
 
-  state.paused = !env.shell.fullscreen
+  // Handle player input, physics, update player position, direction, and velocity
+  // If dt is too large, simulate in smaller increments
+  // This prevents glitches like jumping through a block, getting stuck inside a block, etc
+  for (var t = 0.0; t < dt; t += config.PHYSICS.MAX_DT) {
+    var stepDt = Math.min(config.PHYSICS.MAX_DT, dt - t)
+    playerControls.navigate(state.player, stepDt)
+    physics.simulate(state, stepDt)
+  }
+  playerControls.look(state.player)
+  
+  // Prediction: extrapolate object positions from latest server update
+  predictObjects(dt, now)
+  // Draw the frame
+  render(dt)
 }
 
 function predictObjects (dt, now) {
@@ -253,7 +277,7 @@ function render (dt) {
       obj.draw()
     })
     drawWorld(state)
-    drawFallingBlocks(blocks)
+    drawFallingBlocks(state.fallingBlocks)
   })
   if (state.debug.showHUD) {
     if (!drawDebug) drawDebug = require('./draw-debug')
