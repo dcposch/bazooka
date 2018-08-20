@@ -15,7 +15,8 @@ var mat4 = {
   scale: require('gl-mat4/scale')
 }
 var mat3 = {
-  create: require('gl-mat3/create')
+  create: require('gl-mat3/create'),
+  identity: require('gl-mat3/identity')
 }
 
 module.exports = drawFallingBlocks
@@ -31,8 +32,8 @@ var matN = mat3.create()
 var meshBlock = axisAligned(0, 0, 0, 1, 1, 1, 0, 0)
 var mesh = Mesh.combine(new Array(MAX_BLOCKS).fill(0).map(x => meshBlock.clone()))
 
-window.mesh = mesh
 window.meshBlock = meshBlock
+window.mesh = mesh
 
 var bufVerts, bufNorms
 // var bufUV
@@ -48,20 +49,23 @@ function drawFallingBlocks (blocks) {
   for (var i = 0; i < n; i++) {
     var loc = blocks[i].location
     mat4.identity(mat)
-    mat4.identity(matN)
+    mat3.identity(matN)
     mat4.translate(mat, mat, [loc.x, loc.y, loc.z])
-    // mat4.rotateZ(mat, mat, azimuth)
-    // mat4.rotateY(mat, mat, -altitude)
-    // mat4.scale(mat, mat, [SCALE, SCALE, SCALE])
-    Mesh.transformPart(mesh, meshBlock, mat, matN, i * VERTS_PER_BLOCK)
+    var dir = blocks[i].direction
+    // mat4.rotateZ(mat, mat, dir.azimuth)
+    // mat4.rotateY(mat, mat, -dir.altitude)
+    // mat3.rotateZ(matN, matN, dir.azimuth)
+    // mat3.rotateY(matN, matN, -dir.altitude)
+    Mesh.transformPart(mesh, meshBlock, mat, matN, i * VERTS_PER_BLOCK * 3)
   }
 
-  console.log("WTF: " + JSON.stringify(mesh.verts[0]))
-  bufVerts.subdata(mesh.verts)
-  bufNorms.subdata(mesh.norms)
+  // bufVerts.subdata(mesh.verts)
+  // bufNorms.subdata(mesh.norms)
+  bufVerts(mesh.verts)
+  bufNorms(mesh.norms)
 
   // console.log('DRAWING ' + n)
-  var props = { count: n }
+  var props = { numVerts: n * VERTS_PER_BLOCK }
   drawCommand(props)
 }
 
@@ -84,7 +88,7 @@ function compileCommands () {
       // uTexture: textures.loaded.atlas
     },
     count: function (context, props) {
-      return props.count
+      return props.numVerts
     }
   })
   return true

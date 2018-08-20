@@ -73,9 +73,6 @@ function enterLobby () {
 function startGame () {
   divSplash.remove()
 
-  env.shell.fullscreen = true
-  env.shell.pointerLock = true
-
   state.player.name = inputName.value
   state.objects.self = new Player(state.player.name)
   state.startTime = new Date().getTime()

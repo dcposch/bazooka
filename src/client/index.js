@@ -36,7 +36,7 @@ var state = {
     // Which block we're looking at: {location: {x,y,z}, side: {nx,ny,nz}, voxel}
     lookAtBlock: null,
     // Camera can also be 'third-person'
-    camera: 'first-person'
+    camera: 'third-person'
   },
   pendingCommands: [],
   pendingChunkUpdates: [],
@@ -47,7 +47,7 @@ var state = {
   },
   debug: {
     // Player can toggle the debug display
-    showHUD: false
+    showHUD: true
   },
   objects: {},
   world: new World(),
@@ -56,52 +56,26 @@ var state = {
   error: null
 }
 
-// DBG main()
-
+// DBG:
 var blocks = []
 for (var i = 0; i < 100; i++) {
   blocks.push({
     location: { 
-      x: Math.random() * 100 - 50,
-      y: Math.random() * 100 - 50,
-      z: Math.random() * 100 + 50
+      x: Math.random() * 20 - 10,
+      y: Math.random() * 20 - 10,
+      z: Math.random() * 20 + 80
     },
     velocity: {
       x: 0, y: 0, z: 0
     },
     direction: {
-      azimuth: 0, altitude: 0
+      azimuth: Math.random(),
+      altitude: Math.random()
     }
   })
 }
-dbgMain()
 
-function dbgMain () {
-  document.querySelector('div.splash').remove()
-  document.querySelector('canvas').addEventListener('click', function () {
-    if (state.error) return
-    env.shell.fullscreen = true
-    env.shell.pointerLock = true
-  })
-
-  drawDebug = require('./draw-debug')
-  env.regl.frame(dbgFrame)
-}
-
-function dbgFrame () {
-  var now = new Date().getTime()
-  var dt = Math.max(now - state.perf.lastFrameTime, 1) / 1000
-  state.perf.fps = 0.99 * state.perf.fps + 0.01 / dt // Exponential moving average
-  state.perf.lastFrameTime = now
-
-  playerControls.tick(state, dt, false)
-
-  env.regl.clear({ color: [1, 0.5, 1, 1], depth: 1 })
-  drawScope(state, function () {
-    drawFallingBlocks(blocks)
-    drawDebug(state)
-  })
-}
+main()
 
 function main () {
   splash.init(state)
@@ -279,6 +253,7 @@ function render (dt) {
       obj.draw()
     })
     drawWorld(state)
+    drawFallingBlocks(blocks)
   })
   if (state.debug.showHUD) {
     if (!drawDebug) drawDebug = require('./draw-debug')

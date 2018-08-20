@@ -16,5 +16,5 @@ void main(void) {
   // TODO:
   gl_Position = uMatrix * vec4(aPosition, 1.0);
   vNormal = aNormal;
-  vColor = vec4(aNormal, 1.0);
+  vColor = vec4(0.5, 0.5, 0.25, 1.0);
 }

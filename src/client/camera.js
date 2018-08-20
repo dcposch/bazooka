@@ -28,7 +28,7 @@ function updateMatrix (context, props) {
   // First, figure out where the camera goes
   var dir = props.player.direction
   var loc = props.player.location
-  var caltitude = Math.min(1, Math.max(-1, dir.altitude)) * 0.7
+  var caltitude = Math.min(1, Math.max(-1, dir.altitude)) * 0.7 - 0.1
   var cdir = coordinates.toCartesian(dir.azimuth, caltitude, 1.0)
   var cloc
   switch (props.player.camera) {
@@ -38,7 +38,7 @@ function updateMatrix (context, props) {
     case 'third-person':
       // TODO: add a collision check?
       // Currently, the camera can go inside nearby blocks in third-person view.
-      var dist = Math.cos(caltitude) * 2 + 1
+      var dist = Math.cos(caltitude) * 5 + 1
       cloc = [loc.x - dist * cdir[0], loc.y - dist * cdir[1], loc.z - cdir[2]]
       break
     default:
