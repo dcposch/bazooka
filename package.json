@@ -14,7 +14,7 @@
     "browserify": "browserify -t brfs src/client",
     "uglify": "uglifyjs -c -m",
     "show-bloat": "browserify --full-paths src/client | discify --open",
-    "start": "npm run watch & node ./src/server"
+    "start": "node ./src/server"
   },
   "repository": {
     "type": "git",

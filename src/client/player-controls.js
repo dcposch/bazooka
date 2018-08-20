@@ -26,7 +26,7 @@ function tick (state, dt, isPaused) {
   for (var t = 0.0; t < dt; t += config.PHYSICS.MAX_DT) {
     var stepDt = Math.min(config.PHYSICS.MAX_DT, dt - t)
     if (!isPaused) navigate(state.player, stepDt)
-    simulate(state, stepDt)
+    // simulate(state, stepDt)
   }
   if (!isPaused) look(state.player)
 }

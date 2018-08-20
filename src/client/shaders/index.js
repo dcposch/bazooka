@@ -5,7 +5,8 @@ module.exports = {
     uvWorld: fs.readFileSync(require.resolve('./vert-uv-world.glsl'), 'utf8'),
     uvClip: fs.readFileSync(require.resolve('./vert-uv-clip.glsl'), 'utf8'),
     colorWorld: fs.readFileSync(require.resolve('./vert-color-world.glsl'), 'utf8'),
-    colorClip: fs.readFileSync(require.resolve('./vert-color-clip.glsl'), 'utf8')
+    colorClip: fs.readFileSync(require.resolve('./vert-color-clip.glsl'), 'utf8'),
+    fallingBlocks: fs.readFileSync(require.resolve('./vert-falling-blocks.glsl'), 'utf8')
   },
   frag: {
     color: fs.readFileSync(require.resolve('./frag-color.glsl'), 'utf8'),

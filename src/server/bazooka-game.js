@@ -5,6 +5,7 @@ var config = require('../config')
 module.exports = BazookaGame
 
 const CB = config.CHUNK_BITS
+const MAX_BLK = config.BAZOOKA.MAX_FALLING_BLOCKS
 
 // Represents one Bazooka City game.
 // Battle royale. Players land on a procgen voxel sky island and fight until one is left.
@@ -20,6 +21,7 @@ function BazookaGame () {
   this.playerConns = []
   this.world = new World()
   this.status = 'ACTIVE' // TODO
+  this.fallingBlocks = []
 }
 
 BazookaGame.prototype.generate = function generate () {
@@ -81,7 +83,8 @@ BazookaGame.prototype._updateObjects = function _updateObjects () {
 
     for (var j = 0; j < n; j++) {
       if (j === i) continue
-      var b = this.playerConns[j].player
+      var pcb = this.playerConns[j]
+      var b = pcb.player
       if (!a.location || !b.location) continue
       if (!b.name) continue
       if (!isInRange(a.location, b.location)) continue
@@ -89,15 +92,25 @@ BazookaGame.prototype._updateObjects = function _updateObjects () {
       objsToSend.push({
         // Common to all objects
         type: 'player',
-        key: 'player-' + b.name,
+        key: 'player-' + pcb.id,
         location: b.location,
         velocity: b.velocity,
         // Specific to the player object
-        props: {
-          name: b.name,
-          direction: b.direction,
-          situation: b.situation
-        }
+        name: b.name,
+        direction: b.direction,
+        situation: b.situation
+      })
+    }
+
+    for (j = 0; j < this.fallingBlocks.length; i++) {
+      var block = this.fallingBlocks[j]
+      objsToSend.push({
+        // Common to all objects
+        type: 'block',
+        key: 'block-' + j,
+        location: block.location,
+        velocity: block.velocity,
+        direction: block.direction
       })
     }
 

@@ -43,6 +43,7 @@ module.exports = {
   },
   BAZOOKA: {
     MAX_PLAYERS: 20,
-    GEN_RADIUS_CHUNKS: 15
+    GEN_RADIUS_CHUNKS: 15,
+    MAX_FALLING_BLOCKS: 128
   }
 }

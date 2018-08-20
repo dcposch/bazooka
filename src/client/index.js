@@ -16,6 +16,7 @@ var drawScope = require('./draw-scope')
 var drawHitMarker = require('./draw-hit-marker')
 var drawWorld = require('./draw-world')
 var drawDebug = null // Created on-demand
+var drawFallingBlocks = require('./models/falling-blocks')
 var Player = require('./models/player')
 
 // All game state lives here
@@ -55,7 +56,52 @@ var state = {
   error: null
 }
 
-main()
+// DBG main()
+
+var blocks = []
+for (var i = 0; i < 100; i++) {
+  blocks.push({
+    location: { 
+      x: Math.random() * 100 - 50,
+      y: Math.random() * 100 - 50,
+      z: Math.random() * 100 + 50
+    },
+    velocity: {
+      x: 0, y: 0, z: 0
+    },
+    direction: {
+      azimuth: 0, altitude: 0
+    }
+  })
+}
+dbgMain()
+
+function dbgMain () {
+  document.querySelector('div.splash').remove()
+  document.querySelector('canvas').addEventListener('click', function () {
+    if (state.error) return
+    env.shell.fullscreen = true
+    env.shell.pointerLock = true
+  })
+
+  drawDebug = require('./draw-debug')
+  env.regl.frame(dbgFrame)
+}
+
+function dbgFrame () {
+  var now = new Date().getTime()
+  var dt = Math.max(now - state.perf.lastFrameTime, 1) / 1000
+  state.perf.fps = 0.99 * state.perf.fps + 0.01 / dt // Exponential moving average
+  state.perf.lastFrameTime = now
+
+  playerControls.tick(state, dt, false)
+
+  env.regl.clear({ color: [1, 0.5, 1, 1], depth: 1 })
+  drawScope(state, function () {
+    drawFallingBlocks(blocks)
+    drawDebug(state)
+  })
+}
 
 function main () {
   splash.init(state)
@@ -134,6 +180,8 @@ function createObject (info) {
   switch (info.type) {
     case 'player':
       return new Player(info.name)
+    case 'block':
+      return new FallingBlock()
     default:
       throw new Error('unrecognized object type ' + info.type)
   }
