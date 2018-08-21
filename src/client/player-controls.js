@@ -20,8 +20,13 @@ function interact (state) {
   var p = state.player
 
   if (shell.wasDown('1')) {
+    state.player.mode = 'bazooka'
+  } else if (shell.wasDown('2')) {
+    state.player.mode = 'commando'
+  } else if (shell.wasDown('3')) {
     dbgSpawnBlocks(state)
   }
+  
 
   if (shell.press('9')) p.camera = p.camera === 'first-person' ? 'third-person' : 'first-person'
 
@@ -76,8 +81,6 @@ function navigate (player, dt) {
   var vel = player.velocity
 
   // Directional input (WASD) always works
-  vel.x = 0
-  vel.y = 0
   if (shell.wasDown('nav-forward')) move(vel, 1, dir.azimuth, 0)
   if (shell.wasDown('nav-back')) move(vel, 1, dir.azimuth + Math.PI, 0)
   if (shell.wasDown('nav-left')) move(vel, 1, dir.azimuth + Math.PI * 0.5, 0)

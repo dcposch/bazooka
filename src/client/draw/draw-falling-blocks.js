@@ -10,12 +10,12 @@ var mat3 = {
   rotate: require('gl-mat3/rotate')
 }
 
-var regl = require('./env').regl
-var shaders = require('./shaders')
-var textures = require('./textures')
-var Poly8 = require('./geometry/poly8')
-var Mesh = require('./geometry/mesh')
-var vox = require('../vox')
+var regl = require('../env').regl
+var shaders = require('../shaders')
+var textures = require('../textures')
+var Poly8 = require('../geometry/poly8')
+var Mesh = require('../geometry/mesh')
+var vox = require('../../vox')
 
 module.exports = drawFallingBlocks
 
@@ -40,7 +40,7 @@ var drawCommand
 
 /**
  * Draws up to MAX_BLOCKS falling blocks efficiently.
- * 
+ *
  * Each one should be a block object: { location, velocity, rotAxis, rotTheta, ... }
  */
 function drawFallingBlocks (blocks) {
@@ -64,13 +64,13 @@ function drawFallingBlocks (blocks) {
 
     Mesh.transformPart(mesh, meshBlock, mat, matN, i * VERTS_PER_BLOCK)
 
-    if (blockTypes[i] != block.typeIndex) {
+    if (blockTypes[i] !== block.typeIndex) {
       dirtyUVs = true
       blockTypes[i] = block.typeIndex
       var uv = vox.TYPES[block.typeIndex].uv
       var uvEachSideOfBlock = [uv.top, uv.side, uv.side, uv.side, uv.side, uv.bottom]
       uvEachSideOfBlock.map(function (u, j) {
-        var sideIx = i * 72 + j * 12 
+        var sideIx = i * 72 + j * 12
         // 000 001 010 010 011 001
         mesh.uvs[sideIx + 0] = (u[0] + 0) * VOX_TEX_TILE_SIZE
         mesh.uvs[sideIx + 1] = (u[1] + 0) * VOX_TEX_TILE_SIZE

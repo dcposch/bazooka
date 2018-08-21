@@ -1,8 +1,8 @@
-var env = require('./env')
-var config = require('../config')
-var shaders = require('./shaders')
-var camera = require('./camera')
-var textures = require('./textures')
+var env = require('../env')
+var config = require('../../config')
+var shaders = require('../shaders')
+var camera = require('../camera')
+var textures = require('../textures')
 var vec3 = {
   create: require('gl-vec3/create'),
   transformMat4: require('gl-vec3/transformMat4')

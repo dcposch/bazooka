@@ -28,8 +28,17 @@ function updateMatrix (context, props) {
   // First, figure out where the camera goes
   var dir = props.player.direction
   var loc = props.player.location
+  var vel = props.player.velocity
+
   var caltitude = Math.min(1, Math.max(-1, dir.altitude)) * 0.7 - 0.1
-  var cdir = coordinates.toCartesian(dir.azimuth, caltitude, 1.0)
+  var vel2 = vel.x * vel.x + vel.y * vel.y + vel.z * vel.z
+  if (vel2 < 0.1) {
+    cdir = coordinates.toCartesian(dir.azimuth, caltitude, 1.0)
+  } else {
+    var cm = -1 / Math.sqrt(vel2)
+    cdir = [vel.x * cm, vel.y * cm, vel.z * cm]
+  }
+
   var cloc
   switch (props.player.camera) {
     case 'first-person':

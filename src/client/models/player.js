@@ -49,6 +49,9 @@ function Player (name) {
   this.location = {x: 0, y: 0, z: 0}
   this.velocity = {x: 0, y: 0, z: 0}
 
+  // Which mode you're in-- bazooka, commando, ...
+  this.mode = 'bazooka'
+
   // Specific to Player
   this.props = {
     name: null,
@@ -135,7 +138,7 @@ Player.prototype.draw = function () {
   this.buffers.verts.subdata(this.mesh.verts)
   this.buffers.norms.subdata(this.mesh.norms)
 
-  drawCommand({player: this})
+  drawCommand({ player: this })
 }
 
 Player.prototype.destroy = function () {
@@ -153,9 +156,10 @@ var drawCommand = regl({
   },
   uniforms: {
     uTexture: function (context, props) {
-      var skin = props.player.skin
-      if (skin === 'commando') return textures.loaded.skinPurple
-      return textures.loaded.skinArmy
+      var mode = props.player.mode
+      if (mode === 'commando') return textures.loaded.skinCommando
+      else if (mode === 'bazooka') return textures.loaded.skinArmy
+      else throw new Error('Unsupported mode ' + mode)
     }
   },
   count: meshTemplate.verts.length

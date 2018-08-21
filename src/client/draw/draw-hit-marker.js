@@ -1,5 +1,5 @@
-var env = require('./env')
-var shaders = require('./shaders')
+var env = require('../env')
+var shaders = require('../shaders')
 
 var CROSSHAIR_RADIUS = 10 // Pixels
 var CROSSHAIR_WIDTH = 1

@@ -13,11 +13,13 @@ var splash = require('./splash')
 var env = require('./env')
 
 // Precompile regl commands
-var drawScope = require('./draw-scope')
-var drawHitMarker = require('./draw-hit-marker')
-var drawWorld = require('./draw-world')
+var drawScope = require('./draw/draw-scope')
+var drawHitMarker = require('./draw/draw-hit-marker')
+var drawWorld = require('./draw/draw-world')
 var drawDebug = null // Created on-demand
-var drawFallingBlocks = require('./draw-falling-blocks')
+var drawFallingBlocks = require('./draw/draw-falling-blocks')
+var drawHud = require('./draw/draw-hud')
+
 var Player = require('./models/player')
 
 // All game state lives here
@@ -38,9 +40,10 @@ var state = {
     lookAtBlock: null,
     // Camera can also be 'third-person'
     camera: 'third-person',
-    // Current skin. See static/textures/skin-<...>.png
-    skin: 'army'
+    // Current mode: 'commando', 'bazooka', ...
+    mode: 'bazooka',
   },
+
   pendingCommands: [],
   pendingChunkUpdates: [],
   perf: {
@@ -222,6 +225,7 @@ function predictObjects (dt, now) {
   self.velocity = state.player.velocity
   self.props.direction = state.player.direction
   self.props.name = state.player.name
+  self.mode = state.player.mode
 
   // All other object positions are extrapolated from the latest server position + velocity
   Object.keys(state.objects).forEach(function (key) {
@@ -251,8 +255,9 @@ function render (dt) {
     drawWorld(state)
     drawFallingBlocks(state.fallingBlocks)
   })
+  drawHud({mode: state.player.mode})
   if (state.debug.showHUD) {
-    if (!drawDebug) drawDebug = require('./draw-debug')
+    if (!drawDebug) drawDebug = require('./draw/draw-debug')
     drawDebug(state)
   }
   if (state.player.camera === 'first-person') {

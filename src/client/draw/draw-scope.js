@@ -1,5 +1,5 @@
-var env = require('./env')
-var camera = require('./camera')
+var env = require('../env')
+var camera = require('../camera')
 
 module.exports = env.regl({
   uniforms: {
