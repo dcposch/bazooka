@@ -6,6 +6,11 @@ var mat4 = {
   perspective: require('gl-mat4/perspective'),
   multiply: require('gl-mat4/multiply')
 }
+var vec3 = {
+  clone: require('gl-vec3/clone'),
+  scale: require('gl-vec3/scale'),
+  dot: require('gl-vec3/dot')
+}
 var coordinates = require('./geometry/coordinates')
 
 // Projects the world from 3D to 2D
@@ -23,7 +28,7 @@ var vmat = mat4.create()
 var pmat = mat4.create()
 var mat = mat4.create()
 
-// Calculates the combined projection and view matrix
+// Calculates and returns the combined projection and view matrix
 function updateMatrix (context, props) {
   // First, figure out where the camera goes
   var dir = props.player.direction
@@ -31,24 +36,29 @@ function updateMatrix (context, props) {
   var vel = props.player.velocity
 
   var caltitude = Math.min(1, Math.max(-1, dir.altitude)) * 0.7 - 0.1
-  var vel2 = vel.x * vel.x + vel.y * vel.y + vel.z * vel.z
-  if (vel2 < 0.1) {
-    cdir = coordinates.toCartesian(dir.azimuth, caltitude, 1.0)
-  } else {
-    var cm = -1 / Math.sqrt(vel2)
-    cdir = [vel.x * cm, vel.y * cm, vel.z * cm]
-  }
+  var lookDir = coordinates.toCartesian(dir.azimuth, caltitude, 1.0)
 
-  var cloc
+  var cloc = props.cameraLoc
   switch (props.player.camera) {
     case 'first-person':
-      cloc = [loc.x + 0.3 * cdir[0], loc.y + 0.3 * cdir[1], loc.z + 0.3 * cdir[2]]
+      // Camera glued to the front of the player's face, facing forward
+      cloc[0] = loc.x + 0.3 * lookDir[0]
+      cloc[1] = loc.y + 0.3 * lookDir[1]
+      cloc[2] = loc.z + 0.3 * lookDir[2]
       break
     case 'third-person':
+      // Camera flies to a target location above & behind the player
       // TODO: add a collision check?
       // Currently, the camera can go inside nearby blocks in third-person view.
+      var cdir = vec3.clone([lookDir[0] + vel.x * 0.2, lookDir[1] + vel.y * 0.2, lookDir[2]])
+      var cnorm = 1 / Math.sqrt(vec3.dot(cdir, cdir))
+      vec3.scale(cdir, cdir, cnorm)
+
       var dist = Math.cos(caltitude) * 5 + 1
-      cloc = [loc.x - dist * cdir[0], loc.y - dist * cdir[1], loc.z - cdir[2]]
+      var decay = 0.1
+      cloc[0] = (loc.x - dist * cdir[0]) * decay + cloc[0] * (1 - decay)
+      cloc[1] = (loc.y - dist * cdir[1]) * decay + cloc[1] * (1 - decay)
+      cloc[2] = (loc.z - dist * cdir[2]) * decay + cloc[2] * (1 - decay)
       break
     default:
       throw new Error('unknown camera setting ' + props.player.camera)

@@ -1,3 +1,7 @@
+var vec3 = {
+  clone: require('gl-vec3/clone')
+}
+
 var playerControls = require('./player-controls')
 var physics = require('./physics')
 var picker = require('./picker')
@@ -26,6 +30,7 @@ var Player = require('./models/player')
 var state = {
   startTime: 0,
   paused: true,
+
   player: {
     // Block coordinates of the player's head. +Z is up. When facing +X, +Y is left.
     location: { x: 0, y: 0, z: 100 },
@@ -41,11 +46,14 @@ var state = {
     // Camera can also be 'third-person'
     camera: 'third-person',
     // Current mode: 'commando', 'bazooka', ...
-    mode: 'bazooka',
+    mode: 'bazooka'
   },
+
+  cameraLoc: vec3.clone([10, 0, 100]),
 
   pendingCommands: [],
   pendingChunkUpdates: [],
+
   perf: {
     lastFrameTime: new Date().getTime(),
     fps: 0,
@@ -55,6 +63,7 @@ var state = {
     // Player can toggle the debug display
     showHUD: true
   },
+
   objects: {},
   fallingBlocks: [],
   world: new World(),

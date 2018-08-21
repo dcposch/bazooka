@@ -44,7 +44,7 @@ var drawQuickbar = env.regl({
       }
 
       var u0 = 0
-      var v0 = voff/ 128
+      var v0 = voff / 128
       var u1 = 1
       var v1 = v0 + HUD_HEIGHT_PX / HUD_WIDTH_PX
       return makeQuad(u0, v0, u1, v1)
@@ -69,7 +69,7 @@ function calculateBounds (context, props) {
   // Single px, x and y, in clip coordinates (which go from bottom left (-1, -1) to top right (1, 1))
   var pxW = 2 / context.viewportWidth
   var pxH = 2 / context.viewportHeight
-  
+
   var x0 = -1 + pxW * HUD_LEFT_PX
   var x1 = x0 + pxW * HUD_WIDTH_PX
   var y0 = -1 + pxH * (HUD_BOTTOM_PX + HUD_HEIGHT_PX)

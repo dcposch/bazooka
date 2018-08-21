@@ -26,7 +26,6 @@ function interact (state) {
   } else if (shell.wasDown('3')) {
     dbgSpawnBlocks(state)
   }
-  
 
   if (shell.press('9')) p.camera = p.camera === 'first-person' ? 'third-person' : 'first-person'
 
@@ -81,15 +80,18 @@ function navigate (player, dt) {
   var vel = player.velocity
 
   // Directional input (WASD) always works
+  vel.x = 0
+  vel.y = 0
   if (shell.wasDown('nav-forward')) move(vel, 1, dir.azimuth, 0)
   if (shell.wasDown('nav-back')) move(vel, 1, dir.azimuth + Math.PI, 0)
   if (shell.wasDown('nav-left')) move(vel, 1, dir.azimuth + Math.PI * 0.5, 0)
   if (shell.wasDown('nav-right')) move(vel, 1, dir.azimuth + Math.PI * 1.5, 0)
-  var speed = shell.wasDown('nav-sprint') ? config.SPEED_SPRINT : config.SPEED_WALK
-  if (vel.x !== 0 || vel.y !== 0) {
-    var norm = Math.sqrt(vel.x * vel.x + vel.y * vel.y)
-    vel.x *= speed / norm
-    vel.y *= speed / norm
+  var v2 = vel.x * vel.x + vel.y * vel.y
+  if (v2 > 0) {
+    var speed = shell.wasDown('nav-sprint') ? config.SPEED_SPRINT : config.SPEED_WALK
+    var norm = speed / Math.sqrt(vel.x * vel.x + vel.y * vel.y)
+    vel.x *= norm
+    vel.y *= norm
   }
   loc.x += vel.x * dt
   loc.y += vel.y * dt
