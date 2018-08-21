@@ -4,29 +4,80 @@ module.exports = {
   simulate: simulate
 }
 
-var HORIZONTAL_COLLISION_DIRS = [
-    [PW, 0, 0], [PW, 0, -1],
-    [-PW, 0, 0], [-PW, 0, -1],
-    [0, PW, 0], [0, PW, -1],
-    [0, -PW, 0], [0, -PW, -1]
-  ]
 var EPS = 0.001
 var PW = config.PLAYER_WIDTH
 var PH = config.PLAYER_HEIGHT
+var HORIZONTAL_COLLISION_DIRS = [
+  [PW, 0, 0], [PW, 0, -1],
+  [-PW, 0, 0], [-PW, 0, -1],
+  [0, PW, 0], [0, PW, -1],
+  [0, -PW, 0], [0, -PW, -1]
+]
 
 /**
  * Runs a single step of the physics simulation.
- * 
+ *
  * Moves objects, checks for collisions, updates their velocities and states.
  */
 function simulate (state, dt) {
   simPlayer(state, dt)
-  simFallingBlocks(state.fallingBlocks, dt)
+  simFallingBlocks(state, dt)
 }
 
-function simFallingBlocks (blocks, dt) {
-  for (var i = 0 ; i < blocks.length; i++) {
-      blocks[i].rotTheta += blocks[i].rotVel * dt
+function simFallingBlocks (state, dt) {
+  for (var i = 0; i < state.fallingBlocks.length; i++) {
+    var block = state.fallingBlocks[i]
+
+    // Spin
+    block.rotTheta += block.rotVel * dt
+
+    // Move
+    var loc = block.location
+    var vel = block.velocity
+    loc.x += vel.x * dt
+    loc.y += vel.y * dt
+    loc.z += vel.z * dt
+
+    // Fall, collide w world
+    var vel2 = vel.x * vel.x + vel.y * vel.y + vel.z * vel.z
+
+    var negZ = collide(state, loc.x, loc.y, loc.z - 0.51)
+    var posZ = collide(state, loc.x, loc.y, loc.z + 0.5)
+    var negY = collide(state, loc.x, loc.y - 0.5, loc.z)
+    var posY = collide(state, loc.x, loc.y + 0.5, loc.z)
+    var negX = collide(state, loc.x - 0.5, loc.y, loc.z)
+    var posX = collide(state, loc.x + 0.5, loc.y, loc.z)
+
+    if (!negZ) {
+      // Gravity
+      vel.z -= config.PHYSICS.GRAVITY * dt
+    } else if (vel2 < 1) {
+      // Stopped
+      loc.x = Math.round(loc.x - 0.5) + 0.5
+      loc.y = Math.round(loc.y - 0.5) + 0.5
+      loc.z = Math.round(loc.z - 0.5) + 0.5
+      vel.x = 0
+      vel.y = 0
+      vel.z = 0
+      block.rotTheta = 0
+      block.rotVel = 0
+    } else {
+      if (negZ) block.rotTheta *= 0.5
+
+      var bounce = 0.6
+      var bounceDrag = 0.8
+      if (negX) vel.x = Math.abs(vel.x) * bounce
+      if (posX) vel.x = -Math.abs(vel.x) * bounce
+      if (negY) vel.y = Math.abs(vel.y) * bounce
+      if (posY) vel.y = -Math.abs(vel.y) * bounce
+      if (negZ) vel.z = Math.abs(vel.z) * bounce
+      if (posZ) vel.z = -Math.abs(vel.z) * bounce
+      if (negX || posX || negY || posY || negZ || posZ) {
+        vel.x *= bounceDrag
+        vel.y *= bounceDrag
+        vel.z *= bounceDrag
+      }
+    }
   }
 }
 

@@ -8,9 +8,6 @@ var World = require('../world')
 var ChunkIO = require('../protocol/chunk-io')
 var textures = require('./textures')
 var splash = require('./splash')
-var vec3 = {
-  create: require('gl-vec3/create')
-}
 
 // Find the canvas, initialize regl and game-shell
 var env = require('./env')
@@ -61,29 +58,14 @@ var state = {
   error: null
 }
 
-// DBG:
-for (var i = 0; i < 100; i++) {
-  state.fallingBlocks.push({
-    location: { 
-      x: Math.random() * 20 - 10,
-      y: Math.random() * 20 - 10,
-      z: Math.random() * 20 + 80
-    },
-    velocity: {
-      x: 0, y: 0, z: 0
-    },
-    rotAxis: randomRotAxis(),
-    rotTheta: 0,
-    rotVel: Math.random() * 5
-  })
-}
-
 main()
 
 function main () {
   splash.init(state)
   loadTextures()
   initWebsocket()
+
+  // Game loop:
   env.shell.on('tick', tick)
   env.regl.frame(frame)
 
@@ -154,24 +136,12 @@ function handleObjects (msg) {
   })
 }
 
-function randomRotAxis () {
-  var ret = vec3.create()
-  ret[0] = Math.random()
-  ret[1] = Math.random()
-  ret[2] = Math.random()
-  var det = Math.sqrt(ret[0], ret[1], ret[2])
-  ret[0] /= det
-  ret[1] /= det
-  ret[2] /= det
-  return ret
-}
-
 function createObject (info) {
   switch (info.type) {
     case 'player':
       return new Player(info.name)
     case 'block':
-      return new FallingBlock()
+      return { type: 'falling-block' }
     default:
       throw new Error('unrecognized object type ' + info.type)
   }
@@ -236,7 +206,7 @@ function frame (context) {
     physics.simulate(state, stepDt)
   }
   playerControls.look(state.player)
-  
+
   // Prediction: extrapolate object positions from latest server update
   predictObjects(dt, now)
   // Draw the frame

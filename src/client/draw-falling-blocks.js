@@ -1,10 +1,7 @@
 var regl = require('./env').regl
 var shaders = require('./shaders')
-var textures = require('./textures')
 var Poly8 = require('./geometry/poly8')
 var Mesh = require('./geometry/mesh')
-var coordinates = require('./geometry/coordinates')
-var config = require('../config')
 var mat4 = {
   create: require('gl-mat4/create'),
   identity: require('gl-mat4/identity'),
@@ -20,9 +17,8 @@ module.exports = drawFallingBlocks
 
 var MAX_BLOCKS = 128
 var VERTS_PER_BLOCK = 36
-var POINTS_PER_BLOCK = 8
 
-// Matrices to transform 
+// Matrices to transform
 var mat = mat4.create()
 var matN = mat3.create()
 
@@ -40,7 +36,7 @@ function drawFallingBlocks (blocks) {
 
   var n = blocks.length
   if (n > MAX_BLOCKS) {
-    throw new Error("MAX_BLOCKS exceeded: " + n)
+    throw new Error('MAX_BLOCKS exceeded: ' + n)
   }
   for (var i = 0; i < n; i++) {
     var block = blocks[i]
@@ -49,20 +45,12 @@ function drawFallingBlocks (blocks) {
     mat4.identity(mat)
     mat4.translate(mat, mat, [loc.x, loc.y, loc.z])
     mat4.rotate(mat, mat, block.rotTheta, block.rotAxis)
-    var dir = blocks[i].direction
-    // mat4.rotateZ(mat, mat, dir.azimuth)
-    // mat4.rotateY(mat, mat, -dir.altitude)
-    // mat3.rotateZ(matN, matN, dir.azimuth)
-    // mat3.rotateY(matN, matN, -dir.altitude)
     Mesh.transformPart(mesh, meshBlock, mat, matN, i * VERTS_PER_BLOCK)
   }
 
-  // bufVerts.subdata(mesh.verts)
-  // bufNorms.subdata(mesh.norms)
   bufVerts(mesh.verts)
   bufNorms(mesh.norms)
 
-  // console.log('DRAWING ' + n)
   var props = { numVerts: n * VERTS_PER_BLOCK }
   drawCommand(props)
 }

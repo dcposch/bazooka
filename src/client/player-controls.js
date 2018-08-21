@@ -1,7 +1,11 @@
 var config = require('../config')
 var env = require('./env')
 var vox = require('../vox')
-var HUD = require('./models/hud')
+// var HUD = require('./models/hud')
+var vec3 = {
+  create: require('gl-vec3/create')
+}
+
 var shell = env.shell
 
 module.exports = {
@@ -15,14 +19,9 @@ module.exports = {
 function interact (state) {
   var p = state.player
 
-  if (shell.wasDown('1')) p.placing = HUD.QUICKBAR_VOX[0]
-  else if (shell.wasDown('2')) p.placing = HUD.QUICKBAR_VOX[1]
-  else if (shell.wasDown('3')) p.placing = HUD.QUICKBAR_VOX[2]
-  else if (shell.wasDown('4')) p.placing = HUD.QUICKBAR_VOX[3]
-  else if (shell.wasDown('5')) p.placing = HUD.QUICKBAR_VOX[4]
-  else if (shell.wasDown('6')) p.placing = HUD.QUICKBAR_VOX[5]
-  else if (shell.wasDown('7')) p.placing = HUD.QUICKBAR_VOX[6]
-  else if (shell.wasDown('8')) p.placing = HUD.QUICKBAR_VOX[7]
+  if (shell.wasDown('1')) {
+    dbgSpawnBlocks(state)
+  }
 
   if (shell.press('9')) p.camera = p.camera === 'first-person' ? 'third-person' : 'first-person'
 
@@ -33,6 +32,40 @@ function interact (state) {
   var shift = shell.wasDown('shift')
   if (right || (shift && left)) return breakBlock(state)
   else if (left) return placeBlock(state)
+}
+
+function dbgSpawnBlocks (state) {
+  state.fallingBlocks = []
+  for (var i = 0; i < 100; i++) {
+    var loc = {
+      x: Math.random() * 20 - 10,
+      y: Math.random() * 20 - 10,
+      z: Math.random() * 20 + 100
+    }
+    state.fallingBlocks.push({
+      location: loc,
+      velocity: {
+        x: loc.x + Math.random() * 6 - 3,
+        y: loc.x + Math.random() * 6 - 3,
+        z: 0
+      },
+      rotAxis: dbgRandomRotAxis(),
+      rotTheta: 0,
+      rotVel: Math.random() * 5
+    })
+  }
+}
+
+function dbgRandomRotAxis () {
+  var ret = vec3.create()
+  ret[0] = Math.random()
+  ret[1] = Math.random()
+  ret[2] = Math.random()
+  var det = Math.sqrt(ret[0], ret[1], ret[2])
+  ret[0] /= det
+  ret[1] /= det
+  ret[2] /= det
+  return ret
 }
 
 // Let the player move

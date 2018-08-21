@@ -5,7 +5,6 @@ var config = require('../config')
 module.exports = BazookaGame
 
 const CB = config.CHUNK_BITS
-const MAX_BLK = config.BAZOOKA.MAX_FALLING_BLOCKS
 
 // Represents one Bazooka City game.
 // Battle royale. Players land on a procgen voxel sky island and fight until one is left.
