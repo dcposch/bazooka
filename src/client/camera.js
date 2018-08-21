@@ -50,7 +50,7 @@ function updateMatrix (context, props) {
       // Camera flies to a target location above & behind the player
       // TODO: add a collision check?
       // Currently, the camera can go inside nearby blocks in third-person view.
-      var cdir = vec3.clone([lookDir[0] + vel.x * 0.2, lookDir[1] + vel.y * 0.2, lookDir[2]])
+      var cdir = vec3.clone([lookDir[0] + vel.x * 0.15, lookDir[1] + vel.y * 0.15, lookDir[2]])
       var cnorm = 1 / Math.sqrt(vec3.dot(cdir, cdir))
       vec3.scale(cdir, cdir, cnorm)
 
@@ -58,7 +58,7 @@ function updateMatrix (context, props) {
       var decay = 0.1
       cloc[0] = (loc.x - dist * cdir[0]) * decay + cloc[0] * (1 - decay)
       cloc[1] = (loc.y - dist * cdir[1]) * decay + cloc[1] * (1 - decay)
-      cloc[2] = (loc.z - dist * cdir[2]) * decay + cloc[2] * (1 - decay)
+      cloc[2] = (loc.z - dist * cdir[2] + 1) * decay + cloc[2] * (1 - decay)
       break
     default:
       throw new Error('unknown camera setting ' + props.player.camera)
