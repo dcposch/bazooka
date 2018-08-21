@@ -32,10 +32,9 @@ Poly8.prototype.createMesh = function () {
 
   // Create six faces...
   for (var i = 0; i < 6; i++) {
-    // TODO: accurate normals?
-    var nx = i >> 1 === 0 ? 1 - i % 2 * 2 : 0
-    var ny = i >> 1 === 1 ? 1 - i % 2 * 2 : 0
-    var nz = i >> 1 === 2 ? 1 - i % 2 * 2 : 0
+    var nx = i >> 1 === 0 ? i % 2 * 2 - 1 : 0
+    var ny = i >> 1 === 1 ? i % 2 * 2 - 1 : 0
+    var nz = i >> 1 === 2 ? i % 2 * 2 - 1 : 0
     var faceUVs = this.uvs ? this.uvs[i] : null
 
     // ...each with two tris, six verts
@@ -50,7 +49,6 @@ Poly8.prototype.createMesh = function () {
 
       mesh.norms.push(vec3.clone([nx, ny, nz]))
 
-      // TODO: draw indexed triangles? saves 2 / 6 vertex shader invocations
       var uv = faceUVs ? faceUVs[vi[0] * 2 + vi[1]] : vi
       mesh.uvs.push(vec2.clone(uv))
     }

@@ -153,13 +153,9 @@ var drawCommand = regl({
   },
   uniforms: {
     uTexture: function (context, props) {
-      // TODO: remove this narsty hack
-      var name = props.player.props.name
-      if (name === 'satnam') return textures.loaded.skinSkeletor
-      if (name === 'noor') return textures.loaded.skinPurple
-      if (name === 'jessibo') return textures.loaded.skinOcean
-      if (name === 'scott') return textures.loaded.skinGamer
-      return textures.loaded.skinHerobrine
+      var skin = props.player.skin
+      if (skin === 'commando') return textures.loaded.skinPurple
+      return textures.loaded.skinArmy
     }
   },
   count: meshTemplate.verts.length

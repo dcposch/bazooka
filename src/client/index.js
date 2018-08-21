@@ -37,7 +37,9 @@ var state = {
     // Which block we're looking at: {location: {x,y,z}, side: {nx,ny,nz}, voxel}
     lookAtBlock: null,
     // Camera can also be 'third-person'
-    camera: 'third-person'
+    camera: 'third-person',
+    // Current skin. See static/textures/skin-<...>.png
+    skin: 'army'
   },
   pendingCommands: [],
   pendingChunkUpdates: [],
@@ -202,10 +204,10 @@ function frame (context) {
   // This prevents glitches like jumping through a block, getting stuck inside a block, etc
   for (var t = 0.0; t < dt; t += config.PHYSICS.MAX_DT) {
     var stepDt = Math.min(config.PHYSICS.MAX_DT, dt - t)
-    playerControls.navigate(state.player, stepDt)
+    if (!state.paused) playerControls.navigate(state.player, stepDt)
     physics.simulate(state, stepDt)
   }
-  playerControls.look(state.player)
+  if (!state.paused) playerControls.look(state.player)
 
   // Prediction: extrapolate object positions from latest server update
   predictObjects(dt, now)

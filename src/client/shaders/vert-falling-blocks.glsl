@@ -1,20 +1,22 @@
 precision mediump float;
 
 uniform mat4 uMatrix;
+uniform vec3 uLightDir;
+uniform vec3 uLightDiffuse;
+uniform vec3 uLightAmbient;
 
 attribute vec3 aPosition;
 attribute vec3 aNormal;
-// attribute vec2 aUV;
+attribute vec2 aUV;
 
-varying vec3 vNormal;
-// varying vec2 vUV;
-varying vec4 vColor;
+varying vec2 vUV;
+varying vec3 vLight;
 
 // Inputs: positions in world coordinates, a projection * view matrix, and colors.
 // Outputs: projected (screen space) vertices with colors.
 void main(void) {
-  // TODO:
-  gl_Position = uMatrix * vec4(aPosition, 1.0);
-  vNormal = aNormal;
-  vColor = vec4(0.5, 0.5, 0.25, 1.0);
+  gl_Position = uMatrix * vec4(aPosition, 1.0); 
+
+  float diffuse = max(0.0, dot(aNormal, uLightDir));
+  vLight = diffuse * uLightDiffuse + uLightAmbient;
 }

@@ -51,7 +51,8 @@ function dbgSpawnBlocks (state) {
       },
       rotAxis: dbgRandomRotAxis(),
       rotTheta: 0,
-      rotVel: Math.random() * 5
+      rotVel: Math.random() * 5,
+      typeIndex: Math.random() < 0.5 ? vox.INDEX.STONE : vox.INDEX.BROWN
     })
   }
 }
