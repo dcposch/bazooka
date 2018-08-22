@@ -2,10 +2,15 @@ var World = require('../world')
 var gen = require('../gen')
 var config = require('../config')
 var coordinates = require('../math/geometry/coordinates')
+var vox = require('../vox')
 
 module.exports = BazookaGame
 
 const CB = config.CHUNK_BITS
+const CS = config.CHUNK_SIZE
+const PAD = 3
+const PAD2 = 2 * PAD
+
 
 // Represents one Bazooka City game.
 // Battle royale. Players land on a procgen voxel sky island and fight until one is left.
@@ -23,19 +28,35 @@ function BazookaGame () {
   this.status = 'ACTIVE'
   this.objects = []
   this.nextObjKey = 0
+
+  this.timeTilVoxFalls = {}
 }
 
 BazookaGame.prototype.generate = function generate () {
   console.log('generating island...')
-  var cs = config.CHUNK_SIZE
   var genRad = config.BAZOOKA.GEN_RADIUS_CHUNKS
-  for (var x = -cs * genRad; x < cs * genRad; x += cs) {
-    for (var y = -cs * genRad; y < cs * genRad; y += cs) {
+  for (var x = -CS * genRad; x < CS * genRad; x += CS) {
+    for (var y = -CS * genRad; y < CS * genRad; y += CS) {
       var column = gen.generateColumn(x, y)
       for (var i = 0; i < column.chunks.length; i++) {
         this.world.addChunk(column.chunks[i])
       }
-      var heightMap = column.heightMap
+      for (var ix = 0; ix < CS; ix++) {
+        for (var iy = 0; iy < CS; iy++) {
+          var height = (column.heightMap[(ix + PAD) * (CS + PAD2) + iy + PAD] | 0) + PAD // TODO(eugene) un-hack
+          var distanceToCenter = Math.sqrt(Math.pow(x + ix, 2) + Math.pow(y + iy, 2))
+          var time = (700 - distanceToCenter) | 0 // TODO(eugene) un-hack
+          if (this.timeTilVoxFalls[time] === undefined) {
+            this.timeTilVoxFalls[time] = []
+          }
+          if (height) {
+            this.timeTilVoxFalls[time].push({
+              x: x + ix,
+              y: y + iy,
+              height: height})
+          }
+        }
+      }
     }
   }
   console.log('generated ' + this.world.chunks.length + ' chunks')
@@ -72,14 +93,32 @@ BazookaGame.prototype.tick = function tick (tick) {
 
   this._simulate(0.1) // TODO
 
+  this._makeBlocksFall(tick)
   this._updateObjects()
   this._updateChunks(tick)
+}
+
+BazookaGame.prototype._makeBlocksFall = function _makeBlocksFall (tick) {
+  var blocksToFall = this.timeTilVoxFalls[tick]
+  if (blocksToFall === undefined) {
+    return
+  }
+  for (var i = 0; i < blocksToFall.length; i++) {
+    var x = blocksToFall[i].x
+    var y = blocksToFall[i].y
+    var height = blocksToFall[i].height
+    if (height) {
+      for (var z = -height; z <= height; z++) {
+        this.world.setVox(x, y, z, vox.INDEX.AIR)
+      }
+    }
+  }
 }
 
 BazookaGame.prototype._simulate = function _simulate (dt) {
   var n = this.objects.length
   for (var i = 0; i < n; i++) {
-    var o = this.objjects[i]
+    var o = this.objects[i]
     // vec3.scaleAndAdd(m.location, m.location, m.velocity, dt)
     o.velocity[2] = o.velocity[2] - config.PHYSICS.GRAVITY * dt
 
