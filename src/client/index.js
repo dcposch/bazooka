@@ -266,7 +266,7 @@ function render (dt) {
   })
   drawHud({
     mode: state.player.mode,
-    health: 40,
+    health: 10,
     numPlayersLeft: 17
   })
   if (state.debug.showHUD) {

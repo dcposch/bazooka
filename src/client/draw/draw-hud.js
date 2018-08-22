@@ -7,14 +7,14 @@ module.exports = draw
 
 var STATUS_WIDTH_PX = 66 * 2
 var STATUS_HEIGHT_PX = 32 * 2
-var HEALTH_WIDTH_PX = 60 * 2
-var HEALTH_HEIGHT_PX = 5 * 2
+var HEALTH_WIDTH_PX = 60 * 3
+var HEALTH_HEIGHT_PX = 5 * 3
 var NUM_LEFT_WIDTH_PX = 60 * 2
-var NUM_LEFT_HEIGHT_PX = 16 * 2
+var NUM_LEFT_HEIGHT_PX = 32 * 2
 
 var STATUS_OFFSETS = {
-  commando: 4,
-  bazooka: 32
+  commando: 2,
+  bazooka: 16
 }
 
 /**
@@ -52,7 +52,7 @@ var drawHud = env.regl({
         -1 + pxH * 16,))
 
       // Rect 2: health bar
-      var healthX = pxW * (HEALTH_WIDTH_PX * -0.5 + props.health)
+      var healthX = pxW * (HEALTH_WIDTH_PX * -0.5 + 15 + props.health * 3)
       rects.push(makeQuad(
         pxW * HEALTH_WIDTH_PX * -0.5,
         -1 + pxH * (24 + HEALTH_HEIGHT_PX),
@@ -93,7 +93,7 @@ var drawHud = env.regl({
       rects.push(makeQuad(tx * 4, voff * ty, tx * 70, voff * ty + STATUS_HEIGHT_PX / STATUS_WIDTH_PX * 0.5))
 
       // Rect 2: health bar
-      var healthU = tx * (4 + props.health)
+      var healthU = tx * (4 + 5 + props.health)
       rects.push(makeQuad(tx * 4, ty * 49, healthU, ty * 54))
 
       // Rect 3: health bar consumed
