@@ -20,7 +20,9 @@ var HORIZONTAL_COLLISION_DIRS = [
  * Moves objects, checks for collisions, updates their velocities and states.
  */
 function simulate (state, dt) {
-  simPlayer(state, dt)
+  // TODO: loop thru objects
+  // TODO: move to common
+  simPlayer(state, state.player, dt)
   simFallingBlocks(state, dt)
 }
 
@@ -81,8 +83,7 @@ function simFallingBlocks (state, dt) {
   }
 }
 
-function simPlayer (state, dt) {
-  var player = state.player
+function simPlayer (state, player, dt) {
   var loc = player.location
   var vel = player.velocity
 

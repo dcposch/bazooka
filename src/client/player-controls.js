@@ -25,6 +25,8 @@ function interact (state) {
     state.player.mode = 'commando'
   } else if (shell.wasDown('3')) {
     dbgSpawnBlocks(state)
+  } else if (shell.wasDown('F')) {
+    state.pendingCommands.push({type: 'fire-bazooka'})
   }
 
   if (shell.press('9')) p.camera = p.camera === 'first-person' ? 'third-person' : 'first-person'

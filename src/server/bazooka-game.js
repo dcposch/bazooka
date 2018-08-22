@@ -1,6 +1,9 @@
+var vec3 = require('gl-vec3')
+
 var World = require('../world')
 var gen = require('../gen')
 var config = require('../config')
+var coordinates = require('../math/geometry/coordinates')
 
 module.exports = BazookaGame
 
@@ -21,6 +24,8 @@ function BazookaGame () {
   this.world = new World()
   this.status = 'ACTIVE' // TODO
   this.fallingBlocks = []
+  this.missiles = []
+  this.nextObjKey = 0
 }
 
 BazookaGame.prototype.generate = function generate () {
@@ -67,8 +72,19 @@ BazookaGame.prototype.tick = function tick (tick) {
     if (loc && loc.z < -100) pc.conn.die({message: 'you fell'})
   })
 
+  this._simulate(0.1) // TODO
+
   this._updateObjects()
   this._updateChunks(tick)
+}
+
+BazookaGame.prototype._simulate = function _simulate (dt) {
+  var n = this.missiles.length
+  for (var i = 0; i < this.missiles.length; i++) {
+    var m = this.missiles[i]
+    vec3.scaleAndAdd(m.location, m.location, m.velocity, dt)
+    m.velocity[2] = m.velocity[2] - config.PHYSICS.GRAVITY * dt
+  }
 }
 
 // Tell each player about objects around them, including pother players
@@ -101,6 +117,7 @@ BazookaGame.prototype._updateObjects = function _updateObjects () {
       })
     }
 
+    // TODO: dedupe
     for (j = 0; j < this.fallingBlocks.length; i++) {
       var block = this.fallingBlocks[j]
       objsToSend.push({
@@ -110,6 +127,21 @@ BazookaGame.prototype._updateObjects = function _updateObjects () {
         location: block.location,
         velocity: block.velocity,
         direction: block.direction
+      })
+    }
+
+    // SEND MISSILES
+    if (this.missiles.length) {
+      console.log('MISSILES', this.missiles)
+    }
+    for (j = 0; j < this.missiles.length; i++) {
+      var missile = this.missiles[j]
+      objsToSend.push({
+        type: missile.type,
+        key: missile.key,
+        location: missile.location,
+        velocity: missile.velocity,
+        direction: missile.direction
       })
     }
 
@@ -164,6 +196,8 @@ BazookaGame.prototype._handleUpdate = function _handleUpdate (pc, obj) {
     switch (command.type) {
       case 'set':
         return this._handleSet(command)
+      case 'fire-bazooka':
+        return this._handleFireBazooka(pc)
       default:
         console.error('Ignoring unknown command type ' + command.type)
     }
@@ -172,6 +206,19 @@ BazookaGame.prototype._handleUpdate = function _handleUpdate (pc, obj) {
 
 BazookaGame.prototype._handleSet = function _handleSet (cmd) {
   this.world.setVox(cmd.x, cmd.y, cmd.z, cmd.v)
+}
+
+BazookaGame.prototype._handleFireBazooka = function _handleFireBazooka (pc) {
+  var dir = pc.player.direction
+  var vel = coordinates.toCartesian(dir.azimuth, dir.altitude, 15)
+  var missile = {
+    type: 'missile',
+    key: 'missile-' + (++this.nextObjKey),
+    location: pc.player.location,
+    velocity: {x:vel[0], y:vel[1], z:vel[2]}
+  }
+
+  this.missiles.push(missile)
 }
 
 function isInRange (a, b) {
