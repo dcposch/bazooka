@@ -71,7 +71,7 @@ function Player (name) {
     situation: 'airborne',
     walk: 0
   }
-  
+
   this.bones = {
     head: {rot: vec3.fromValues(0, 0, 0), center: vec3.fromValues(0, 0, 0)},
     armL: {rot: vec3.fromValues(0, 0, 0), center: vec3.fromValues(0, 4, -4)},
@@ -256,10 +256,6 @@ function cubeUVs (iu, iv, width, depth, height, tw, th) {
   if (!tw || !tw) throw new Error('missing tex dims')
 
   // scale factor from world to texture coordinates
-  var u0 = iu / tw
-  var v0 = iv / th
-  var mu = 1 / tw
-  var mv = 1 / th
   return [
     rectUVs(iu, iv, depth, height, tw, th), // x0 face: depth x height
     rectUVs(iu, iv, depth, height, tw, th),

@@ -1,5 +1,3 @@
-var vec3 = require('gl-vec3')
-
 var World = require('../world')
 var gen = require('../gen')
 var config = require('../config')
@@ -78,11 +76,18 @@ BazookaGame.prototype.tick = function tick (tick) {
 }
 
 BazookaGame.prototype._simulate = function _simulate (dt) {
-  var n = this.missiles.length
-  for (var i = 0; i < this.missiles.length; i++) {
-    var m = this.missiles[i]
+  var n = this.objects.length
+  for (var i = 0; i < n; i++) {
+    var o = this.objjects[i]
     // vec3.scaleAndAdd(m.location, m.location, m.velocity, dt)
-    m.velocity[2] = m.velocity[2] - config.PHYSICS.GRAVITY * dt
+    o.velocity[2] = o.velocity[2] - config.PHYSICS.GRAVITY * dt
+
+    // TODO:
+    // - check collision
+    // - if shell/ground, crater
+    // - if shell/player, inflict damage
+    // - if block/trerain, bounce or stick1
+    // - otherwise, fall
   }
 }
 
@@ -116,32 +121,10 @@ BazookaGame.prototype._updateObjects = function _updateObjects () {
       })
     }
 
-    // TODO: dedupe
-    for (j = 0; j < this.fallingBlocks.length; i++) {
-      var block = this.fallingBlocks[j]
-      objsToSend.push({
-        // Common to all objects
-        type: 'block',
-        key: 'block-' + j,
-        location: block.location,
-        velocity: block.velocity,
-        direction: block.direction
-      })
-    }
-
-    // SEND MISSILES
-    if (this.missiles.length) {
-      console.log('MISSILES', this.missiles)
-    }
-    for (j = 0; j < this.missiles.length; i++) {
-      var missile = this.missiles[j]
-      objsToSend.push({
-        type: missile.type,
-        key: missile.key,
-        location: missile.location,
-        velocity: missile.velocity,
-        direction: missile.direction
-      })
+    // Send missiles, etc
+    for (j = 0; j < this.objects.length; i++) {
+      var object = this.objects[j]
+      objsToSend.push(object)
     }
 
     pc.conn.sendObjects(objsToSend)
@@ -214,7 +197,7 @@ BazookaGame.prototype._handleFireBazooka = function _handleFireBazooka (pc) {
     type: 'missile',
     key: 'missile-' + (++this.nextObjKey),
     location: pc.player.location,
-    velocity: {x:vel[0], y:vel[1], z:vel[2]}
+    velocity: {x: vel[0], y: vel[1], z: vel[2]}
   }
 
   this.missiles.push(missile)
