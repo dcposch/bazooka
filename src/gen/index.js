@@ -5,7 +5,7 @@ var Chunk = require('../chunk')
 
 // Generate the world
 module.exports = {
-  generateChunk
+  generateColumn
 }
 
 var CS = config.CHUNK_SIZE
@@ -22,12 +22,10 @@ var perlin1 = new Float32Array((CS + PAD2) * (CS + PAD2))
 var perlin2 = new Float32Array((CS + PAD2) * (CS + PAD2))
 var perlin3 = new Float32Array(CS * CS)
 
-// World generation. Generates one chunk of voxels.
+// World generation. Generates one (x, y) column of chunks.
 // Returns a newly allocated Chunk: { x, y, z, data: UInt8Array }
 // Skips {data} if the chunk would be completely empty
-function generateChunk (x, y, z) {
-  var ret = new Chunk(x, y, z)
-
+function generateColumn (x, y) {
   // Generate a Perlin heightmap
   // https://web.archive.org/web/20160421115558/
   // http://freespace.virgin.net/hugo.elias/models/m_perlin.htm
@@ -41,12 +39,20 @@ function generateChunk (x, y, z) {
   // Sky island: force positive near (0,0), clamp to zero toward (+/-1k, +/-1k)
   perlin.apply(perlin1, x - PAD, y - PAD, CS + PAD2, islandFunc)
 
-  // Go from Perlin noise to voxels
-  placeLand(ret)
-  placeTrees(ret)
+  var ret = {
+    chunks: [],
+    heightMap: new Float32Array(perlin1)
+  }
 
-  // Go from flat array of voxels to list-of-quads, save 90+% space
-  return ret.pack()
+  for (var z = -CS * 5; z < CS * 5; z += CS) {
+    var chunk = new Chunk(x, y, z)
+    placeLand(chunk)
+    placeTrees(chunk)
+    // Go from flat array of voxels to list-of-quads, save 90+% space
+    ret.chunks.push(chunk.pack())
+  }
+
+  return ret
 }
 
 function islandFunc (sx, sy, val) {

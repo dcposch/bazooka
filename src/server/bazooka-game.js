@@ -31,10 +31,11 @@ BazookaGame.prototype.generate = function generate () {
   var genRad = config.BAZOOKA.GEN_RADIUS_CHUNKS
   for (var x = -cs * genRad; x < cs * genRad; x += cs) {
     for (var y = -cs * genRad; y < cs * genRad; y += cs) {
-      for (var z = -cs * 5; z < cs * 5; z += cs) {
-        var chunk = gen.generateChunk(x, y, z)
-        this.world.addChunk(chunk)
+      var column = gen.generateColumn(x, y)
+      for (var i = 0; i < column.chunks.length; i++) {
+        this.world.addChunk(column.chunks[i])
       }
+      var heightMap = column.heightMap
     }
   }
   console.log('generated ' + this.world.chunks.length + ' chunks')
