@@ -13,8 +13,8 @@ var mat3 = {
 var regl = require('../env').regl
 var shaders = require('../shaders')
 var textures = require('../textures')
-var Poly8 = require('../geometry/poly8')
-var Mesh = require('../geometry/mesh')
+var Poly8 = require('../../math/geometry/poly8')
+var Mesh = require('../../math/geometry/mesh')
 var vox = require('../../vox')
 
 module.exports = drawFallingBlocks

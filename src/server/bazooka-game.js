@@ -22,9 +22,8 @@ const CB = config.CHUNK_BITS
 function BazookaGame () {
   this.playerConns = []
   this.world = new World()
-  this.status = 'ACTIVE' // TODO
-  this.fallingBlocks = []
-  this.missiles = []
+  this.status = 'ACTIVE'
+  this.objects = []
   this.nextObjKey = 0
 }
 
@@ -82,7 +81,7 @@ BazookaGame.prototype._simulate = function _simulate (dt) {
   var n = this.missiles.length
   for (var i = 0; i < this.missiles.length; i++) {
     var m = this.missiles[i]
-    vec3.scaleAndAdd(m.location, m.location, m.velocity, dt)
+    // vec3.scaleAndAdd(m.location, m.location, m.velocity, dt)
     m.velocity[2] = m.velocity[2] - config.PHYSICS.GRAVITY * dt
   }
 }

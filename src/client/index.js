@@ -264,7 +264,11 @@ function render (dt) {
     drawWorld(state)
     drawFallingBlocks(state.fallingBlocks)
   })
-  drawHud({mode: state.player.mode})
+  drawHud({
+    mode: state.player.mode,
+    health: 40,
+    numPlayersLeft: 17
+  })
   if (state.debug.showHUD) {
     if (!drawDebug) drawDebug = require('./draw/draw-debug')
     drawDebug(state)

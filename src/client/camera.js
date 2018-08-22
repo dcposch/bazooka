@@ -11,7 +11,7 @@ var vec3 = {
   scale: require('gl-vec3/scale'),
   dot: require('gl-vec3/dot')
 }
-var coordinates = require('./geometry/coordinates')
+var coordinates = require('../math/geometry/coordinates')
 
 // Projects the world from 3D to 2D
 // Calculates the view and projection matrices based on player location and orientation

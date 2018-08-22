@@ -2,15 +2,17 @@ var env = require('../env')
 var shaders = require('../shaders')
 var textures = require('../textures')
 
-var HUD_WIDTH_PX = 128 * 3
-var HUD_HEIGHT_PX = 32 * 3
-var HUD_BOTTOM_PX = 16
-var HUD_LEFT_PX = 16
-
 // Draws a Heads-Up Display
 module.exports = draw
 
-var OFFSETS = {
+var STATUS_WIDTH_PX = 66 * 2
+var STATUS_HEIGHT_PX = 32 * 2
+var HEALTH_WIDTH_PX = 60 * 2
+var HEALTH_HEIGHT_PX = 5 * 2
+var NUM_LEFT_WIDTH_PX = 60 * 2
+var NUM_LEFT_HEIGHT_PX = 16 * 2
+
+var STATUS_OFFSETS = {
   commando: 4,
   bazooka: 32
 }
@@ -24,30 +26,82 @@ var OFFSETS = {
  * - TODO: your health bar
  */
 function draw (props) {
-  drawQuickbar({mode: props.mode})
+  drawHud({
+    mode: props.mode,
+    health: props.health,
+    numPlayersLeft: props.numPlayersLeft 
+  })
 }
 
-var drawQuickbar = env.regl({
+var drawHud = env.regl({
   vert: shaders.vert.uvClip,
   frag: shaders.frag.texture,
   attributes: {
     aPosition: function (context, props) {
-      // Just a single rectangle
-      var b = calculateBounds(context, props)
-      var verts = makeQuad(b.x0, b.y0, b.x1, b.y1)
-      return verts
+      var rects = []
+
+      // Single px, x and y, in clip coordinates (which go from bottom left (-1, -1) to top right (1, 1))
+      var pxW = 2 / context.viewportWidth
+      var pxH = 2 / context.viewportHeight
+
+      // Rect 1: left status
+      rects.push(makeQuad(
+        -1 + pxW * 16, 
+        -1 + pxH * (16 + STATUS_HEIGHT_PX),
+        -1 + pxW * (16 + STATUS_WIDTH_PX), 
+        -1 * pxH * 16))
+
+      // Rect 2: health bar
+      var healthX = pxW * (HEALTH_WIDTH_PX * -0.5 + props.health)
+      rects.push(makeQuad(
+        pxW * HEALTH_WIDTH_PX * -0.5, 
+        -1 + pxH * (24 + HEALTH_HEIGHT_PX),
+        healthX, 
+        -1 * pxH * 24))
+      
+      // Rect 3: health bar consumed
+      rects.push(makeQuad(
+        healthX, 
+        -1 + pxH * (24 + HEALTH_HEIGHT_PX),
+        pxW * HEALTH_WIDTH_PX * 0.5, 
+        -1 * pxH * 24))
+      
+      // Rect 4: num players left alive
+      rects.push(makeQuad(
+        1 - pxW * (16 + NUM_LEFT_WIDTH_PX), 
+        -1 + pxH * (16 + NUM_LEFT_HEIGHT_PX),
+        1 - pxW * 16, 
+        -1 * pxH * 16))
+
+      // TODO nums
+
+      return rects
     },
+
     aUV: function (context, props) {
-      var voff = OFFSETS[props.mode]
+      var rects = []
+
+      // Each texel is 1/128 UV coords
+      var tx = 2 / 128
+
+      // Rect 1
+      var voff = STATUS_OFFSETS[props.mode]
       if (voff == null) {
         throw new Error('Unsupported mode: ' + props.mode)
       }
+      rects.push(makeQuad(-1 * tx * 4, voff * tx, -1 * tx * 70, voff * tx + STATUS_HEIGHT_PX / STATUS_WIDTH_PX * 0.5))
 
-      var u0 = 0
-      var v0 = voff / 128
-      var u1 = 1
-      var v1 = v0 + HUD_HEIGHT_PX / HUD_WIDTH_PX
-      return makeQuad(u0, v0, u1, v1)
+      // Rect 2: health bar
+      var healthU = -1 + tx * (4 + props.health)
+      rects.push(makeQuad(-1 + tx * 4, 1 - tx * 49, healthU, 1 - tx * 54))
+
+      // Rect 3: health bar consumed
+      rects.push(makeQuad(healthU, 1 - tx * 56, 0, 1 - tx * 61))
+
+      // Rect 4: num players left alive
+      rects.push(makeQuad(-1 + tx * 4, 1 - tx * 32, 0, 1 - tx * 48))
+
+      return rects
     }
   },
   uniforms: {
@@ -61,22 +115,9 @@ var drawQuickbar = env.regl({
   blend: {
     enable: false
   },
-  count: 6,
+  count: 6 * 4,
   primitive: 'triangles'
 })
-
-function calculateBounds (context, props) {
-  // Single px, x and y, in clip coordinates (which go from bottom left (-1, -1) to top right (1, 1))
-  var pxW = 2 / context.viewportWidth
-  var pxH = 2 / context.viewportHeight
-
-  var x0 = -1 + pxW * HUD_LEFT_PX
-  var x1 = x0 + pxW * HUD_WIDTH_PX
-  var y0 = -1 + pxH * (HUD_BOTTOM_PX + HUD_HEIGHT_PX)
-  var y1 = y0 - pxH * HUD_HEIGHT_PX
-
-  return {x0: x0, x1: x1, y0: y0, y1: y1}
-}
 
 function makeQuad (x0, y0, x1, y1) {
   return [[x0, y0], [x0, y1], [x1, y1], [x0, y0], [x1, y1], [x1, y0]]

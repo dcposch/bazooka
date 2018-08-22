@@ -1,9 +1,9 @@
 var regl = require('../env').regl
 var shaders = require('../shaders')
 var textures = require('../textures')
-var Poly8 = require('../geometry/poly8')
-var Mesh = require('../geometry/mesh')
-var coordinates = require('../geometry/coordinates')
+var Poly8 = require('../../math/geometry/poly8')
+var Mesh = require('../../math/geometry/mesh')
+var coordinates = require('../../math/geometry/coordinates')
 var config = require('../../config')
 var mat4 = {
   create: require('gl-mat4/create'),
