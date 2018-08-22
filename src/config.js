@@ -39,7 +39,9 @@ module.exports = {
   SERVER: {
     CHUNK_SEND_RADIUS: 15,
     VERSION: 0,
-    PORT: 8080
+    PORT: 8080,
+    FIRST_FALLING_TICK: 100,
+    LAST_FALLING_TICK: 1000,
   },
   BAZOOKA: {
     MAX_PLAYERS: 20,

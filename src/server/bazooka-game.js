@@ -28,8 +28,7 @@ function BazookaGame () {
   this.status = 'ACTIVE'
   this.objects = []
   this.nextObjKey = 0
-
-  this.timeTilVoxFalls = {}
+  this.columnsToFall = []
 }
 
 BazookaGame.prototype.generate = function generate () {
@@ -43,22 +42,23 @@ BazookaGame.prototype.generate = function generate () {
       }
       for (var ix = 0; ix < CS; ix++) {
         for (var iy = 0; iy < CS; iy++) {
-          var height = (column.heightMap[(ix + PAD) * (CS + PAD2) + iy + PAD] | 0) + PAD // TODO(eugene) un-hack
+          var height = (column.heightMap[(ix + PAD) * (CS + PAD2) + iy + PAD] | 0) + 10 // extra for trees
           var distanceToCenter = Math.sqrt(Math.pow(x + ix, 2) + Math.pow(y + iy, 2))
-          var time = (700 - distanceToCenter) | 0 // TODO(eugene) un-hack
-          if (this.timeTilVoxFalls[time] === undefined) {
-            this.timeTilVoxFalls[time] = []
-          }
           if (height) {
-            this.timeTilVoxFalls[time].push({
+            this.columnsToFall.push({
               x: x + ix,
               y: y + iy,
-              height: height})
+              height: height,
+              distance: distanceToCenter
+            })
           }
         }
       }
     }
   }
+  this.columnsToFall.sort(function (c1, c2) {
+    return c2.distance - c1.distance
+  })
   console.log('generated ' + this.world.chunks.length + ' chunks')
 }
 
@@ -93,23 +93,26 @@ BazookaGame.prototype.tick = function tick (tick) {
 
   this._simulate(0.1) // TODO
 
-  this._makeBlocksFall(tick)
+  this._makeColumnsFall(tick)
   this._updateObjects()
   this._updateChunks(tick)
 }
 
-BazookaGame.prototype._makeBlocksFall = function _makeBlocksFall (tick) {
-  var blocksToFall = this.timeTilVoxFalls[tick]
-  if (blocksToFall === undefined) {
+BazookaGame.prototype._makeColumnsFall = function _makeColumnsFall (tick) {
+  const firstTick = config.SERVER.FIRST_FALLING_TICK
+  const lastTick = config.SERVER.LAST_FALLING_TICK
+  if (tick < firstTick || tick >= lastTick) {
     return
   }
-  for (var i = 0; i < blocksToFall.length; i++) {
-    var x = blocksToFall[i].x
-    var y = blocksToFall[i].y
-    var height = blocksToFall[i].height
-    if (height) {
-      for (var z = -height; z <= height; z++) {
-        this.world.setVox(x, y, z, vox.INDEX.AIR)
+  var totalColumns = this.columnsToFall.length
+  var startIndex = ((tick - firstTick) / (lastTick - firstTick) * totalColumns) | 0
+  var endIndex = ((tick + 1 - firstTick) / (lastTick - firstTick) * totalColumns) | 0
+
+  for (var i = startIndex; i < endIndex; i++) {
+    var column = this.columnsToFall[i]
+    if (this.columnsToFall[i].height) {
+      for (var z = -this.columnsToFall[i].height; z < this.columnsToFall[i].height; z++) {
+        this.world.setVox(column.x, column.y, z, vox.INDEX.AIR)
       }
     }
   }
