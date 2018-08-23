@@ -1,25 +1,21 @@
-var mat4 = {
-  create: require('gl-mat4/create'),
-  identity: require('gl-mat4/identity'),
-  rotate: require('gl-mat4/rotate'),
-  translate: require('gl-mat4/translate'),
-  perspective: require('gl-mat4/perspective'),
-  multiply: require('gl-mat4/multiply'),
-}
-var vec3 = {
-  clone: require('gl-vec3/clone'),
-  scale: require('gl-vec3/scale'),
-  dot: require('gl-vec3/dot'),
-}
+import mat4 from 'gl-mat4'
+import vec3 from 'gl-vec3'
 import coordinates from '../math/geometry/coordinates'
+import { DefaultContext, Vec3 } from 'regl'
+import Player from './models/player'
 
 // Projects the world from 3D to 2D
 // Calculates the view and projection matrices based on player location and orientation
 // (The model matrix must be multiplied in separately. Voxel chunks are already in world
 // coordinates, so they don't need one.)
-module.exports = {
-  updateMatrix: updateMatrix,
-  getMatrix: getMatrix,
+export default {
+  updateMatrix,
+  getMatrix,
+}
+
+export interface CameraProps {
+  player: Player
+  cameraLoc: Vec3
 }
 
 // View, projection, and combined matrices
@@ -29,7 +25,7 @@ var pmat = mat4.create()
 var mat = mat4.create()
 
 // Calculates and returns the combined projection and view matrix
-function updateMatrix(context, props) {
+function updateMatrix(context: DefaultContext, props: CameraProps) {
   // First, figure out where the camera goes
   var dir = props.player.direction
   var loc = props.player.location
@@ -91,7 +87,7 @@ function updateMatrix(context, props) {
 }
 
 // Gets the latest view matrix, projection matrix, or combined (multiplied)
-function getMatrix(which) {
+function getMatrix(which: string) {
   if (which === 'view') return vmat
   else if (which === 'projection') return pmat
   else if (which === 'combined') return mat

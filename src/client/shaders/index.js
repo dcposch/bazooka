@@ -1,18 +1,20 @@
 import fs from 'fs'
 
-module.exports = {
+// TODO: turn into .ts file once this Parcel bug is fixed:
+// https://github.com/parcel-bundler/parcel/issues/1736
+export default {
   vert: {
     uvWorld: fs.readFileSync(require.resolve('./vert-uv-world.glsl'), 'utf8'),
     uvClip: fs.readFileSync(require.resolve('./vert-uv-clip.glsl'), 'utf8'),
     colorWorld: fs.readFileSync(require.resolve('./vert-color-world.glsl'), 'utf8'),
     colorClip: fs.readFileSync(require.resolve('./vert-color-clip.glsl'), 'utf8'),
     fallingBlocks: fs.readFileSync(require.resolve('./vert-falling-blocks.glsl'), 'utf8'),
-    sky: fs.readFileSync(require.resolve('./vert-sky.glsl'), 'utf8')
+    sky: fs.readFileSync(require.resolve('./vert-sky.glsl'), 'utf8'),
   },
   frag: {
     color: fs.readFileSync(require.resolve('./frag-color.glsl'), 'utf8'),
     texture: fs.readFileSync(require.resolve('./frag-texture.glsl'), 'utf8'),
     textureLight: fs.readFileSync(require.resolve('./frag-texture-light.glsl'), 'utf8'),
-    voxel: fs.readFileSync(require.resolve('./frag-voxel.glsl'), 'utf8')
-  }
+    voxel: fs.readFileSync(require.resolve('./frag-voxel.glsl'), 'utf8'),
+  },
 }
