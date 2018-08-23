@@ -2,6 +2,7 @@ import env from '../env'
 import shaders from '../shaders'
 import vox from '../../vox'
 import { DefaultContext } from 'regl'
+import { PointXYZ } from '../../types'
 
 const version = 'TODO' // Read from package.json
 
@@ -113,16 +114,16 @@ function createDebugText(state: any) {
 }
 
 // Returns eg "25k" for 25181
-function k(v) {
+function k(v: number) {
   return Math.round(v / 1000) + 'k'
 }
 
 // Returns "x,y,z". Displays d decimal points
-function pointToString(loc, d) {
+function pointToString(loc: PointXYZ, d: number) {
   return loc.x.toFixed(d) + ', ' + loc.y.toFixed(d) + ', ' + loc.z.toFixed(d)
 }
 
 // Radians to degrees, rounded to the nearest integer
-function toDeg(radians) {
+function toDeg(radians: number) {
   return Math.round((radians * 180) / Math.PI)
 }
