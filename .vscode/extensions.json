@@ -1,6 +1,6 @@
 {
   "recommendations": [
-    "chenxsan.vscode-standardjs",
-    "slevesque.shader"
+    "esbenp.prettier-vscode",
+    "eg2.tslint"
   ]
 }
