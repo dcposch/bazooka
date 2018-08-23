@@ -23,6 +23,7 @@ var drawWorld = require('./draw/draw-world')
 var drawDebug = null // Created on-demand
 var drawFallingBlocks = require('./draw/draw-falling-blocks')
 var drawHud = require('./draw/draw-hud')
+var drawSky = require('./draw/draw-sky')
 
 var Player = require('./models/player')
 
@@ -256,6 +257,7 @@ function render (dt) {
   env.regl.clear({ color: [1, 1, 1, 1], depth: 1 })
   if (!drawScope) return
   drawScope(state, function () {
+    drawSky(state.cameraLoc)
     Object.keys(state.objects).forEach(function (key) {
       var obj = state.objects[key]
       obj.tick(dt)

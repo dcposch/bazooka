@@ -73,7 +73,22 @@ var drawHud = env.regl({
         1 - pxW * 16,
         -1 + pxH * 16,))
 
-      // TODO nums
+      // Rect 5 and 6: digits
+      var pxFromBottom = 16 + NUM_LEFT_HEIGHT_PX - 20
+      var pxCharHeight = 24
+      var pxFromLeft = 16 + NUM_LEFT_WIDTH_PX - 24
+      var pxCharWidth = pxCharHeight * 4 / 6
+      var pxCharSpace = 4
+      rects.push(makeQuad(
+        1 - pxW * (pxFromLeft),
+        -1 + pxH * (pxFromBottom),
+        1 - pxW * (pxFromLeft - pxCharWidth),
+        -1 + pxH * (pxFromBottom - pxCharHeight)))
+      rects.push(makeQuad(
+        1 - pxW * (pxFromLeft - pxCharWidth - pxCharSpace),
+        -1 + pxH * (pxFromBottom),
+        1 - pxW * (pxFromLeft - 2 * pxCharWidth - pxCharSpace),
+        -1 + pxH * (pxFromBottom - pxCharHeight)))
 
       return rects
     },
@@ -100,10 +115,17 @@ var drawHud = env.regl({
       rects.push(makeQuad(healthU, ty * 56, tx * 64, ty * 61))
 
       // Rect 4: num players left alive
-      // rects.push(makeQuad(tx * 4, tx * 32, tx * 64, tx * 48))
       rects.push(makeQuad(tx * 4, ty * 32, tx * 64, ty * 48))
 
-      // console.log("WTF " + JSON.stringify(rects))
+      // Rect 5 and 6: digits
+      var dig1 = (props.numPlayersLeft / 10) | 0
+      if (dig1 == 0) {
+        dig1 = 10 // Write eg "8", not "08"
+      }
+      var dig2 = props.numPlayersLeft % 10
+      rects.push(makeQuad(tx * (5 * dig1 + 72), ty * 4, tx * (5 * dig1 + 76), ty * 10))
+      rects.push(makeQuad(tx * (5 * dig2 + 72), ty * 4, tx * (5 * dig2 + 76), ty * 10))
+
       return rects
     }
   },
@@ -118,7 +140,7 @@ var drawHud = env.regl({
   blend: {
     enable: false
   },
-  count: 6 * 4,
+  count: 6 * 6,
   primitive: 'triangles'
 })
 
