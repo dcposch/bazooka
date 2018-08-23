@@ -1,7 +1,7 @@
 var CHUNK_BITS = 5
 
 // Configuration, game settings, physics constants
-module.exports = {
+export default {
   TICK_INTERVAL: 0.1, // Seconds
   CHUNK_SIZE: 1 << CHUNK_BITS, // The world is divided into 32x32x32-block chunks
   CHUNK_BITS: CHUNK_BITS,
@@ -18,23 +18,23 @@ module.exports = {
     'nav-back': ['S', 'down'],
     'nav-right': ['D', 'right'],
     'nav-sprint': ['shift'],
-    'nav-jump': ['space']
+    'nav-jump': ['space'],
   },
   MAX_PICK_DISTANCE: 10, // Can place or break blocks up to 10 blocks away
   MAX_EXTRAPOLATE_MS: 100,
   GRAPHICS: {
     CHUNK_DRAW_RADIUS: 10, // Draw this many chunks in every direction from the player
-    MAX_ANISOTROPIC: 0 // Disable anisotropic filtering
+    MAX_ANISOTROPIC: 0, // Disable anisotropic filtering
   },
   PHYSICS: {
     MAX_DT: 0.01, // Compute physics in increments of at most 10ms to avoid glitches
-    GRAVITY: 20 // -Z acceleration in ms^-2, each block is 1 m^3
+    GRAVITY: 20, // -Z acceleration in ms^-2, each block is 1 m^3
   },
   WORLD_GEN: {
-    CHUNK_RADIUS: 20 // Generate this many chunk in every direction from every player
+    CHUNK_RADIUS: 20, // Generate this many chunk in every direction from every player
   },
   CLIENT: {
-    VERSION: 0
+    VERSION: 0,
   },
   SERVER: {
     CHUNK_SEND_RADIUS: 15,
@@ -46,6 +46,6 @@ module.exports = {
   BAZOOKA: {
     MAX_PLAYERS: 20,
     GEN_RADIUS_CHUNKS: 15,
-    MAX_FALLING_BLOCKS: 128
-  }
+    MAX_FALLING_BLOCKS: 128,
+  },
 }

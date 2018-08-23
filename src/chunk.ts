@@ -1,88 +1,101 @@
 import config from './config'
-import nextPow2 from './math/bit'.nextPow2
-
-// A chunk is a cubic region of space that fits CHUNK_SIZE^3 voxels
-// Coordinates (x, y, z) are aligned to CHUNK_SIZE
-module.exports = Chunk
+import nextPow2 from './math/bit'
 
 var CS = config.CHUNK_SIZE
 var CB = config.CHUNK_BITS
 
+interface ChunkMesh {
+  opaque: Mesh
+  trans: Mesh
+}
+
+// A chunk is a cubic region of space that fits CHUNK_SIZE^3 voxels
+// Coordinates (x, y, z) are aligned to CHUNK_SIZE
+class Chunk {
+  x: number
+  y: number
+  z: number
+  packed: boolean
+  data: Uint8Array
+  length: number
+  mesh: ChunkMesh
+  dirty: boolean
+  constructor(x?: number, y?: number, z?: number, data?: Uint8Array, packed?: boolean) {
+    this.x = x | 0
+    this.y = y | 0
+    this.z = z | 0
+    this.packed = !!packed
+    this.data = data || null
+    this.length = packed ? data.length : 0
+    this.mesh = { opaque: null, trans: null }
+    this.dirty = !!data
+  }
+
+  getKey() {
+    return this.x + ',' + this.y + ',' + this.z
+  }
+
+  // Takes integer coordinates relative to this chunk--in other words, in the range [0, CHUNK_SIZE)
+  // Returns an integer representing voxel data
+  getVox(ix: number, iy: number, iz: number) {
+    if (!this.data) return 0
+    if (this.packed) return getVoxPacked(this, ix, iy, iz)
+    else return getVoxUnpacked(this, ix, iy, iz)
+  }
+
+  // Takes integer coordinates relative to this chunk and a voxel int
+  // If this changes the value of that voxel, makes the chunk dirty
+  setVox(ix: number, iy: number, iz: number, v: number) {
+    var data = this.data
+    if (!data && v === 0) return // Nothing to do (setting air at a voxel that was already air)
+    if (this.packed) setVoxPacked(this, ix, iy, iz, v)
+    else setVoxUnpacked(this, ix, iy, iz, v)
+    return this
+  }
+
+  // Changes the representation from a flat array to list-of-quads
+  // Flat array: one byte per voxel, so CHUNK_SIZE^3 = 32 KB space, O(1) getVox and setVox
+  // List of quads: 8 bytes per quad, typically ~2 KB, O(nQuads) getVox and setVox
+  // Average over 10x reduction in memory use, quads ready to mesh, but getVox/setVox ~10x slower
+  pack() {
+    if (this.packed) throw new Error('already packed')
+    if (this.data) {
+      var quads = packGreedyQuads(this)
+      this.data = new Uint8Array(nextPow2(quads.length))
+      this.data.set(quads)
+      this.length = quads.length
+    }
+    this.packed = true
+    return this
+  }
+
+  // Changes representation from list-of-quads to flat array
+  unpack() {
+    if (!this.packed) throw new Error('already unpacked')
+    if (this.data) throw new Error('unpack nonempty chunk unimplemented')
+    this.packed = false
+    return this
+  }
+
+  destroy() {
+    this.destroyMesh()
+    this.packed = false
+    this.data = null
+    this.length = 0
+    this.dirty = false
+  }
+
+  destroyMesh() {
+    destroyMesh(this.mesh.opaque)
+    destroyMesh(this.mesh.trans)
+    this.mesh.opaque = null
+    this.mesh.trans = null
+  }
+}
+
 var packed = new Chunk()
 
-function Chunk (x, y, z, data, packed) {
-  this.x = x | 0
-  this.y = y | 0
-  this.z = z | 0
-  this.packed = !!packed
-  this.data = data || null
-  this.length = packed ? data.length : 0
-  this.mesh = { opaque: null, trans: null }
-  this.dirty = !!data
-}
-
-Chunk.prototype.getKey = function () {
-  return this.x + ',' + this.y + ',' + this.z
-}
-
-// Takes integer coordinates relative to this chunk--in other words, in the range [0, CHUNK_SIZE)
-// Returns an integer representing voxel data
-Chunk.prototype.getVox = function (ix, iy, iz) {
-  if (!this.data) return 0
-  if (this.packed) return getVoxPacked(this, ix, iy, iz)
-  else return getVoxUnpacked(this, ix, iy, iz)
-}
-
-// Takes integer coordinates relative to this chunk and a voxel int
-// If this changes the value of that voxel, makes the chunk dirty
-Chunk.prototype.setVox = function (ix, iy, iz, v) {
-  var data = this.data
-  if (!data && v === 0) return // Nothing to do (setting air at a voxel that was already air)
-  if (this.packed) setVoxPacked(this, ix, iy, iz, v)
-  else setVoxUnpacked(this, ix, iy, iz, v)
-  return this
-}
-
-// Changes the representation from a flat array to list-of-quads
-// Flat array: one byte per voxel, so CHUNK_SIZE^3 = 32 KB space, O(1) getVox and setVox
-// List of quads: 8 bytes per quad, typically ~2 KB, O(nQuads) getVox and setVox
-// Average over 10x reduction in memory use, quads ready to mesh, but getVox/setVox ~10x slower
-Chunk.prototype.pack = function () {
-  if (this.packed) throw new Error('already packed')
-  if (this.data) {
-    var quads = packGreedyQuads(this)
-    this.data = new Uint8Array(nextPow2(quads.length))
-    this.data.set(quads)
-    this.length = quads.length
-  }
-  this.packed = true
-  return this
-}
-
-// Changes representation from list-of-quads to flat array
-Chunk.prototype.unpack = function () {
-  if (!this.packed) throw new Error('already unpacked')
-  if (this.data) throw new Error('unpack nonempty chunk unimplemented')
-  this.packed = false
-  return this
-}
-
-Chunk.prototype.destroy = function () {
-  this.destroyMesh()
-  this.packed = false
-  this.data = null
-  this.length = 0
-  this.dirty = false
-}
-
-Chunk.prototype.destroyMesh = function () {
-  destroyMesh(this.mesh.opaque)
-  destroyMesh(this.mesh.trans)
-  this.mesh.opaque = null
-  this.mesh.trans = null
-}
-
-function destroyMesh (mesh) {
+function destroyMesh(mesh: Mesh) {
   if (!mesh) return
   if (mesh.count === 0) return
   mesh.verts.destroy()
@@ -90,7 +103,7 @@ function destroyMesh (mesh) {
   mesh.uvs.destroy()
 }
 
-function getVoxPacked (chunk, ix, iy, iz) {
+function getVoxPacked(chunk: Chunk, ix: number, iy: number, iz: number) {
   var data = chunk.data
   var n = chunk.length
   for (var i = 0; i < n; i += 8) {
@@ -107,7 +120,7 @@ function getVoxPacked (chunk, ix, iy, iz) {
   return 0
 }
 
-function setVoxPacked (chunk, ix, iy, iz, v) {
+function setVoxPacked(chunk: Chunk, ix: number, iy: number, iz: number, v: number) {
   var data = chunk.data
 
   // Find the quad that this point belongs to
@@ -120,19 +133,19 @@ function setVoxPacked (chunk, ix, iy, iz, v) {
 
   // First, create a 1x1x1 quad for the voxel we're setting
   var add = []
-  if (v !== 0) add.push({x0: ix, y0: iy, z0: iz, x1: ix + 1, y1: iy + 1, z1: iz + 1, v: v})
+  if (v !== 0) add.push({ x0: ix, y0: iy, z0: iz, x1: ix + 1, y1: iy + 1, z1: iz + 1, v: v })
 
   // If we found an existing quad that covers (ix, iy, iz), split it as needed
   if (q) {
     var ix1 = ix + 1
     var iy1 = iy + 1
     var iz1 = iz + 1
-    if (ix > q.x0) add.push({x0: q.x0, y0: q.y0, z0: q.z0, x1: ix, y1: q.y1, z1: q.z1, v: q.v})
-    if (ix1 < q.x1) add.push({x0: ix1, y0: q.y0, z0: q.z0, x1: q.x1, y1: q.y1, z1: q.z1, v: q.v})
-    if (iy > q.y0) add.push({x0: ix, y0: q.y0, z0: q.z0, x1: ix1, y1: iy, z1: q.z1, v: q.v})
-    if (iy1 < q.y1) add.push({x0: ix, y0: iy1, z0: q.z0, x1: ix1, y1: q.y1, z1: q.z1, v: q.v})
-    if (iz > q.z0) add.push({x0: ix, y0: iy, z0: q.z0, x1: ix1, y1: iy1, z1: iz, v: q.v})
-    if (iz1 < q.z1) add.push({x0: ix, y0: iy, z0: iz1, x1: ix1, y1: iy1, z1: q.z1, v: q.v})
+    if (ix > q.x0) add.push({ x0: q.x0, y0: q.y0, z0: q.z0, x1: ix, y1: q.y1, z1: q.z1, v: q.v })
+    if (ix1 < q.x1) add.push({ x0: ix1, y0: q.y0, z0: q.z0, x1: q.x1, y1: q.y1, z1: q.z1, v: q.v })
+    if (iy > q.y0) add.push({ x0: ix, y0: q.y0, z0: q.z0, x1: ix1, y1: iy, z1: q.z1, v: q.v })
+    if (iy1 < q.y1) add.push({ x0: ix, y0: iy1, z0: q.z0, x1: ix1, y1: q.y1, z1: q.z1, v: q.v })
+    if (iz > q.z0) add.push({ x0: ix, y0: iy, z0: q.z0, x1: ix1, y1: iy1, z1: iz, v: q.v })
+    if (iz1 < q.z1) add.push({ x0: ix, y0: iy, z0: iz1, x1: ix1, y1: iy1, z1: q.z1, v: q.v })
 
     // Modify that existing quad to be air, so we'll delete it soon.
     data[q.i + 6] = 0
@@ -208,7 +221,7 @@ function setVoxPacked (chunk, ix, iy, iz, v) {
   }
 }
 
-function findQuad (chunk, ix, iy, iz) {
+function findQuad(chunk: Chunk, ix: number, iy: number, iz: number) {
   var data = chunk.data
   if (!data) return null
   for (var i = 0; i < chunk.length; i += 8) {
@@ -229,7 +242,7 @@ function findQuad (chunk, ix, iy, iz) {
       y1: y1,
       z1: z1,
       v: v,
-      i: i
+      i: i,
     }
   }
   return null
@@ -237,7 +250,7 @@ function findQuad (chunk, ix, iy, iz) {
 
 // Implements the greedy quad algorithm
 // http://0fps.net/2012/06/30/meshing-in-a-minecraft-game/
-function packGreedyQuads (chunk) {
+function packGreedyQuads(chunk: Chunk) {
   if (packed.data) packed.data.fill(0)
 
   // Write quads into a flat array, minimize allocations
@@ -304,14 +317,16 @@ function packGreedyQuads (chunk) {
   return quads
 }
 
-function getVoxUnpacked (chunk, ix, iy, iz) {
-  return chunk.data[(ix << CB << CB) + (iy << CB) + iz]
+function getVoxUnpacked(chunk: Chunk, ix: number, iy: number, iz: number) {
+  return chunk.data[((ix << CB) << CB) + (iy << CB) + iz]
 }
 
-function setVoxUnpacked (chunk, ix, iy, iz, v) {
+function setVoxUnpacked(chunk: Chunk, ix: number, iy: number, iz: number, v: number) {
   if (!chunk.data) chunk.data = new Uint8Array(CS * CS * CS)
-  var index = (ix << CB << CB) + (iy << CB) + iz
+  var index = ((ix << CB) << CB) + (iy << CB) + iz
   if (chunk.data[index] === v) return
   chunk.data[index] = v
   chunk.dirty = true
 }
+
+export default Chunk
