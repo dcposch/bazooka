@@ -3,61 +3,26 @@ import config from '../../config'
 import shaders from '../shaders'
 import camera from '../camera'
 import textures from '../textures'
-var vec3 = {
-  create: require('gl-vec3/create'),
-  transformMat4: require('gl-vec3/transformMat4')
-}
-
-// Draws the voxels.
-// Does not draw the player or UI overlays.
-module.exports = drawWorld
+import vec3 from 'gl-vec3'
+import { DrawCommand } from 'regl'
 
 var CS = config.CHUNK_SIZE
 
 // Allocate once, update every frame in cullChunks()
-var meshes = []
-var meshesTrans = []
+var meshes: Mesh[] = []
+var meshesTrans: Mesh[] = []
 
-var chunkCommand, chunkCommandTranslucent
-
-// Compile regl commands, if necessary. Returns true if regl commands are ready to go.
-// Returns false if we're still waiting for resources to finish loading.
-function compileCommands () {
-  if (chunkCommand) return true
-  if (!textures.loaded.atlas) return false
-
-  var params = {
-    // To profile, use this property, then add the following line to the render loop:
-    // if (context.tick % 100 === 0) console.log(JSON.stringify(drawChunk.stats))
-    // profile: true,
-    vert: shaders.vert.uvWorld,
-    frag: shaders.frag.voxel,
-    uniforms: {
-      uAtlas: textures.loaded.atlas
-    },
-    attributes: {
-      aPosition: env.regl.prop('verts'),
-      aNormal: env.regl.prop('normals'),
-      aUV: env.regl.prop('uvs')
-    },
-    count: env.regl.prop('count')
-  }
-
-  chunkCommand = env.regl(params)
-  chunkCommandTranslucent = env.regl(Object.assign({}, params, {
-    blend: {
-      enable: true,
-      func: {
-        src: 'src alpha',
-        dst: 'one minus src alpha'
-      }
-    }
-  }))
-}
+var chunkCommand: DrawCommand | undefined
+let chunkCommandTranslucent: DrawCommand | undefined
+let triedCompile = false
 
 // Draw voxel chunks, once resources are loaded.
-function drawWorld (state) {
-  if (!compileCommands()) return
+export default function drawWorld(state: any) {
+  maybeCompileCommands()
+  if (!chunkCommand || !chunkCommandTranslucent) {
+    return
+  }
+
   cullChunks(state)
   // Draw opaque layer first, then translucent meshes, farthest to nearest
   chunkCommand(meshes)
@@ -66,7 +31,7 @@ function drawWorld (state) {
 
 // Figure out which chunks we have to draw
 // TODO: cave culling
-function cullChunks (state) {
+function cullChunks(state) {
   var chunks = state.world.chunks
   var loc = state.player.location
   var maxDistance = config.GRAPHICS.CHUNK_DRAW_RADIUS * config.CHUNK_SIZE
@@ -106,7 +71,7 @@ function cullChunks (state) {
   state.perf.draw.verts = totalVerts
 }
 
-function chunkOutsideFrustum (matCombined, chunk) {
+function chunkOutsideFrustum(matCombined, chunk) {
   var world = new Float32Array([chunk.x, chunk.y, chunk.z]) // World coordinates
   var v = vec3.create() // Clip coordinates. (0, 0, 0) to (1, 1, 1) is in the frame
 
@@ -118,4 +83,42 @@ function chunkOutsideFrustum (matCombined, chunk) {
     if (v[0] > -1 && v[1] > -1 && v[2] > -1 && v[0] < 1 && v[1] < 1 && v[2] < 1) return false
   }
   return true
+}
+
+// Compile regl commands, if necessary. Returns true if regl commands are ready to go.
+// Returns false if we're still waiting for resources to finish loading.
+function maybeCompileCommands() {
+  if (triedCompile) return
+  if (!textures.loaded.atlas) return
+  triedCompile = true
+
+  var params = {
+    // To profile, use this property, then add the following line to the render loop:
+    // if (context.tick % 100 === 0) console.log(JSON.stringify(drawChunk.stats))
+    // profile: true,
+    vert: shaders.vert.uvWorld,
+    frag: shaders.frag.voxel,
+    uniforms: {
+      uAtlas: textures.loaded.atlas,
+    },
+    attributes: {
+      aPosition: env.regl.prop('verts'),
+      aNormal: env.regl.prop('normals'),
+      aUV: env.regl.prop('uvs'),
+    },
+    count: env.regl.prop('count'),
+  }
+
+  chunkCommand = env.regl(params)
+  chunkCommandTranslucent = env.regl(
+    Object.assign({}, params, {
+      blend: {
+        enable: true,
+        func: {
+          src: 'src alpha',
+          dst: 'one minus src alpha',
+        },
+      },
+    })
+  )
 }

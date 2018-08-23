@@ -1,9 +1,8 @@
 import env from '../env'
 import shaders from '../shaders'
 import textures from '../textures'
-
-// Draws a Heads-Up Display
-module.exports = draw
+import { DefaultContext } from 'regl'
+import { PlayerMode } from '../../types'
 
 var STATUS_WIDTH_PX = 66 * 2
 var STATUS_HEIGHT_PX = 32 * 2
@@ -12,9 +11,15 @@ var HEALTH_HEIGHT_PX = 5 * 3
 var NUM_LEFT_WIDTH_PX = 60 * 2
 var NUM_LEFT_HEIGHT_PX = 32 * 2
 
-var STATUS_OFFSETS = {
+var STATUS_OFFSETS: { [index: string]: number } = {
   commando: 2,
-  bazooka: 16
+  bazooka: 16,
+}
+
+export interface HudProps {
+  health: number
+  mode: PlayerMode
+  numPlayersLeft: number
 }
 
 /**
@@ -25,11 +30,11 @@ var STATUS_OFFSETS = {
  * - TODO: how many players are left alive
  * - TODO: your health bar
  */
-function draw (props) {
+export default function draw(props: HudProps) {
   drawHud({
     mode: props.mode,
     health: props.health,
-    numPlayersLeft: props.numPlayersLeft
+    numPlayersLeft: props.numPlayersLeft,
   })
 }
 
@@ -37,7 +42,7 @@ var drawHud = env.regl({
   vert: shaders.vert.uvClip,
   frag: shaders.frag.texture,
   attributes: {
-    aPosition: function (context, props) {
+    aPosition: function(context: DefaultContext, props: HudProps) {
       var rects = []
 
       // Single px, x and y, in clip coordinates (which go from bottom left (-1, -1) to top right (1, 1))
@@ -45,55 +50,49 @@ var drawHud = env.regl({
       var pxH = 2 / context.viewportHeight
 
       // Rect 1: left status
-      rects.push(makeQuad(
-        -1 + pxW * 16,
-        -1 + pxH * (16 + STATUS_HEIGHT_PX),
-        -1 + pxW * (16 + STATUS_WIDTH_PX),
-        -1 + pxH * 16,))
+      rects.push(
+        makeQuad(-1 + pxW * 16, -1 + pxH * (16 + STATUS_HEIGHT_PX), -1 + pxW * (16 + STATUS_WIDTH_PX), -1 + pxH * 16)
+      )
 
       // Rect 2: health bar
       var healthX = pxW * (HEALTH_WIDTH_PX * -0.5 + 15 + props.health * 3)
-      rects.push(makeQuad(
-        pxW * HEALTH_WIDTH_PX * -0.5,
-        -1 + pxH * (24 + HEALTH_HEIGHT_PX),
-        healthX,
-        -1 + pxH * 24))
+      rects.push(makeQuad(pxW * HEALTH_WIDTH_PX * -0.5, -1 + pxH * (24 + HEALTH_HEIGHT_PX), healthX, -1 + pxH * 24))
 
       // Rect 3: health bar consumed
-      rects.push(makeQuad(
-        healthX,
-        -1 + pxH * (24 + HEALTH_HEIGHT_PX),
-        pxW * HEALTH_WIDTH_PX * 0.5,
-        -1 + pxH * 24,))
+      rects.push(makeQuad(healthX, -1 + pxH * (24 + HEALTH_HEIGHT_PX), pxW * HEALTH_WIDTH_PX * 0.5, -1 + pxH * 24))
 
       // Rect 4: num players left alive
-      rects.push(makeQuad(
-        1 - pxW * (16 + NUM_LEFT_WIDTH_PX),
-        -1 + pxH * (16 + NUM_LEFT_HEIGHT_PX),
-        1 - pxW * 16,
-        -1 + pxH * 16,))
+      rects.push(
+        makeQuad(1 - pxW * (16 + NUM_LEFT_WIDTH_PX), -1 + pxH * (16 + NUM_LEFT_HEIGHT_PX), 1 - pxW * 16, -1 + pxH * 16)
+      )
 
       // Rect 5 and 6: digits
       var pxFromBottom = 16 + NUM_LEFT_HEIGHT_PX - 20
       var pxCharHeight = 24
       var pxFromLeft = 16 + NUM_LEFT_WIDTH_PX - 24
-      var pxCharWidth = pxCharHeight * 4 / 6
+      var pxCharWidth = (pxCharHeight * 4) / 6
       var pxCharSpace = 4
-      rects.push(makeQuad(
-        1 - pxW * (pxFromLeft),
-        -1 + pxH * (pxFromBottom),
-        1 - pxW * (pxFromLeft - pxCharWidth),
-        -1 + pxH * (pxFromBottom - pxCharHeight)))
-      rects.push(makeQuad(
-        1 - pxW * (pxFromLeft - pxCharWidth - pxCharSpace),
-        -1 + pxH * (pxFromBottom),
-        1 - pxW * (pxFromLeft - 2 * pxCharWidth - pxCharSpace),
-        -1 + pxH * (pxFromBottom - pxCharHeight)))
+      rects.push(
+        makeQuad(
+          1 - pxW * pxFromLeft,
+          -1 + pxH * pxFromBottom,
+          1 - pxW * (pxFromLeft - pxCharWidth),
+          -1 + pxH * (pxFromBottom - pxCharHeight)
+        )
+      )
+      rects.push(
+        makeQuad(
+          1 - pxW * (pxFromLeft - pxCharWidth - pxCharSpace),
+          -1 + pxH * pxFromBottom,
+          1 - pxW * (pxFromLeft - 2 * pxCharWidth - pxCharSpace),
+          -1 + pxH * (pxFromBottom - pxCharHeight)
+        )
+      )
 
       return rects
     },
 
-    aUV: function (context, props) {
+    aUV: function(context: DefaultContext, props: HudProps) {
       var rects = []
 
       // Each texel is 1/128 UV coords
@@ -105,7 +104,7 @@ var drawHud = env.regl({
       if (voff == null) {
         throw new Error('Unsupported mode: ' + props.mode)
       }
-      rects.push(makeQuad(tx * 4, voff * ty, tx * 70, voff * ty + STATUS_HEIGHT_PX / STATUS_WIDTH_PX * 0.5))
+      rects.push(makeQuad(tx * 4, voff * ty, tx * 70, voff * ty + (STATUS_HEIGHT_PX / STATUS_WIDTH_PX) * 0.5))
 
       // Rect 2: health bar
       var healthU = tx * (4 + 5 + props.health)
@@ -127,23 +126,23 @@ var drawHud = env.regl({
       rects.push(makeQuad(tx * (5 * dig2 + 72), ty * 4, tx * (5 * dig2 + 76), ty * 10))
 
       return rects
-    }
+    },
   },
   uniforms: {
-    uTexture: function (context, props) {
+    uTexture: function(context: DefaultContext, props: HudProps) {
       return textures.loaded.hud
-    }
+    },
   },
   depth: {
-    enable: false
+    enable: false,
   },
   blend: {
-    enable: false
+    enable: false,
   },
   count: 6 * 6,
-  primitive: 'triangles'
+  primitive: 'triangles',
 })
 
-function makeQuad (x0, y0, x1, y1) {
+function makeQuad(x0, y0, x1, y1) {
   return [[x0, y0], [x0, y1], [x1, y1], [x0, y0], [x1, y1], [x1, y0]]
 }

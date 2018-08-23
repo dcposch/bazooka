@@ -3,3 +3,8 @@ export interface PointXYZ {
   y: number
   z: number
 }
+
+export enum PlayerMode {
+  BAZOOKA = 'bazooka',
+  ARMY = 'army',
+}

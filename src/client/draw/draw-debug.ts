@@ -56,10 +56,11 @@ function createHiddenCanvas() {
 
 function createContext2D(canvas: HTMLCanvasElement) {
   const context2D = canvas.getContext('2d')
-  if (context2D) {
-    context2D.font = '16px monospace'
-    context2D.fillStyle = '#fff'
+  if (!context2D) {
+    throw new Error('failed to get context2D')
   }
+  context2D.font = '16px monospace'
+  context2D.fillStyle = '#fff'
   return context2D
 }
 
