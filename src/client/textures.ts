@@ -1,25 +1,28 @@
 import env from './env'
 import config from '../config'
+import { Texture } from 'regl'
 
-module.exports = {
-  load: load,
-  loadAll: loadAll,
-  loaded: {},
+const loaded: { [key: string]: Texture } = {}
+
+export default {
+  load,
+  loadAll,
+  loaded,
 }
 
 // Loads all built-in textures, then calls back
-function loadAll(cb) {
-  var tex = {}
-  tex.atlas = load('textures/atlas-p9.png')
-  tex.skinArmy = load('textures/skin-army.png')
-  tex.skinCommando = load('textures/skin-commando.png')
-  tex.hud = load('textures/hud.png')
+function loadAll(cb: any) {
+  var tex: { [key: string]: Promise<Texture> } = {
+    atlas: load('textures/atlas-p9.png'),
+    skinArmy: load('textures/skin-army.png'),
+    skinCommando: load('textures/skin-commando.png'),
+    hud: load('textures/hud.png'),
+  }
 
   var keys = Object.keys(tex)
   var promises = keys.map(function(key) {
     return tex[key]
   })
-  var loaded = module.exports.loaded
 
   Promise.all(promises)
     .then(function(textures) {
@@ -34,11 +37,11 @@ function loadAll(cb) {
 }
 
 // Returns a Promise that resolves to a REGL texture object
-function load(url) {
+function load(url: string): Promise<Texture> {
   var aniso = Math.min(env.regl.limits.maxAnisotropic, config.GRAPHICS.MAX_ANISOTROPIC)
 
   return new Promise(function(resolve, reject) {
-    var image = new window.Image()
+    var image = new Image()
     image.src = url
     image.onload = function() {
       console.log('Loaded ' + url)

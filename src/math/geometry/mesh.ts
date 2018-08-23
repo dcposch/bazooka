@@ -1,98 +1,98 @@
 import validate from './validate'
-var vec3 = {
-  clone: require('gl-vec3/clone'),
-  transformMat3: require('gl-vec3/transformMat3'),
-  transformMat4: require('gl-vec3/transformMat4'),
-  copy: require('gl-vec3/copy')
-}
-var vec2 = {
-  clone: require('gl-vec2/clone')
-}
-
-module.exports = Mesh
+import vec3 from 'gl-vec3'
+import vec2 from 'gl-vec2'
+import { Vec3, Vec2, Mat4, Mat3 } from 'regl'
 
 // Represents an mesh: vertices, normals and texture UVs
 // Format:
 // - verts is an array of vec3s, which are just Float32Arrays of length 3
 // - norms is an array of vec3s
 // - uvs is an array of vec2s
-function Mesh (verts, norms, uvs) {
-  if (verts) validate(verts, 3)
-  if (norms) validate(norms, 3)
-  if (uvs) validate(uvs, 2)
+export default class Mesh {
+  verts: Vec3[]
+  norms: Vec3[]
+  uvs: Vec2[]
+  parent?: Mesh
+  offset: number
 
-  this.verts = verts || []
-  this.norms = norms || []
-  this.uvs = uvs || []
-  this.parent = null
-  this.offset = 0
+  constructor(verts?: Vec3[], norms?: Vec3[], uvs?: Vec2[]) {
+    if (verts) validate(verts, 3)
+    if (norms) validate(norms, 3)
+    if (uvs) validate(uvs, 2)
 
-  var n = this.verts.length
-  if (n % 3 !== 0) throw new Error('triangle mesh, n must be a multiple of 3')
-  if (n !== this.norms.length) throw new Error('mesh must have same # of verts and norms')
-  if (n !== this.uvs.length) throw new Error('mesh must have same # of verts and uvs')
-}
+    this.verts = verts || []
+    this.norms = norms || []
+    this.uvs = uvs || []
+    this.parent = undefined
+    this.offset = 0
 
-Mesh.prototype.clone = function () {
-  var verts = this.verts.map(vec3.clone)
-  var norms = this.norms.map(vec3.clone)
-  var uvs = this.uvs.map(vec2.clone)
-  return new Mesh(verts, norms, uvs)
-}
-
-Mesh.combine = function (meshes) {
-  var ret = new Mesh()
-  meshes.forEach(function (mesh) {
-    mesh.parent = ret
-    mesh.offset = ret.verts.length
-    Array.prototype.push.apply(ret.verts, mesh.verts)
-    Array.prototype.push.apply(ret.norms, mesh.norms)
-    Array.prototype.push.apply(ret.uvs, mesh.uvs)
-  })
-  return ret
-}
-
-// Transform (translate, rotate, scale) a mesh according to a matrix
-Mesh.transform = function (output, input, mat, matNorm) {
-  if (output.verts.length !== input.verts.length) {
-    throw new Error('transform input and output meshes must be the same size')
+    var n = this.verts.length
+    if (n % 3 !== 0) throw new Error('triangle mesh, n must be a multiple of 3')
+    if (n !== this.norms.length) throw new Error('mesh must have same # of verts and norms')
+    if (n !== this.uvs.length) throw new Error('mesh must have same # of verts and uvs')
   }
-  this.transformPart(output, input, mat, matNorm, 0)
-}
 
-Mesh.transformPart = function (output, input, mat, matNorm, offset) {
-  if (!output || !input || !mat || !matNorm) throw new Error('missing args')
-  offset = offset || input.offset
-
-  var n = input.verts.length
-  if (offset + n > output.verts.length) throw new Error('transformed part out of range')
-
-  for (var i = 0; i < n; i++) {
-    var vertIn = input.verts[i]
-    var vertOut = output.verts[i + offset]
-    vec3.transformMat4(vertOut, vertIn, mat)
-
-    // Rotate, but don't translate or scale the norms
-    var normIn = input.norms[i]
-    var normOut = output.norms[i + offset]
-    vec3.transformMat3(normOut, normIn, matNorm)
+  clone() {
+    var verts = this.verts.map(vec3.clone) as Vec3[]
+    var norms = this.norms.map(vec3.clone) as Vec3[]
+    var uvs = this.uvs.map(vec2.clone) as Vec2[]
+    return new Mesh(verts, norms, uvs)
   }
-}
 
-Mesh.copyPart = function (output, input, offset) {
-  if (!output || !input) throw new Error('missing args')
-  offset = offset || input.offset
+  static combine(meshes: Mesh[]) {
+    var ret = new Mesh()
+    meshes.forEach(function(mesh) {
+      mesh.parent = ret
+      mesh.offset = ret.verts.length
+      Array.prototype.push.apply(ret.verts, mesh.verts)
+      Array.prototype.push.apply(ret.norms, mesh.norms)
+      Array.prototype.push.apply(ret.uvs, mesh.uvs)
+    })
+    return ret
+  }
 
-  var n = input.verts.length
-  if (offset + n > output.verts.length) throw new Error('transformed part out of range')
+  // Transform (translate, rotate, scale) a mesh according to a matrix
+  static transform(output: Mesh, input: Mesh, mat: Mat4, matNorm: Mat3) {
+    if (output.verts.length !== input.verts.length) {
+      throw new Error('transform input and output meshes must be the same size')
+    }
+    Mesh.transformPart(output, input, mat, matNorm, 0)
+  }
 
-  for (var i = 0; i < n; i++) {
-    var vertIn = input.verts[i]
-    var vertOut = output.verts[i + offset]
-    vec3.copy(vertOut, vertIn)
+  static transformPart(output: Mesh, input: Mesh, mat: Mat4, matNorm: Mat3, offset: number) {
+    if (!output || !input || !mat || !matNorm) throw new Error('missing args')
+    offset = offset || input.offset
 
-    var normIn = input.norms[i]
-    var normOut = output.norms[i + offset]
-    vec3.copy(normOut, normIn)
+    var n = input.verts.length
+    if (offset + n > output.verts.length) throw new Error('transformed part out of range')
+
+    for (var i = 0; i < n; i++) {
+      var vertIn = input.verts[i]
+      var vertOut = output.verts[i + offset]
+      vec3.transformMat4(vertOut, vertIn, mat)
+
+      // Rotate, but don't translate or scale the norms
+      var normIn = input.norms[i]
+      var normOut = output.norms[i + offset]
+      vec3.transformMat3(normOut, normIn, matNorm)
+    }
+  }
+
+  static copyPart(output: Mesh, input: Mesh, offset: number) {
+    if (!output || !input) throw new Error('missing args')
+    offset = offset || input.offset
+
+    var n = input.verts.length
+    if (offset + n > output.verts.length) throw new Error('transformed part out of range')
+
+    for (var i = 0; i < n; i++) {
+      var vertIn = input.verts[i]
+      var vertOut = output.verts[i + offset]
+      vec3.copy(vertOut, vertIn)
+
+      var normIn = input.norms[i]
+      var normOut = output.norms[i + offset]
+      vec3.copy(normOut, normIn)
+    }
   }
 }

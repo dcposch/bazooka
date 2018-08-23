@@ -4,8 +4,8 @@ import config from '../config'
 import Chunk from '../chunk'
 
 // Generate the world
-module.exports = {
-  generateColumn
+export default {
+  generateColumn,
 }
 
 var CS = config.CHUNK_SIZE
@@ -25,7 +25,7 @@ var perlin3 = new Float32Array(CS * CS)
 // World generation. Generates one (x, y) column of chunks.
 // Returns a newly allocated Chunk: { x, y, z, data: UInt8Array }
 // Skips {data} if the chunk would be completely empty
-function generateColumn (x, y) {
+function generateColumn(x: number, y: number) {
   // Generate a Perlin heightmap
   // https://web.archive.org/web/20160421115558/
   // http://freespace.virgin.net/hugo.elias/models/m_perlin.htm
@@ -39,9 +39,9 @@ function generateColumn (x, y) {
   // Sky island: force positive near (0,0), clamp to zero toward (+/-1k, +/-1k)
   perlin.apply(perlin1, x - PAD, y - PAD, CS + PAD2, islandFunc)
 
-  var ret = {
-    chunks: [],
-    heightMap: new Float32Array(perlin1)
+  const ret = {
+    chunks: [] as Chunk[],
+    heightMap: new Float32Array(perlin1),
   }
 
   for (var z = -CS * 5; z < CS * 5; z += CS) {
@@ -55,12 +55,12 @@ function generateColumn (x, y) {
   return ret
 }
 
-function islandFunc (sx, sy, val) {
+function islandFunc(sx, sy, val) {
   const island = val - (GEN_RAD - Math.sqrt(GEN_RAD * GEN_RAD - sx * sx - sy * sy)) * 0.1
   return Math.max(island, 0)
 }
 
-function placeLand (ret) {
+function placeLand(ret) {
   var z = ret.z
   for (var ix = 0; ix < CS; ix++) {
     for (var iy = 0; iy < CS; iy++) {
@@ -87,7 +87,7 @@ function placeLand (ret) {
   }
 }
 
-function placeTrees (ret) {
+function placeTrees(ret) {
   var z = ret.z
   for (var ix = -2; ix < CS + PAD; ix++) {
     for (var iy = -2; iy < CS + PAD; iy++) {
@@ -95,7 +95,7 @@ function placeTrees (ret) {
       var h2 = perlin2[(ix + PAD) * (CS + PAD2) + iy + PAD]
       var i1 = Math.ceil(h1)
       var isShore = i1 >= 15 && i1 <= 18
-      var palmJuice = (h2 > 14.0 || h2 < 10.0) ? 2.0 : (h2 % 1.0) * 50.0 // range [0, 50)
+      var palmJuice = h2 > 14.0 || h2 < 10.0 ? 2.0 : (h2 % 1.0) * 50.0 // range [0, 50)
       if (!isShore || palmJuice > 1.0) continue
       // If we're here, we're placing a palm tree, and palmJuice is in [0, 1)
       var palmHeight = Math.floor(palmJuice * 10.0) + 4
@@ -126,7 +126,7 @@ function placeTrees (ret) {
   }
 }
 
-function trySet (chunk, ix, iy, iz, v, overwrite) {
+function trySet(chunk: Chunk, ix: number, iy: number, iz: number, v: number, overwrite?: boolean) {
   if (ix < 0 || iy < 0 || iz < 0 || ix >= CS || iy >= CS || iz >= CS) return
   if (!overwrite && chunk.getVox(ix, iy, iz) !== vox.INDEX.AIR) return
   chunk.setVox(ix, iy, iz, v)

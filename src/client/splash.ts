@@ -2,34 +2,34 @@ import sound from './sound'
 import env from './env'
 import Player from './models/player'
 
-module.exports = {
+export default {
   init: init,
   showError: showError,
 }
 
 // Spash screen
-var divSplash
-var inputName
-var btnStart
-var divControls
+let divSplash: HTMLDivElement
+let inputName: HTMLInputElement
+let btnStart: HTMLButtonElement
+let divControls: HTMLDivElement
 
 // Error overlay
-var divError
+let divError: HTMLDivElement
 
 // Game canvas
-var canvas
+let canvas: HTMLCanvasElement
 
-var state
+let state: any
 
-function init(st) {
+function init(st: any) {
   state = st
 
-  divSplash = document.querySelector('div.splash')
-  inputName = document.querySelector('input.splash-input-name')
-  btnStart = document.querySelector('button.splash-btn-start')
-  divControls = document.querySelector('div.splash-controls')
-  divError = document.querySelector('div.error')
-  canvas = document.querySelector('canvas')
+  divSplash = document.querySelector('div.splash') as HTMLDivElement
+  inputName = document.querySelector('input.splash-input-name') as HTMLInputElement
+  btnStart = document.querySelector('button.splash-btn-start') as HTMLButtonElement
+  divControls = document.querySelector('div.splash-controls') as HTMLDivElement
+  divError = document.querySelector('div.error') as HTMLDivElement
+  canvas = document.querySelector('canvas') as HTMLCanvasElement
 
   // Focus player name entry
   inputName.focus()
@@ -63,7 +63,7 @@ function updateSplash(e) {
 function enterLobby() {
   var bgImg = 'url(img/bazooka-city-dark.gif), url(img/bazooka-city-title.png)'
   divSplash.style.setProperty('background-image', bgImg)
-  document.querySelector('.splash-start').remove()
+  document.querySelector('.splash-start')!.remove()
 
   // TODO: get lobby / game  state from server
   window.setTimeout(startGame, 2000)
@@ -89,7 +89,7 @@ function startGame() {
 
 // Kill the game on error (eg 'connection lost')
 // Player has to refresh the page.
-function showError(message, err) {
+function showError(message: string, err: Error) {
   console.error(message)
   if (err) console.error(err)
   if (state.error) return

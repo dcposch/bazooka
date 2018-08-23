@@ -1,8 +1,4 @@
-module.exports = {
-  nextPow2: nextPow2
-}
-
-function nextPow2 (v) {
+export function nextPow2(v: number) {
   v = (v | 0) - 1
   v |= v >> 1
   v |= v >> 2

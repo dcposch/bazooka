@@ -1,27 +1,24 @@
-module.exports = {
-  play: play,
-}
+import soundNames from './sound-names'
 
-import fs from 'fs'
+export default { play }
 
 // Cache <audio> elements for instant playback
-var cache = {}
+const cache: { [name: string]: HTMLAudioElement } = {}
 
 // Preload any short sounds checked into the repo
-var names = fs.readdirSync('static/sounds')
-names.forEach(function(name) {
-  var audio = new window.Audio()
+soundNames.forEach(function(name: string) {
+  var audio = new Audio()
   audio.src = 'sounds/' + name
   cache[name] = audio
 })
 
 // Takes a name (for short sounds) or a URL (for larger files, not in git)
 // Optionally takes a time offset in seconds
-function play(name, time) {
+function play(name: string, time: number) {
   var audio = cache[name]
   if (!audio) {
     if (!name.includes('/')) throw new Error('Missing sound: ' + name)
-    audio = new window.Audio()
+    audio = new Audio()
     audio.src = name
     cache[name] = audio
   }

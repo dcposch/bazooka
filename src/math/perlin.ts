@@ -3,9 +3,9 @@ import interp from './interp'
 
 // Generates deterministic 2D Perlin noise
 // TODO: publish this as its own NPM module
-module.exports = {
-  generate2D: generate2D,
-  apply: apply
+export default {
+  generate2D,
+  apply,
 }
 
 // Avoid run-time allocations, reduce GC pressure
@@ -17,7 +17,13 @@ var RAND_SEED = 2892
 //
 // Func takes func(sx, sy, val) where (sx, sy) are world coords
 // and val is the current value at the corresponding loc in arr.
-function apply (arr, x, y, width, func) {
+function apply(
+  arr: Float32Array,
+  x: number,
+  y: number,
+  width: number,
+  func: (sx: number, sy: number, w: number) => number
+) {
   for (var u = 0; u < width; u++) {
     for (var v = 0; v < width; v++) {
       // (sx, sy) are world coords
@@ -35,7 +41,13 @@ function apply (arr, x, y, width, func) {
 // (x, y) - location on the plane, world coordinates, corresponds to (ix, iy) = 0, 0
 // width - (width x width) are the dimensions of `ret`
 // amplitudes - perlin amplitudes
-function generate2D (ret, x, y, width, amplitudes) {
+function generate2D(
+  ret: Float32Array,
+  x: number,
+  y: number,
+  width: number,
+  amplitudes: (number | ((rand: number, sx: number, sy: number, i: number) => number))[]
+) {
   if (width > MAX_WIDTH) {
     throw new Error('generate2D width ' + width + ' > max width ' + MAX_WIDTH)
   }
@@ -62,9 +74,11 @@ function generate2D (ret, x, y, width, amplitudes) {
     var ys = Math.floor(y / stride) * stride
 
     // We'll take a w x w grid of noise samples at (xs, ys), (xs + stride, ys), ...
-    var w = Math.max(
-      Math.ceil((x + width) / stride) - Math.floor(x / stride),
-      Math.ceil((y + width) / stride) - Math.floor(y / stride)) + 1
+    var w =
+      Math.max(
+        Math.ceil((x + width) / stride) - Math.floor(x / stride),
+        Math.ceil((y + width) / stride) - Math.floor(y / stride)
+      ) + 1
     if (w > MAX_WIDTH) throw new Error('perlin max width exceeded: ' + w)
 
     // (su, sv) is an index into the grid of noise samples
@@ -111,13 +125,13 @@ function generate2D (ret, x, y, width, amplitudes) {
 }
 
 // Returns a hash code random value in [0.0, 1.0)
-function hashRand (values) {
+function hashRand(values: number[]) {
   var hc = hashInts(values)
   return (hc & 0x7fffffff) / 0x7fffffff
 }
 
 // Returns a hash code in [0, 1<<30)
-function hashInts (values) {
+function hashInts(values: number[]) {
   var str = values.join('')
   return murmurhash.v2(str)
 }
