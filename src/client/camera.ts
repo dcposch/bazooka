@@ -1,6 +1,6 @@
 import mat4 from 'gl-mat4'
 import vec3 from 'gl-vec3'
-import coordinates from '../math/geometry/coordinates'
+import { toCartesian } from '../math/geometry/coordinates'
 import { DefaultContext, Vec3 } from 'regl'
 import Player from './models/player'
 
@@ -32,7 +32,7 @@ function updateMatrix(context: DefaultContext, props: CameraProps) {
   var vel = props.player.velocity
 
   var caltitude = Math.min(1, Math.max(-1, dir.altitude)) * 0.7 - 0.1
-  var lookDir = coordinates.toCartesian(dir.azimuth, caltitude, 1.0)
+  var lookDir = toCartesian(dir.azimuth, caltitude, 1.0)
 
   var cloc = props.cameraLoc
   switch (props.player.camera) {

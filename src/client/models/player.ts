@@ -1,9 +1,9 @@
 import { regl } from '../env'
-import shaders from '../shaders'
+import shaders from '../shaders/index'
 import textures from '../textures'
 import Poly8 from '../../math/geometry/poly8'
 import Mesh from '../../math/geometry/mesh'
-import coordinates from '../../math/geometry/coordinates'
+import { toCartesian } from '../../math/geometry/coordinates'
 import config from '../../config'
 import mat4 from 'gl-mat4'
 import mat3 from 'gl-mat3'
@@ -112,7 +112,7 @@ export default class Player {
   tick(dt: number) {
     var vel = this.velocity
     var props = this.props
-    var cdir = coordinates.toCartesian(props.direction.azimuth, 0, 1)
+    var cdir = toCartesian(props.direction.azimuth, 0, 1)
 
     // Update bones
     var dStand = 0.15

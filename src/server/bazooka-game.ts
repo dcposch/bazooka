@@ -1,7 +1,7 @@
 import World from '../world'
 import gen from '../gen'
 import config from '../config'
-import coordinates from '../math/geometry/coordinates'
+import { toCartesian } from '../math/geometry/coordinates'
 import vox from '../vox'
 import { PointXYZ } from '../types'
 
@@ -241,7 +241,7 @@ class BazookaGame {
 
   _handleFireBazooka(pc) {
     var dir = pc.player.direction
-    var vel = coordinates.toCartesian(dir.azimuth, dir.altitude, 15)
+    var vel = toCartesian(dir.azimuth, dir.altitude, 15)
     var missile = {
       type: 'missile',
       key: 'missile-' + ++this.nextObjKey,
