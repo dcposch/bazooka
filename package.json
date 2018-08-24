@@ -49,6 +49,7 @@
     "ws": "^6.0.0"
   },
   "devDependencies": {
+    "@types/node": "^10.9.1",
     "typescript": "^3.0.1"
   }
 }
