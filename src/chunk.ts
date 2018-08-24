@@ -1,5 +1,6 @@
 import config from './config'
 import nextPow2 from './math/bit'
+import Mesh from './math/geometry/mesh'
 
 var CS = config.CHUNK_SIZE
 var CB = config.CHUNK_BITS
@@ -20,7 +21,7 @@ class Chunk {
   length: number
   mesh: ChunkMesh
   dirty: boolean
-  constructor(x?: number, y?: number, z?: number, data?: Uint8Array, packed?: boolean) {
+  constructor(x: number, y: number, z: number, data?: Uint8Array, packed?: boolean) {
     this.x = x | 0
     this.y = y | 0
     this.z = z | 0
@@ -93,7 +94,7 @@ class Chunk {
   }
 }
 
-var packed = new Chunk()
+var packed = new Chunk(0, 0, 0)
 
 function destroyMesh(mesh: Mesh) {
   if (!mesh) return
