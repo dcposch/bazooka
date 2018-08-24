@@ -1,4 +1,4 @@
-export function nextPow2(v: number) {
+export default function nextPow2(v: number) {
   v = (v | 0) - 1
   v |= v >> 1
   v |= v >> 2
