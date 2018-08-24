@@ -1,15 +1,16 @@
 import Chunk from '../chunk'
+import FlexBuffer from './flex-buffer'
 
 module.exports = {
   write: write,
-  read: read
+  read: read,
 }
 
 // Takes a FlexBuffer and an array of chunks
 // Serializes the chunks into the FlexBuffer
-function write (buf, chunks) {
+function write(buf: FlexBuffer, chunks: Array<Chunk>) {
   buf.writeInt32LE(chunks.length)
-  chunks.forEach(function (chunk) {
+  chunks.forEach(function(chunk) {
     if (!chunk.packed) throw new Error('expected all chunks to be packed list-of-quads')
     buf.writeInt32LE(chunk.x)
     buf.writeInt32LE(chunk.y)
@@ -22,7 +23,7 @@ function write (buf, chunks) {
 
 // Deserializes chunks from an ArrayBuffer
 // Returns an array of chunks
-function read (arrayBuffer) {
+function read(arrayBuffer: ArrayBuffer) {
   var ints = new Int32Array(arrayBuffer)
   var numChunks = ints[0]
   var ret = new Array(numChunks)
