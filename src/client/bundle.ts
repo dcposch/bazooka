@@ -1,31 +1,30 @@
-var vec3 = {
-  clone: require('gl-vec3/clone')
-}
+import vec3 from 'gl-vec3'
 
-var playerControls = require('./player-controls')
-var physics = require('./physics')
-var picker = require('./picker')
-var mesher = require('./mesher')
-var Socket = require('./socket')
-var config = require('../config')
-var World = require('../world')
-var ChunkIO = require('../protocol/chunk-io')
-var textures = require('./textures')
-var splash = require('./splash')
+import playerControls from './player-controls'
+import physics from './physics'
+import picker from './picker'
+import mesher from './mesher'
+import Socket from './socket'
+import config from '../config'
+import World from '../world'
+import ChunkIO from '../protocol/chunk-io'
+import textures from './textures'
+import splash from './splash'
 
 // Find the canvas, initialize regl and game-shell
-var env = require('./env')
+import env from './env'
 
 // Precompile regl commands
-var drawScope = require('./draw/draw-scope')
-var drawHitMarker = require('./draw/draw-hit-marker')
-var drawWorld = require('./draw/draw-world')
-var drawDebug = null // Created on-demand
-var drawFallingBlocks = require('./draw/draw-falling-blocks')
-var drawHud = require('./draw/draw-hud')
-var drawSky = require('./draw/draw-sky')
+import drawScope from './draw/draw-scope'
+import drawHitMarker from './draw/draw-hit-marker'
+import drawWorld from './draw/draw-world'
+import drawDebug from './draw/draw-debug'
+import drawFallingBlocks from './draw/draw-falling-blocks'
+import drawHud from './draw/draw-hud'
+import drawSky from './draw/draw-sky'
 
-var Player = require('./models/player')
+import Player from './models/player'
+import { PlayerMode, PlayerSituation } from '../types'
 
 // All game state lives here
 var state = {
@@ -41,13 +40,13 @@ var state = {
     // Physics
     velocity: { x: 0, y: 0, z: 0 },
     // Situation can also be 'on-ground', 'suffocating'
-    situation: 'airborne',
+    situation: PlayerSituation.AIRBORNE,
     // Which block we're looking at: {location: {x,y,z}, side: {nx,ny,nz}, voxel}
     lookAtBlock: null,
     // Camera can also be 'third-person'
     camera: 'third-person',
     // Current mode: 'commando', 'bazooka', ...
-    mode: 'bazooka'
+    mode: PlayerMode.BAZOOKA,
   },
 
   cameraLoc: vec3.clone([10, 0, 100]),
@@ -58,24 +57,25 @@ var state = {
   perf: {
     lastFrameTime: new Date().getTime(),
     fps: 0,
-    draw: {chunks: 0, verts: 0}
+    draw: { chunks: 0, verts: 0 },
   },
   debug: {
     // Player can toggle the debug display
-    showHUD: true
+    showHUD: true,
   },
 
   objects: {},
   fallingBlocks: [],
+
   world: new World(),
   socket: new Socket(),
   config: null,
-  error: null
+  error: null,
 }
 
 main()
 
-function main () {
+function main() {
   splash.init(state)
   loadTextures()
   initWebsocket()
@@ -85,25 +85,25 @@ function main () {
   env.regl.frame(frame)
 
   // For debugging
-  window.state = state
-  window.config = config
+  ;(window as any).state = state
+  ;(window as any).config = config
 }
 
-function loadTextures () {
+function loadTextures() {
   // Load resources
-  textures.loadAll(function (err) {
+  textures.loadAll(function(err) {
     if (err) splash.showError('failed to load textures', err)
   })
 }
 
-function initWebsocket () {
+function initWebsocket() {
   // Handle server messages
-  state.socket.on('binary', function (msg) {
+  state.socket.on('binary', function(msg: ArrayBuffer) {
     state.pendingChunkUpdates = ChunkIO.read(msg)
     console.log('Read %d chunks, %s KB', state.pendingChunkUpdates.length, msg.byteLength >> 10)
   })
 
-  state.socket.on('json', function (msg) {
+  state.socket.on('json', function(msg) {
     switch (msg.type) {
       case 'config':
         return handleConfig(msg)
@@ -116,21 +116,21 @@ function initWebsocket () {
     }
   })
 
-  state.socket.on('close', function () {
+  state.socket.on('close', function() {
     splash.showError('connection lost')
   })
 }
 
-function handleConfig (msg) {
+function handleConfig(msg) {
   state.config = msg.config
 }
 
-function handleObjects (msg) {
+function handleObjects(msg) {
   var now = new Date().getTime()
   var keys = {}
 
   // Create and update new objects
-  msg.objects.forEach(function (info) {
+  msg.objects.forEach(function(info) {
     keys[info.key] = true
     var obj = state.objects[info.key]
     if (!obj) obj = state.objects[info.key] = createObject(info)
@@ -143,7 +143,7 @@ function handleObjects (msg) {
   })
 
   // Delete objects that no longer exist or are too far away
-  Object.keys(state.objects).forEach(function (key) {
+  Object.keys(state.objects).forEach(function(key) {
     if (keys[key]) return
     if (key === 'self') return
     state.objects[key].destroy()
@@ -151,7 +151,7 @@ function handleObjects (msg) {
   })
 }
 
-function createObject (info) {
+function createObject(info) {
   switch (info.type) {
     case 'player':
       return new Player(info.name)
@@ -163,7 +163,7 @@ function createObject (info) {
 }
 
 // Runs regularly, independent of frame rate
-function tick () {
+function tick() {
   env.resizeCanvasIfNeeded()
   if (state.error) return
 
@@ -184,7 +184,7 @@ function tick () {
     state.socket.send({
       type: 'update',
       player: state.player,
-      commands: state.pendingCommands
+      commands: state.pendingCommands,
     })
     state.pendingCommands.length = 0
   }
@@ -195,7 +195,7 @@ function tick () {
 
 // Renders each frame. Should run at 60Hz.
 // Stops running if the canvas is not visible, for example because the window is minimized.
-function frame (context) {
+function frame(context) {
   // Track FPS
   var now = new Date().getTime()
   var dt = Math.max(now - state.perf.lastFrameTime, 1) / 1000
@@ -228,7 +228,7 @@ function frame (context) {
   render(dt)
 }
 
-function predictObjects (dt, now) {
+function predictObjects(dt, now) {
   // Our own player object gets special treatment
   var self = state.objects.self
   self.location = state.player.location
@@ -238,7 +238,7 @@ function predictObjects (dt, now) {
   self.mode = state.player.mode
 
   // All other object positions are extrapolated from the latest server position + velocity
-  Object.keys(state.objects).forEach(function (key) {
+  Object.keys(state.objects).forEach(function(key) {
     if (key === 'self') return
     var obj = state.objects[key]
     // Don't extrapolate too far. If there's too much lag, it's better for objects to stop moving
@@ -253,12 +253,12 @@ function predictObjects (dt, now) {
   })
 }
 
-function render (dt) {
+function render(dt) {
   env.regl.clear({ color: [1, 1, 1, 1], depth: 1 })
   if (!drawScope) return
-  drawScope(state, function () {
+  drawScope(state, function() {
     drawSky(state.cameraLoc)
-    Object.keys(state.objects).forEach(function (key) {
+    Object.keys(state.objects).forEach(function(key) {
       var obj = state.objects[key]
       obj.tick(dt)
       obj.draw()
@@ -269,10 +269,9 @@ function render (dt) {
   drawHud({
     mode: state.player.mode,
     health: 10,
-    numPlayersLeft: 17
+    numPlayersLeft: 17,
   })
   if (state.debug.showHUD) {
-    if (!drawDebug) drawDebug = require('./draw/draw-debug')
     drawDebug(state)
   }
   if (state.player.camera === 'first-person') {
@@ -280,10 +279,10 @@ function render (dt) {
   }
 }
 
-function applyChunkUpdates () {
+function applyChunkUpdates() {
   var chunks = state.pendingChunkUpdates
   if (chunks.length > 0) {
-    chunks.forEach(function (chunk) {
+    chunks.forEach(function(chunk) {
       state.world.replaceChunk(chunk)
     })
     chunks.length = 0

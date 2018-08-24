@@ -6,7 +6,7 @@ import textures from '../textures'
 import Poly8 from '../../math/geometry/poly8'
 import Mesh from '../../math/geometry/mesh'
 import vox from '../../vox'
-import { PointXYZ } from '../../types'
+import { VecXYZ } from '../../types'
 import { Buffer, DrawCommand, DefaultContext } from 'regl'
 
 const MAX_BLOCKS = 128
@@ -31,7 +31,7 @@ let bufUV: Buffer | undefined
 var drawCommand: DrawCommand | undefined
 
 export interface Block {
-  location: PointXYZ
+  location: VecXYZ
   rotTheta: number
   rotAxis: number
   typeIndex: number

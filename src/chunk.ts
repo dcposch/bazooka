@@ -1,34 +1,58 @@
 import config from './config'
 import nextPow2 from './math/bit'
+<<<<<<< HEAD
 import Mesh from './math/geometry/mesh'
+=======
+import { Buffer } from 'regl'
+>>>>>>> unfucking wip
 
 var CS = config.CHUNK_SIZE
 var CB = config.CHUNK_BITS
 
-interface ChunkMesh {
-  opaque: Mesh
-  trans: Mesh
+interface ChunkMeshes {
+  opaque?: ChunkMesh
+  trans?: ChunkMesh
+}
+
+export interface ChunkMesh {
+  count: number
+  verts: Buffer
+  normals: Buffer
+  uvs: Buffer
 }
 
 // A chunk is a cubic region of space that fits CHUNK_SIZE^3 voxels
 // Coordinates (x, y, z) are aligned to CHUNK_SIZE
-class Chunk {
+export default class Chunk {
+  // World coordinates
   x: number
   y: number
   z: number
+
+  // Whether the chunk is unpacked (1 byte per voxel) or packed (a few bytes per quad)
   packed: boolean
-  data: Uint8Array
+
+  // Raw data. Format depends on `packed`
+  data?: Uint8Array
+
+  // Data length, in bytes
   length: number
-  mesh: ChunkMesh
+
+  // The mesh. This chunk might or might not be meshed.
+  mesh: ChunkMeshes
+
+  // Whether the chunk needs re-meshing
   dirty: boolean
-  constructor(x: number, y: number, z: number, data?: Uint8Array, packed?: boolean) {
-    this.x = x | 0
-    this.y = y | 0
-    this.z = z | 0
+
+  constructor(x?: number, y?: number, z?: number, data?: Uint8Array, packed?: boolean) {
+    this.x = x || 0
+    this.y = y || 0
+    this.z = z || 0
+    
     this.packed = !!packed
-    this.data = data || null
-    this.length = packed ? data.length : 0
-    this.mesh = { opaque: null, trans: null }
+    this.data = data
+    this.length = packed && data ? data.length : 0
+    this.mesh = { opaque: undefined, trans: undefined }
     this.dirty = !!data
   }
 
@@ -40,8 +64,8 @@ class Chunk {
   // Returns an integer representing voxel data
   getVox(ix: number, iy: number, iz: number) {
     if (!this.data) return 0
-    if (this.packed) return getVoxPacked(this, ix, iy, iz)
-    else return getVoxUnpacked(this, ix, iy, iz)
+    if (this.packed) return getVoxPacked(this.data, this.length, ix, iy, iz)
+    else return getVoxUnpacked(this.data, ix, iy, iz)
   }
 
   // Takes integer coordinates relative to this chunk and a voxel int
@@ -81,7 +105,7 @@ class Chunk {
   destroy() {
     this.destroyMesh()
     this.packed = false
-    this.data = null
+    this.data = undefined
     this.length = 0
     this.dirty = false
   }
@@ -89,14 +113,14 @@ class Chunk {
   destroyMesh() {
     destroyMesh(this.mesh.opaque)
     destroyMesh(this.mesh.trans)
-    this.mesh.opaque = null
-    this.mesh.trans = null
+    this.mesh.opaque = undefined
+    this.mesh.trans = undefined
   }
 }
 
 var packed = new Chunk(0, 0, 0)
 
-function destroyMesh(mesh: Mesh) {
+function destroyMesh(mesh?: ChunkMesh) {
   if (!mesh) return
   if (mesh.count === 0) return
   mesh.verts.destroy()
@@ -104,9 +128,7 @@ function destroyMesh(mesh: Mesh) {
   mesh.uvs.destroy()
 }
 
-function getVoxPacked(chunk: Chunk, ix: number, iy: number, iz: number) {
-  var data = chunk.data
-  var n = chunk.length
+function getVoxPacked(data: Uint8Array, n: number, ix: number, iy: number, iz: number) {
   for (var i = 0; i < n; i += 8) {
     var x0 = data[i]
     var y0 = data[i + 1]
@@ -123,6 +145,9 @@ function getVoxPacked(chunk: Chunk, ix: number, iy: number, iz: number) {
 
 function setVoxPacked(chunk: Chunk, ix: number, iy: number, iz: number, v: number) {
   var data = chunk.data
+  if (!data) {
+    throw new Error('Chunk data missing')
+  }
 
   // Find the quad that this point belongs to
   var q = findQuad(chunk, ix, iy, iz)
@@ -318,8 +343,8 @@ function packGreedyQuads(chunk: Chunk) {
   return quads
 }
 
-function getVoxUnpacked(chunk: Chunk, ix: number, iy: number, iz: number) {
-  return chunk.data[((ix << CB) << CB) + (iy << CB) + iz]
+function getVoxUnpacked(data: Uint8Array, ix: number, iy: number, iz: number) {
+  return data[((ix << CB) << CB) + (iy << CB) + iz]
 }
 
 function setVoxUnpacked(chunk: Chunk, ix: number, iy: number, iz: number, v: number) {
@@ -329,5 +354,3 @@ function setVoxUnpacked(chunk: Chunk, ix: number, iy: number, iz: number, v: num
   chunk.data[index] = v
   chunk.dirty = true
 }
-
-export default Chunk

@@ -2,16 +2,24 @@
 // VOX.TYPES[1] // { name: 'WATER', uv, sideOffset, ... }
 // VOX.INDEX.WATER // equals 1
 
+type UvType = [number, number] | { side: [number, number]; top: [number, number]; bottom: [number, number] }
+
 class VoxType {
   name: string
-  uv: any
+  uv?: UvType
   sideOffset: number
   opaque: boolean
-  constructor(name: string, props: Array<number> | object) {
+  constructor(name: string, props: [number, number] | { uv?: UvType; opaque?: boolean; sideOffset?: number }) {
     this.name = name
-    this.uv = Array.isArray(props) ? props : props.uv
-    this.sideOffset = props.sideOffset | 0
-    this.opaque = props.opaque == null ? true : !!props.opaque
+    if (Array.isArray(props)) {
+      this.uv = props
+      this.sideOffset = 0
+      this.opaque = false
+    } else {
+      this.uv = props.uv
+      this.sideOffset = props.sideOffset == null ? 0 : props.sideOffset
+      this.opaque = props.opaque == null ? true : !!props.opaque
+    }
   }
 }
 
@@ -19,15 +27,15 @@ var VOX = {
   isSolid: isSolid,
   isOpaque: isOpaque,
   isTranslucent: isTranslucent,
-  TYPES: <Array<VoxType>>[],
-  INDEX: <Object>{},
+  TYPES: [] as VoxType[],
+  INDEX: {} as { [key: string]: number },
 }
 
 // Voxel (block) types
 // The index will be used for serialization over the network and to disk.
 // Once that's supported, new block types may only be appended to the end.
 VOX.TYPES = [
-  new VoxType('AIR', { uv: null, opaque: false }),
+  new VoxType('AIR', { uv: undefined, opaque: false }),
   new VoxType('WATER', { uv: [0, 0], opaque: false }),
   new VoxType('GRASS', { uv: { side: [0, 0], top: [0, 0], bottom: [0, 0] } }),
   new VoxType('STONE', [4, 0]),

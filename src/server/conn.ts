@@ -26,6 +26,7 @@ class Conn extends EventEmitter {
   clientVersion: any
   perf: Perf
   error: any
+
   constructor(ws: WebSocket) {
     super()
     this.ws = ws

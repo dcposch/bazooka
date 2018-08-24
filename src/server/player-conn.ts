@@ -1,18 +1,24 @@
 import uuid from 'uuid/v4'
 import Player from './player'
+import Conn from './conn'
 
-module.exports = PlayerConn
+export default class PlayerConn {
+  /** Each connection gets a unique ID */
+  id: string
 
-function PlayerConn (conn) {
-  // Each connection gets a unique ID
-  this.id = uuid()
+  /** Wrapped websocket connection */
+  conn: Conn
 
-  // Wrapped websocket connection
-  this.conn = conn
+  /** Keep track of what chunks we've sent to whom. Maps chunkKey to tick. */
+  chunksSent: { [key: string]: number }
 
-  // Keep track of what chunks we've sent to whom. Maps chunkKey to tick.
-  this.chunksSent = {}
+  /** Bazooka player */
+  player: Player
 
-  // Bazooka player
-  this.player = new Player()
+  constructor(conn: any) {
+    this.id = uuid()
+    this.conn = conn
+    this.chunksSent = {}
+    this.player = new Player()
+  }
 }

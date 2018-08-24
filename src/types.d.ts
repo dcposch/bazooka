@@ -1,6 +1,6 @@
 import { Vec3 } from 'regl'
 
-export interface PointXYZ {
+export interface VecXYZ {
   x: number
   y: number
   z: number

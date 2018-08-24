@@ -2,7 +2,7 @@ import env from '../env'
 import shaders from '../shaders'
 import vox from '../../vox'
 import { DefaultContext } from 'regl'
-import { PointXYZ } from '../../types'
+import { VecXYZ } from '../../types'
 
 const version = 'TODO' // Read from package.json
 
@@ -120,7 +120,7 @@ function k(v: number) {
 }
 
 // Returns "x,y,z". Displays d decimal points
-function pointToString(loc: PointXYZ, d: number) {
+function pointToString(loc: VecXYZ, d: number) {
   return loc.x.toFixed(d) + ', ' + loc.y.toFixed(d) + ', ' + loc.z.toFixed(d)
 }
 

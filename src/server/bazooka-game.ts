@@ -3,12 +3,30 @@ import gen from '../gen'
 import config from '../config'
 import { toCartesian } from '../math/geometry/coordinates'
 import vox from '../vox'
-import { PointXYZ } from '../types'
+import { VecXYZ } from '../types'
+import PlayerConn from './player-conn'
 
 const CB = config.CHUNK_BITS
 const CS = config.CHUNK_SIZE
 const PAD = 3
 const PAD2 = 2 * PAD
+
+interface GameObj {
+  position: VecXYZ
+  velocity: VecXYZ
+}
+
+interface GameCmd {
+  type: string
+}
+
+interface GameCmdSetVox {
+  type: 'set'
+  x: number
+  y: number
+  z: number
+  v: number
+}
 
 // Represents one Bazooka City game.
 // Battle royale. Players land on a procgen voxel sky island and fight until one is left.
@@ -21,13 +39,16 @@ const PAD2 = 2 * PAD
 // - Knowing how many players are left (LOBBY / ACTIVE) or who won (COMPLETED)
 // - Sending or receiving messages. See api.js for low level details.
 class BazookaGame {
-  playerConns: Array<any>
+  playerConns: PlayerConn[]
   world: World
   status: string
-  objects: Array<any>
+
+  objects: GameObj[]
   nextObjKey: number
+
   columnsToFall: Array<any>
   missiles: Array<any>
+
   constructor() {
     this.playerConns = []
     this.world = new World()
@@ -129,7 +150,7 @@ class BazookaGame {
     for (var i = 0; i < n; i++) {
       var o = this.objects[i]
       // vec3.scaleAndAdd(m.location, m.location, m.velocity, dt)
-      o.velocity[2] = o.velocity[2] - config.PHYSICS.GRAVITY * dt
+      o.velocity.z = o.velocity.z - config.PHYSICS.GRAVITY * dt
 
       // TODO:
       // - check collision
@@ -217,16 +238,18 @@ class BazookaGame {
     }
   }
 
-  _handleUpdate(pc, obj) {
+  _handleUpdate(pc: PlayerConn, update: any) {
     // TODO: doing this 10x per second per client is not ideal. use binary.
     // TODO: validation
-    if (!pc.player.name && obj.player.name) console.log('Player %s joined', obj.player.name)
-    Object.assign(pc.player, obj.player)
+    if (!pc.player.name && update.player.name) {
+      console.log('Player %s joined', update.player.name)
+    }
+    Object.assign(pc.player, update.player)
 
-    obj.commands.forEach(command => {
+    update.commands.forEach((command: GameCmd) => {
       switch (command.type) {
         case 'set':
-          return this._handleSet(command)
+          return this._handleSet(command as GameCmdSetVox)
         case 'fire-bazooka':
           return this._handleFireBazooka(pc)
         default:
@@ -235,11 +258,11 @@ class BazookaGame {
     })
   }
 
-  _handleSet(cmd) {
+  _handleSet(cmd: GameCmdSetVox) {
     this.world.setVox(cmd.x, cmd.y, cmd.z, cmd.v)
   }
 
-  _handleFireBazooka(pc) {
+  _handleFireBazooka(pc: PlayerConn) {
     var dir = pc.player.direction
     var vel = toCartesian(dir.azimuth, dir.altitude, 15)
     var missile = {
@@ -253,7 +276,7 @@ class BazookaGame {
   }
 }
 
-function isInRange(a: PointXYZ, b: PointXYZ) {
+function isInRange(a: VecXYZ, b: VecXYZ) {
   var dx = (b.x >> CB) - (a.x >> CB)
   var dy = (b.y >> CB) - (a.y >> CB)
   var dz = (b.z >> CB) - (a.z >> CB)

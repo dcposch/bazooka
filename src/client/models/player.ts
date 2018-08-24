@@ -8,7 +8,7 @@ import config from '../../config'
 import mat4 from 'gl-mat4'
 import mat3 from 'gl-mat3'
 import vec3 from 'gl-vec3'
-import { PointXYZ, PlayerMode, DirAzAlt, PlayerSituation, Bone } from '../../types'
+import { VecXYZ, PlayerMode, DirAzAlt, PlayerSituation, Bone } from '../../types'
 import { Buffer, DefaultContext } from 'regl'
 
 // Matrices to translate, rotate, and scale each model
@@ -45,8 +45,8 @@ var bufferUVs = regl.buffer(meshTemplate.uvs)
 export default class Player {
   type: string
   key?: string
-  location: PointXYZ
-  velocity: PointXYZ
+  location: VecXYZ
+  velocity: VecXYZ
   mode: PlayerMode
   props: {
     name?: string

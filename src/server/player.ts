@@ -1,4 +1,4 @@
-import { PointXYZ } from '../types'
+import { VecXYZ } from '../types'
 
 interface Direction {
   azimuth: number
@@ -7,9 +7,9 @@ interface Direction {
 
 class Player {
   name: string
-  location: PointXYZ
+  location: VecXYZ
   direction: Direction
-  velocity: PointXYZ
+  velocity: VecXYZ
   situation: string
   health: number
 

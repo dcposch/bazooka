@@ -1,21 +1,11 @@
 import env from './env'
 import config from '../config'
 import vox from '../vox'
-var vec3 = {
-  create: require('gl-vec3/create'),
-  set: require('gl-vec3/set'),
-  add: require('gl-vec3/add'),
-  multiply: require('gl-vec3/multiply'),
-  scale: require('gl-vec3/scale'),
-  scaleAndAdd: require('gl-vec3/scaleAndAdd'),
-}
-var vec2 = {
-  create: require('gl-vec2/create'),
-  copy: require('gl-vec2/copy'),
-}
+import vec3 from 'gl-vec3'
+import vec2 from 'gl-vec2'
 
 // Meshes and renders voxels chunks
-module.exports = {
+export default {
   meshWorld: meshWorld,
   meshChunk: meshChunk,
 }

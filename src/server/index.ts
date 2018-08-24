@@ -1,5 +1,5 @@
 import http from 'http'
-import WebSocketServer from 'ws'.Server
+import ws from 'ws'
 import express from 'express'
 import config from '../config'
 import BazookaGame from './bazooka-game'
@@ -13,16 +13,16 @@ var state = {
   tick: 0,
   perf: {
     lastTickTime: new Date().getTime(),
-    tps: 0
-  }
+    tps: 0,
+  },
 }
 
 main()
 
-function main () {
+function main() {
   // Serve websocket API
   var httpServer = http.createServer()
-  var wsServer = new WebSocketServer({server: httpServer})
+  var wsServer = new ws.Server({ server: httpServer })
   wsServer.on('connection', addWebsocketConn)
 
   // Serve the client files
@@ -33,7 +33,7 @@ function main () {
   app.use('/monitor', monitor.init(state))
   httpServer.on('request', app)
 
-  httpServer.listen(config.SERVER.PORT, function () {
+  httpServer.listen(config.SERVER.PORT, function() {
     console.log('Listening on ' + JSON.stringify(httpServer.address()))
   })
 
@@ -45,7 +45,7 @@ function main () {
 }
 
 // Update the world, handle client commands, send client updates
-function tick () {
+function tick() {
   // Track performance
   var nowMs = new Date().getTime()
   var dt = (nowMs - state.perf.lastTickTime) / 1000
@@ -62,7 +62,7 @@ function tick () {
 }
 
 // Handles a new websocket connection = a player opening the game
-function addWebsocketConn (ws) {
+function addWebsocketConn(ws) {
   // Send handshake, maybe client config
   var conn = new Conn(ws)
   conn.sendHandshake()
@@ -70,7 +70,7 @@ function addWebsocketConn (ws) {
   // For now, create a new player immediately for every conn, add to single game
   var player = new PlayerConn(conn)
   state.game.addPlayer(player)
-  conn.on('close', function () {
+  conn.on('close', function() {
     state.game.removePlayer(player.id)
   })
 }
