@@ -14,7 +14,7 @@ function load(path: string, world: World, cb: (err?: Error) => any) {
   fs.readFile(path, function(err: Error, buf: Buffer) {
     if (err) return cb(err)
 
-    var chunks = ChunkIO.read(buf.buffer)
+    var chunks = ChunkIO.read(buf.buffer as ArrayBuffer)
     console.log('Read %d chunks, %dmb from %s', chunks.length, Math.round(buf.length / 1e6), path)
 
     chunks.forEach(function(chunk: Chunk) {

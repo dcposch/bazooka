@@ -4,7 +4,7 @@ import vec3 from 'gl-vec3'
 import { toCartesian } from '../math/geometry/coordinates'
 import { DefaultContext, Vec3 } from 'regl'
 
-import Player from './models/player'
+import { GamePlayerState } from '../types'
 
 // Projects the world from 3D to 2D
 // Calculates the view and projection matrices based on player location and orientation
@@ -16,7 +16,7 @@ export default {
 }
 
 export interface CameraProps {
-  player: Player
+  player: GamePlayerState
   cameraLoc: Vec3
 }
 

@@ -1,5 +1,6 @@
 import config from './config'
 import nextPow2 from './math/bit'
+
 import { Buffer } from 'regl'
 
 var CS = config.CHUNK_SIZE

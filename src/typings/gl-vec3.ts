@@ -9,6 +9,7 @@ declare module 'gl-vec3' {
     copy: (o: Vec3, i: Vec3) => void
     transformMat4: (o: Vec3, i: Vec3, m: Mat4) => void
     transformMat3: (o: Vec3, i: Vec3, m: Mat3) => void
+    scale: (o: Vec3, i: Vec3, v: number) => void
   }
 
   export default GlVec3

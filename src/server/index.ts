@@ -7,6 +7,7 @@ import Conn from './conn'
 import PlayerConn from './player-conn'
 import monitor from './monitor'
 import compression from 'compression'
+import WebSocket from 'ws'
 
 var state = {
   game: new BazookaGame(),
@@ -62,7 +63,7 @@ function tick() {
 }
 
 // Handles a new websocket connection = a player opening the game
-function addWebsocketConn(ws) {
+function addWebsocketConn(ws: WebSocket) {
   // Send handshake, maybe client config
   var conn = new Conn(ws)
   conn.sendHandshake()

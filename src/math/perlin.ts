@@ -1,5 +1,5 @@
 import murmurhash from 'murmurhash'
-import interp from './interp'
+import { cosine2D } from './interp'
 
 // Generates deterministic 2D Perlin noise
 // TODO: publish this as its own NPM module
@@ -115,7 +115,7 @@ function generate2D(
         // Interpolate between the four surrounding noise samples
         var tweenU = px / stride - Math.floor(px / stride)
         var tweenV = py / stride - Math.floor(py / stride)
-        rand = interp.cosine2D(rand00, rand01, rand10, rand11, tweenU, tweenV)
+        rand = cosine2D(rand00, rand01, rand10, rand11, tweenU, tweenV)
 
         // Sum. Add the current noise on top the higher-frequency noise we already have
         ret[ou * width + ov] += rand
@@ -133,5 +133,5 @@ function hashRand(values: number[]) {
 // Returns a hash code in [0, 1<<30)
 function hashInts(values: number[]) {
   var str = values.join('')
-  return murmurhash.v2(str)
+  return murmurhash.v2(str, 0)
 }
