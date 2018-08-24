@@ -5,15 +5,15 @@ import { Vec3, Vec2 } from 'regl'
 import { AABB } from '../../types'
 
 // Each face consists of two triangles
-var FACE = [[0, 0], [0, 1], [1, 0], [1, 0], [0, 1], [1, 1]]
+var FACE = [[0, 0], [0, 1], [1, 0], [1, 0], [0, 1], [1, 1]] as Vec2[]
 
 // Represents an 8-point polyhedron
 export default class Poly8 {
   verts: Vec3[]
-  uvs: Vec2[]
+  uvs?: Vec2[]
   aabb: AABB
 
-  constructor(verts: Vec3[], uvs: Vec2[]) {
+  constructor(verts: Vec3[], uvs?: Vec2[]) {
     this.verts = verts
     this.uvs = uvs
     this.aabb = computeAABB(verts)
@@ -62,7 +62,7 @@ export default class Poly8 {
 
   // Creates an axis-aligned cuboid from p0 to p1
   // Optionally takes a list of 6 texture UVs arrays for the six faces (x0, x1, y0, y1, z0, z1)
-  axisAligned(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, uvs: Vec2[]) {
+  static axisAligned(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, uvs?: Vec2[]) {
     return new Poly8(
       [[x0, y0, z0], [x0, y0, z1], [x0, y1, z0], [x0, y1, z1], [x1, y0, z0], [x1, y0, z1], [x1, y1, z0], [x1, y1, z1]],
       uvs

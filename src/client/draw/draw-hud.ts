@@ -38,7 +38,7 @@ export default function draw(props: HudProps) {
   })
 }
 
-var drawHud = env.regl({
+var drawHud = env.regl<{}, {}, HudProps>({
   vert: shaders.vert.uvClip,
   frag: shaders.frag.texture,
   attributes: {
@@ -143,6 +143,6 @@ var drawHud = env.regl({
   primitive: 'triangles',
 })
 
-function makeQuad(x0, y0, x1, y1) {
+function makeQuad(x0: number, y0: number, x1: number, y1: number) {
   return [[x0, y0], [x0, y1], [x1, y1], [x0, y0], [x1, y1], [x1, y0]]
 }

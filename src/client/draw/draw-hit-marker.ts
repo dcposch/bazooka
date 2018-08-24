@@ -1,16 +1,16 @@
 import env from '../env'
 import shaders from '../shaders'
-import { DefaultContext, Vec3 } from 'regl'
+import { DefaultContext, Vec3, Vec4 } from 'regl'
 
 const CROSSHAIR_RADIUS = 10 // Pixels
 const CROSSHAIR_WIDTH = 1
 
-interface HitMarkerProps {
-  color: Vec3
+export interface HitMarkerProps {
+  color: Vec4
 }
 
 // Draws a crosshair in the middle of the screen.
-export default env.regl({
+export default env.regl<{}, {}, HitMarkerProps>({
   vert: shaders.vert.colorClip,
   frag: shaders.frag.color,
   attributes: {

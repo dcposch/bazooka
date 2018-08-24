@@ -4,16 +4,18 @@ import shaders from '../shaders'
 import camera from '../camera'
 import textures from '../textures'
 import vec3 from 'gl-vec3'
-import { DrawCommand } from 'regl'
+import { DrawCommand, Mat4, DefaultContext } from 'regl'
+import Chunk, { ChunkMesh } from '../../chunk'
+import { GameState } from '../../types'
 
 var CS = config.CHUNK_SIZE
 
 // Allocate once, update every frame in cullChunks()
-var meshes: Mesh[] = []
-var meshesTrans: Mesh[] = []
+var meshes: ChunkMesh[] = []
+var meshesTrans: ChunkMesh[] = []
 
-var chunkCommand: DrawCommand | undefined
-let chunkCommandTranslucent: DrawCommand | undefined
+var chunkCommand: DrawCommand<DefaultContext, ChunkMesh> | undefined
+let chunkCommandTranslucent: DrawCommand<DefaultContext, ChunkMesh> | undefined
 let triedCompile = false
 
 // Draw voxel chunks, once resources are loaded.
@@ -31,7 +33,7 @@ export default function drawWorld(state: any) {
 
 // Figure out which chunks we have to draw
 // TODO: cave culling
-function cullChunks(state) {
+function cullChunks(state: GameState) {
   var chunks = state.world.chunks
   var loc = state.player.location
   var maxDistance = config.GRAPHICS.CHUNK_DRAW_RADIUS * config.CHUNK_SIZE
@@ -60,8 +62,8 @@ function cullChunks(state) {
     if (!isClose && chunkOutsideFrustum(matCombined, chunk)) continue
 
     // TODO: no mesh should have count === 0
-    if (opaqueVerts > 0) meshes[numOpaque++] = chunk.mesh.opaque
-    if (transVerts > 0) meshesTrans[numTrans++] = chunk.mesh.trans
+    if (opaqueVerts > 0 && chunk.mesh.opaque) meshes[numOpaque++] = chunk.mesh.opaque
+    if (transVerts > 0 && chunk.mesh.trans) meshesTrans[numTrans++] = chunk.mesh.trans
     totalVerts += opaqueVerts + transVerts
   }
   meshes.length = numOpaque
@@ -71,8 +73,8 @@ function cullChunks(state) {
   state.perf.draw.verts = totalVerts
 }
 
-function chunkOutsideFrustum(matCombined, chunk) {
-  var world = new Float32Array([chunk.x, chunk.y, chunk.z]) // World coordinates
+function chunkOutsideFrustum(matCombined: Mat4, chunk: Chunk) {
+  var world = vec3.clone([chunk.x, chunk.y, chunk.z]) // World coordinates
   var v = vec3.create() // Clip coordinates. (0, 0, 0) to (1, 1, 1) is in the frame
 
   for (var i = 0; i < 8; i++) {
@@ -102,14 +104,14 @@ function maybeCompileCommands() {
       uAtlas: textures.loaded.atlas,
     },
     attributes: {
-      aPosition: env.regl.prop('verts'),
-      aNormal: env.regl.prop('normals'),
-      aUV: env.regl.prop('uvs'),
+      aPosition: env.regl.prop<ChunkMesh, 'verts'>('verts'),
+      aNormal: env.regl.prop<ChunkMesh, 'normals'>('normals'),
+      aUV: env.regl.prop<ChunkMesh, 'uvs'>('uvs'),
     },
-    count: env.regl.prop('count'),
+    count: env.regl.prop<ChunkMesh, 'count'>('count'),
   }
 
-  chunkCommand = env.regl(params)
+  chunkCommand = env.regl<{}, {}, ChunkMesh>(params)
   chunkCommandTranslucent = env.regl(
     Object.assign({}, params, {
       blend: {

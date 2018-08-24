@@ -1,10 +1,7 @@
 import Chunk from '../chunk'
 import FlexBuffer from './flex-buffer'
 
-module.exports = {
-  write: write,
-  read: read,
-}
+export default { read, write }
 
 // Takes a FlexBuffer and an array of chunks
 // Serializes the chunks into the FlexBuffer
@@ -17,6 +14,7 @@ function write(buf: FlexBuffer, chunks: Array<Chunk>) {
     buf.writeInt32LE(chunk.z)
     buf.writeInt32LE(chunk.length / 8) // num quads
     if (chunk.length === 0) return
+    if (!chunk.data) throw new Error('Missing chunk data')
     buf.writeUint8Array(chunk.data, 0, chunk.length)
   })
 }

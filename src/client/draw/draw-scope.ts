@@ -6,7 +6,7 @@ interface ScopeProps {
   startTime: number
 }
 
-export default env.regl({
+export default env.regl<{}, {}, ScopeProps>({
   uniforms: {
     uMatrix: camera.updateMatrix,
     uLightDir: [0.6, 0.48, 0.64],

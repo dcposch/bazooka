@@ -1,11 +1,11 @@
 import test from 'tape'
 import perlin from '../src/math/perlin'
-import PNG from 'pngjs'.PNG
+import { PNG } from 'pngjs'
 import fs from 'fs-extra'
 import path from 'path'
 
 // Sample perlin noise with different amplitude settings at (0, 0)
-test('perlin-amplitudes', function (t) {
+test('perlin-amplitudes', function(t) {
   var ret, x, y, width, amplitudes
   width = 120
   ret = new Float32Array(width * width)
@@ -25,17 +25,17 @@ test('perlin-amplitudes', function (t) {
 })
 
 // Sample perlin noise across the plane, check for continuity
-test('perlin-plane', function (t) {
+test('perlin-plane', function(t) {
   // amplitudes sum to 1.0
   var amplitudes = [1 / 128, 2 / 128, 4 / 128, 8 / 128, 16 / 128, 32 / 128, 64 / 128]
   testPerlinPlane(t, 'img/perlin-plane.png', amplitudes)
 })
 
 // Sample perlin noise where the amplitudes vary across the plane
-test('perlin-function', function (t) {
+test('perlin-function', function(t) {
   // mountainFn produces an amplitude in [0, 0.75) over our domain (0, 0) to (1000, 1000)
-  var mountainFn = function (rand, x, y) {
-    return rand * Math.sin((x + y) * Math.PI / 2000.0) * 0.75
+  var mountainFn = function(rand, x, y) {
+    return rand * Math.sin(((x + y) * Math.PI) / 2000.0) * 0.75
   }
   // amplitudes sum to 1.0
   var amplitudes = [1 / 128, 2 / 128, 4 / 128, 8 / 128, 16 / 128, 0, mountainFn]
@@ -43,9 +43,9 @@ test('perlin-function', function (t) {
 })
 
 // Sample perlin noise where the amplitudes vary across the plane
-test('perlin-apply', function (t) {
+test('perlin-apply', function(t) {
   var amplitudes = [0, 0, 0, 0, 5, 0, 10, 0, 0, 100]
-  function islandFunc (sx, sy, val) {
+  function islandFunc(sx, sy, val) {
     const island = val - (sx * sx + sy * sy) * 1e-4
     return Math.max(island, 0)
   }
@@ -55,12 +55,12 @@ test('perlin-apply', function (t) {
 
 // Sample perlin noise over the plane from (x, y) = (0, 0) to (1000, 1000)
 // Compare resulting image to reference PNG, or create reference PNG if new
-function testPerlinPlane (t, filepath, amplitudes, optFunc) {
+function testPerlinPlane(t, filepath, amplitudes, optFunc?: any) {
   var width = 1000
   var height = 1000
   var stride = 40
   var noise = new Float32Array(stride * stride)
-  var png = new PNG({width, height})
+  var png = new PNG({ width, height })
   for (var x = 0; x < width; x += stride) {
     for (var y = 0; y < height; y += stride) {
       perlin.generate2D(noise, x, y, stride, amplitudes)
@@ -73,14 +73,14 @@ function testPerlinPlane (t, filepath, amplitudes, optFunc) {
   t.end()
 }
 
-function compareOrWritePNG (t, data, max, width, height, filepath) {
-  var png = new PNG({width, height})
+function compareOrWritePNG(t, data, max, width, height, filepath) {
+  var png = new PNG({ width, height })
   copyToPNG(png, 0, 0, data, max, width, height)
   var buffer = PNG.sync.write(png)
   compareOrWriteBuffer(t, buffer, filepath)
 }
 
-function compareOrWriteBuffer (t, buf, filepath) {
+function compareOrWriteBuffer(t, buf, filepath) {
   var fullPath = path.join(__dirname, filepath)
   try {
     var expectedBuf = fs.readFileSync(fullPath)
@@ -93,11 +93,11 @@ function compareOrWriteBuffer (t, buf, filepath) {
   }
 }
 
-function copyToPNG (png, offsetX, offsetY, data, max, width, height) {
+function copyToPNG(png, offsetX, offsetY, data, max, width, height) {
   for (var x = 0; x < width; x++) {
     for (var y = 0; y < height; y++) {
-      var ix = (x + offsetX) + (y + offsetY) * png.height
-      var grey = Math.min(255, Math.max(0, Math.floor(256 * data[x * width + y] / max)))
+      var ix = x + offsetX + (y + offsetY) * png.height
+      var grey = Math.min(255, Math.max(0, Math.floor((256 * data[x * width + y]) / max)))
       png.data[ix * 4 + 0] = grey // red
       png.data[ix * 4 + 1] = grey // green
       png.data[ix * 4 + 2] = grey // blue

@@ -2,7 +2,7 @@ import env from '../env'
 import shaders from '../shaders'
 import vox from '../../vox'
 import { DefaultContext } from 'regl'
-import { VecXYZ } from '../../types'
+import { VecXYZ, GameState } from '../../types'
 
 const version = 'TODO' // Read from package.json
 
@@ -10,9 +10,13 @@ const canvas = createHiddenCanvas()
 const context2D = createContext2D(canvas)
 const texture = env.regl.texture(canvas)
 
+interface DrawDebugProps {
+  gameState: GameState
+}
+
 // Show a debugging heads-up display.
 // Overlays white text onto the top left corner of the screen.
-export default env.regl({
+export default env.regl<{}, {}, DrawDebugProps>({
   vert: shaders.vert.uvClip,
   frag: shaders.frag.texture,
   attributes: {
@@ -24,7 +28,7 @@ export default env.regl({
     aUV: [[0, 0], [1, 0], [1, 1], [1, 1], [0, 1], [0, 0]],
   },
   uniforms: {
-    uTexture: function(context: DefaultContext, props: { gameState: any }) {
+    uTexture: function(context: DefaultContext, props: DrawDebugProps) {
       const text = createDebugText(props.gameState)
       context2D.clearRect(0, 0, canvas.width, canvas.height)
       context2D.fillStyle = 'rgba(0, 0, 0, 0.6)'
@@ -41,7 +45,7 @@ export default env.regl({
       srcRGB: 'src alpha',
       srcAlpha: 'src alpha',
       dstRGB: 'one minus src alpha',
-      dst: 'one',
+      dstAlpha: 'one',
     },
   },
   count: 6,

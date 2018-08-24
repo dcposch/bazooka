@@ -1,7 +1,8 @@
 import validate from './validate'
 import vec3 from 'gl-vec3'
 import vec2 from 'gl-vec2'
-import { Vec3, Vec2, Mat4, Mat3 } from 'regl'
+
+import { Vec3, Mat4, Mat3, Vec2 } from 'regl'
 
 // Represents an mesh: vertices, normals and texture UVs
 // Format:
@@ -78,7 +79,7 @@ export default class Mesh {
     }
   }
 
-  static copyPart(output: Mesh, input: Mesh, offset: number) {
+  static copyPart(output: Mesh, input: Mesh, offset?: number) {
     if (!output || !input) throw new Error('missing args')
     offset = offset || input.offset
 

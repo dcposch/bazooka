@@ -46,7 +46,7 @@ function init(st: any) {
   btnStart.click()
 }
 
-function updateSplash(e) {
+function updateSplash(e?: KeyboardEvent) {
   if (state.startTime > 0) return // Splash screen already gone
 
   var name = inputName.value.replace(/[^A-Za-z0-9 ]/g, '')
@@ -89,7 +89,7 @@ function startGame() {
 
 // Kill the game on error (eg 'connection lost')
 // Player has to refresh the page.
-function showError(message: string, err: Error) {
+function showError(message: string, err?: Error) {
   console.error(message)
   if (err) console.error(err)
   if (state.error) return

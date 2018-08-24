@@ -1,8 +1,6 @@
 import env from '../env'
 import shaders from '../shaders'
-import textures from '../textures'
 import Poly8 from '../../math/geometry/poly8'
-import camera from '../camera'
 import { Vec3, DefaultContext } from 'regl'
 
 var mesh = Poly8.axisAligned(-1, -1, -1, 1, 1, 1).createMesh()
@@ -18,7 +16,7 @@ export default function draw(cameraLoc: Vec3) {
   drawSkybox({ cameraLoc: cameraLoc })
 }
 
-var drawSkybox = env.regl({
+var drawSkybox = env.regl<{}, {}, SkyProps>({
   vert: shaders.vert.sky,
   frag: shaders.frag.color,
   attributes: {

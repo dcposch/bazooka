@@ -1,46 +1,58 @@
 import config from '../config'
 import env from './env'
 import vox from '../vox'
-// import HUD from './models/hud'
-var vec3 = {
-  create: require('gl-vec3/create'),
-}
+import {
+  GameState,
+  PlayerMode,
+  CameraMode,
+  GameCmdSetVox,
+  GameObjFallingBlock,
+  GamePlayerState,
+  VecXYZ,
+  PlayerSituation,
+} from '../types'
+import vec3 from 'gl-vec3'
+import { Vec3 } from 'regl'
 
 var shell = env.shell
 
-module.exports = {
-  navigate: navigate,
-  look: look,
-  interact: interact,
+export default {
+  navigate,
+  look,
+  interact,
 }
 
 // Lets the player place and break blocks
 // TODO: let the player interact with items
-function interact(state) {
+function interact(state: GameState) {
   var p = state.player
 
   if (shell.wasDown('1')) {
-    state.player.mode = 'bazooka'
+    state.player.mode = PlayerMode.BAZOOKA
   } else if (shell.wasDown('2')) {
-    state.player.mode = 'commando'
+    state.player.mode = PlayerMode.COMMANDO
   } else if (shell.wasDown('3')) {
     dbgSpawnBlocks(state)
   } else if (shell.wasDown('F')) {
     state.pendingCommands.push({ type: 'fire-bazooka' })
   }
 
-  if (shell.press('9')) p.camera = p.camera === 'first-person' ? 'third-person' : 'first-person'
+  if (shell.press('9')) {
+    p.camera = p.camera === CameraMode.FIRST_PERSON ? CameraMode.THIRD_PERSON : CameraMode.FIRST_PERSON
+  }
 
   if (shell.press('0')) state.debug.showHUD = !state.debug.showHUD
 
   var left = shell.wasDown('mouse-left')
-  var right = shell.wasDown('mouse-right')
-  var shift = shell.wasDown('shift')
-  if (right || (shift && left)) return breakBlock(state)
-  else if (left) return placeBlock(state)
+  // var right = shell.wasDown('mouse-right')
+  // var shift = shell.wasDown('shift')
+  if (left) return breakBlock(state)
+  // else if (right || (shift && left)) return placeBlock(state)
+
+  return undefined
 }
 
-function dbgSpawnBlocks(state) {
+function dbgSpawnBlocks(state: GameState) {
   state.fallingBlocks = []
   for (var i = 0; i < 100; i++) {
     var loc = {
@@ -48,7 +60,10 @@ function dbgSpawnBlocks(state) {
       y: Math.random() * 20 - 10,
       z: Math.random() * 20 + 100,
     }
+
     state.fallingBlocks.push({
+      type: 'falling-block',
+      key: 'blk-' + i,
       location: loc,
       velocity: {
         x: loc.x + Math.random() * 6 - 3,
@@ -59,16 +74,16 @@ function dbgSpawnBlocks(state) {
       rotTheta: 0,
       rotVel: Math.random() * 5,
       typeIndex: Math.random() < 0.5 ? vox.INDEX.STONE : vox.INDEX.BROWN,
-    })
+    } as GameObjFallingBlock)
   }
 }
 
-function dbgRandomRotAxis() {
+function dbgRandomRotAxis(): Vec3 {
   var ret = vec3.create()
   ret[0] = Math.random()
   ret[1] = Math.random()
   ret[2] = Math.random()
-  var det = Math.sqrt(ret[0], ret[1], ret[2])
+  var det = Math.sqrt(vec3.dot(ret, ret))
   ret[0] /= det
   ret[1] /= det
   ret[2] /= det
@@ -76,7 +91,7 @@ function dbgRandomRotAxis() {
 }
 
 // Let the player move
-function navigate(player, dt) {
+function navigate(player: GamePlayerState, dt: number) {
   var loc = player.location
   var dir = player.direction
   var vel = player.velocity
@@ -101,19 +116,19 @@ function navigate(player, dt) {
   // Jumping (space) only works if we're on solid ground
   if (shell.wasDown('nav-jump') && player.situation === 'on-ground') {
     vel.z = shell.wasDown('nav-sprint') ? config.SPEED_SPRINT_JUMP : config.SPEED_JUMP
-    player.situation = 'airborne'
+    player.situation = PlayerSituation.AIRBORNE
   }
 }
 
 // Modify vector {x, y, z} by adding a vector in spherical coordinates
-function move(v, r, azimuth, altitude) {
+function move(v: VecXYZ, r: number, azimuth: number, altitude: number) {
   v.x += Math.cos(azimuth) * Math.cos(altitude) * r
   v.y += Math.sin(azimuth) * Math.cos(altitude) * r
   v.z += Math.sin(altitude) * r
 }
 
 // Let the player look around
-function look(player) {
+function look(player: GamePlayerState) {
   var dx = shell.mouseX - shell.prevMouseX
   var dy = shell.mouseY - shell.prevMouseY
   var dir = player.direction
@@ -126,25 +141,25 @@ function look(player) {
 
 // Place a block onto the block face we're looking at
 // TODO: rate limit
-function placeBlock(state) {
-  var block = state.player.lookAtBlock
-  if (!block) return
-  var loc = block.location
-  var side = block.side
-  var bx = loc.x + side.nx
-  var by = loc.y + side.ny
-  var bz = loc.z + side.nz
+// function placeBlock(state: GameState) {
+//   var block = state.player.lookAtBlock
+//   if (!block) return
+//   var loc = block.location
+//   var side = block.side
+//   var bx = loc.x + side.x
+//   var by = loc.y + side.y
+//   var bz = loc.z + side.z
 
-  // Don't let the player place a block where they're standing
-  var p = state.player.location
-  var intersectsPlayer = bx === Math.floor(p.x) && by === Math.floor(p.y) && [0, -1].includes(bz - Math.floor(p.z))
-  if (intersectsPlayer) return
+//   // Don't let the player place a block where they're standing
+//   var p = state.player.location
+//   var intersectsPlayer = bx === Math.floor(p.x) && by === Math.floor(p.y) && [0, -1].includes(bz - Math.floor(p.z))
+//   if (intersectsPlayer) return
 
-  return setBlock(state, bx, by, bz, state.player.placing)
-}
+//   return setBlock(state, bx, by, bz, state.player.placing)
+// }
 
 // Break the block we're looking at
-function breakBlock(state) {
+function breakBlock(state: GameState) {
   var block = state.player.lookAtBlock
   if (!block) return
 
@@ -161,7 +176,7 @@ function breakBlock(state) {
   return setBlock(state, loc.x, loc.y, loc.z, v)
 }
 
-function setBlock(state, x, y, z, v) {
+function setBlock(state: GameState, x: number, y: number, z: number, v: number): GameCmdSetVox {
   // TODO: move prediction to its own file
   state.world.setVox(x, y, z, v)
   return { type: 'set', x: x, y: y, z: z, v: v }

@@ -1,13 +1,15 @@
 import mat4 from 'gl-mat4'
 import mat3 from 'gl-mat3'
-import { regl } from '../env'
+import env from '../env'
 import shaders from '../shaders'
 import textures from '../textures'
 import Poly8 from '../../math/geometry/poly8'
 import Mesh from '../../math/geometry/mesh'
 import vox from '../../vox'
 import { VecXYZ } from '../../types'
-import { Buffer, DrawCommand, DefaultContext } from 'regl'
+import { Buffer, DrawCommand, DefaultContext, Vec3 } from 'regl'
+
+const { regl } = env
 
 const MAX_BLOCKS = 128
 const VERTS_PER_BLOCK = 36
@@ -20,7 +22,7 @@ const matN = mat3.create()
 // Vertex positions, normals, etc for each block
 const meshBlock = Poly8.axisAligned(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5).createMesh()
 const mesh = Mesh.combine(new Array(MAX_BLOCKS).fill(0).map(x => meshBlock.clone()))
-mesh.uvs = new Float32Array(MAX_BLOCKS * VERTS_PER_BLOCK * 2)
+mesh.uvs = new Array(MAX_BLOCKS * VERTS_PER_BLOCK).fill([0, 0])
 const blockTypes = new Uint8Array(MAX_BLOCKS)
 
 // Compiled lazily
@@ -28,12 +30,16 @@ let triedCompile = false
 let bufVerts: Buffer | undefined
 let bufNorms: Buffer | undefined
 let bufUV: Buffer | undefined
-var drawCommand: DrawCommand | undefined
+var drawCommand: DrawCommand<DefaultContext, DrawFallingBlocksProps> | undefined
+
+export interface DrawFallingBlocksProps {
+  numVerts: number
+}
 
 export interface Block {
   location: VecXYZ
   rotTheta: number
-  rotAxis: number
+  rotAxis: Vec3
   typeIndex: number
 }
 
@@ -82,23 +88,20 @@ function updateMesh(blocks: Block[]) {
       dirtyUVs = true
       blockTypes[i] = block.typeIndex
       var uv = vox.TYPES[block.typeIndex].uv
-      var uvEachSideOfBlock = [uv.top, uv.side, uv.side, uv.side, uv.side, uv.bottom]
-      uvEachSideOfBlock.map(function(u, j) {
-        var sideIx = i * 72 + j * 12
-        // 000 001 010 010 011 001
-        mesh.uvs[sideIx + 0] = (u[0] + 0) * VOX_TEX_TILE_SIZE
-        mesh.uvs[sideIx + 1] = (u[1] + 0) * VOX_TEX_TILE_SIZE
-        mesh.uvs[sideIx + 2] = (u[0] + 0) * VOX_TEX_TILE_SIZE
-        mesh.uvs[sideIx + 3] = (u[1] + 1) * VOX_TEX_TILE_SIZE
-        mesh.uvs[sideIx + 4] = (u[0] + 1) * VOX_TEX_TILE_SIZE
-        mesh.uvs[sideIx + 5] = (u[1] + 0) * VOX_TEX_TILE_SIZE
-        mesh.uvs[sideIx + 6] = (u[0] + 1) * VOX_TEX_TILE_SIZE
-        mesh.uvs[sideIx + 7] = (u[1] + 0) * VOX_TEX_TILE_SIZE
-        mesh.uvs[sideIx + 8] = (u[0] + 1) * VOX_TEX_TILE_SIZE
-        mesh.uvs[sideIx + 9] = (u[1] + 1) * VOX_TEX_TILE_SIZE
-        mesh.uvs[sideIx + 10] = (u[0] + 0) * VOX_TEX_TILE_SIZE
-        mesh.uvs[sideIx + 11] = (u[1] + 1) * VOX_TEX_TILE_SIZE
-      })
+      if (uv) {
+        var uvEachSideOfBlock = [uv.top, uv.side, uv.side, uv.side, uv.side, uv.bottom]
+        uvEachSideOfBlock.map(function(u, j) {
+          // 000 001 010 010 011 001
+          // TODO:
+          var sideIx = i * 36 + j * 6
+          mesh.uvs[sideIx + 0] = [(u[0] + 0) * VOX_TEX_TILE_SIZE, (u[1] + 0) * VOX_TEX_TILE_SIZE]
+          mesh.uvs[sideIx + 0] = [(u[0] + 0) * VOX_TEX_TILE_SIZE, (u[1] + 1) * VOX_TEX_TILE_SIZE]
+          mesh.uvs[sideIx + 0] = [(u[0] + 1) * VOX_TEX_TILE_SIZE, (u[1] + 0) * VOX_TEX_TILE_SIZE]
+          mesh.uvs[sideIx + 0] = [(u[0] + 1) * VOX_TEX_TILE_SIZE, (u[1] + 0) * VOX_TEX_TILE_SIZE]
+          mesh.uvs[sideIx + 0] = [(u[0] + 1) * VOX_TEX_TILE_SIZE, (u[1] + 1) * VOX_TEX_TILE_SIZE]
+          mesh.uvs[sideIx + 0] = [(u[0] + 0) * VOX_TEX_TILE_SIZE, (u[1] + 1) * VOX_TEX_TILE_SIZE]
+        })
+      }
     }
   }
   return dirtyUVs
@@ -123,7 +126,7 @@ function maybeCompileCommands() {
     uniforms: {
       uTexture: textures.loaded.atlas,
     },
-    count: function(context: DefaultContext, props: { numVerts: number }) {
+    count: function(context: DefaultContext, props: DrawFallingBlocksProps) {
       return props.numVerts
     },
   })

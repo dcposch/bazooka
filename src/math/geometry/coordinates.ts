@@ -1,4 +1,4 @@
-import vec3 from 'gl-vec3'
+import { vec3 } from 'gl-matrix'
 
 // Takes spherical coordinates: azimuth, altitude, and radius
 // Azimuth 0, altitude 0 points in the +X direction

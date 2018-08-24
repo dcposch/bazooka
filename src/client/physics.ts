@@ -1,7 +1,8 @@
 import config from '../config'
+import { GameState, GamePlayerState, PlayerSituation } from '../types'
 
-module.exports = {
-  simulate: simulate,
+export default {
+  simulate,
 }
 
 var EPS = 0.001
@@ -23,14 +24,14 @@ var HORIZONTAL_COLLISION_DIRS = [
  *
  * Moves objects, checks for collisions, updates their velocities and states.
  */
-function simulate(state, dt) {
+function simulate(state: GameState, dt: number) {
   // TODO: loop thru objects
   // TODO: move to common
   simPlayer(state, state.player, dt)
   simFallingBlocks(state, dt)
 }
 
-function simFallingBlocks(state, dt) {
+function simFallingBlocks(state: GameState, dt: number) {
   for (var i = 0; i < state.fallingBlocks.length; i++) {
     var block = state.fallingBlocks[i]
 
@@ -87,7 +88,7 @@ function simFallingBlocks(state, dt) {
   }
 }
 
-function simPlayer(state, player, dt) {
+function simPlayer(state: GameState, player: GamePlayerState, dt: number) {
   var loc = player.location
   var vel = player.velocity
 
@@ -112,28 +113,28 @@ function simPlayer(state, player, dt) {
   var head = collide(state, loc.x, loc.y, loc.z + PW - EPS)
   if (head && underfoot) {
     vel.z = 0
-    player.situation = 'suffocating'
+    player.situation = PlayerSituation.SUFFOCATING
   } else if (head) {
     vel.z = 0
-    player.situation = 'airborne'
+    player.situation = PlayerSituation.AIRBORNE
     loc.z = Math.floor(loc.z - PH - EPS) + PH
   } else if (legs) {
     vel.z = 0
-    player.situation = 'on-ground'
+    player.situation = PlayerSituation.ON_GROUND
     loc.z = Math.ceil(loc.z - PW - EPS) + PH
   } else if (underfoot && vel.z <= 0) {
     vel.z = 0
-    player.situation = 'on-ground'
+    player.situation = PlayerSituation.ON_GROUND
     loc.z = Math.ceil(loc.z - PH - EPS) + PH
   } else {
-    player.situation = 'airborne'
+    player.situation = PlayerSituation.AIRBORNE
   }
 
   loc.z += vel.z * dt
 }
 
 // Returns true if (x, y, z) is unpassable (either in a block or off the world)
-function collide(state, x, y, z) {
+function collide(state: GameState, x: number, y: number, z: number) {
   var v = state.world.getVox(Math.floor(x), Math.floor(y), Math.floor(z))
   return v > 1
 }

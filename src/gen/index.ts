@@ -55,12 +55,12 @@ function generateColumn(x: number, y: number) {
   return ret
 }
 
-function islandFunc(sx, sy, val) {
+function islandFunc(sx: number, sy: number, val: number) {
   const island = val - (GEN_RAD - Math.sqrt(GEN_RAD * GEN_RAD - sx * sx - sy * sy)) * 0.1
   return Math.max(island, 0)
 }
 
-function placeLand(ret) {
+function placeLand(ret: Chunk) {
   var z = ret.z
   for (var ix = 0; ix < CS; ix++) {
     for (var iy = 0; iy < CS; iy++) {
@@ -87,7 +87,7 @@ function placeLand(ret) {
   }
 }
 
-function placeTrees(ret) {
+function placeTrees(ret: Chunk) {
   var z = ret.z
   for (var ix = -2; ix < CS + PAD; ix++) {
     for (var iy = -2; iy < CS + PAD; iy++) {

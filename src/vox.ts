@@ -2,21 +2,27 @@
 // VOX.TYPES[1] // { name: 'WATER', uv, sideOffset, ... }
 // VOX.INDEX.WATER // equals 1
 
-type UvType = [number, number] | { side: [number, number]; top: [number, number]; bottom: [number, number] }
+type VoxTypeProps = [number, number] | { uv?: [number, number] | UvType; opaque?: boolean; sideOffset?: number }
+
+type UvType = { side: [number, number]; top: [number, number]; bottom: [number, number] }
 
 class VoxType {
   name: string
   uv?: UvType
   sideOffset: number
   opaque: boolean
-  constructor(name: string, props: [number, number] | { uv?: UvType; opaque?: boolean; sideOffset?: number }) {
+  constructor(name: string, props: VoxTypeProps) {
     this.name = name
     if (Array.isArray(props)) {
-      this.uv = props
+      this.uv = { side: props, top: props, bottom: props }
       this.sideOffset = 0
       this.opaque = false
     } else {
-      this.uv = props.uv
+      if (Array.isArray(props.uv)) {
+        this.uv = { side: props.uv, top: props.uv, bottom: props.uv }
+      } else {
+        this.uv = props.uv
+      }
       this.sideOffset = props.sideOffset == null ? 0 : props.sideOffset
       this.opaque = props.opaque == null ? true : !!props.opaque
     }

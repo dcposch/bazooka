@@ -1,5 +1,5 @@
-import { regl } from '../env'
-import shaders from '../shaders/index'
+import env from '../env'
+import shaders from '../shaders'
 import textures from '../textures'
 import Poly8 from '../../math/geometry/poly8'
 import Mesh from '../../math/geometry/mesh'
@@ -9,7 +9,9 @@ import mat4 from 'gl-mat4'
 import mat3 from 'gl-mat3'
 import vec3 from 'gl-vec3'
 import { VecXYZ, PlayerMode, DirAzAlt, PlayerSituation, Bone } from '../../types'
-import { Buffer, DefaultContext } from 'regl'
+import { Buffer, DefaultContext, Vec2 } from 'regl'
+
+const { regl } = env
 
 // Matrices to translate, rotate, and scale each model
 var mat = mat4.create()
@@ -186,7 +188,7 @@ interface DrawPlayerProps {
   player: Player
 }
 
-var drawCommand = regl({
+var drawCommand = regl<{}, {}, DrawPlayerProps>({
   frag: shaders.frag.texture,
   vert: shaders.vert.uvWorld,
   attributes: {
@@ -253,14 +255,14 @@ function getUVs(
   tw: number,
   th: number
 ) {
-  return [
+  return ([] as Vec2[]).concat(
     rectUVs(u + 2 * w + 2 * d, v + w + h, -d, -h, tw, th), // x0 face: back
     rectUVs(u + w, v + w + h, d, -h, tw, th), // x1 face: front
     rectUVs(u, v + w + h, w, -h, tw, th), // y0 face: right
     rectUVs(u + 2 * w + d, v + w + h, -w, -h, tw, th), // y1 face: left
     rectUVs(u + w + d, v, d, w, tw, th, true), // z0 face: bottom
-    rectUVs(u + w, v, d, w, tw, th, true), // z1 face: top
-  ]
+    rectUVs(u + w, v, d, w, tw, th, true) // z1 face: top
+  )
 }
 
 function makeBazookaMesh(x: number, y: number, z: number) {
@@ -274,7 +276,7 @@ function makeBazookaMesh(x: number, y: number, z: number) {
 
 // Takes (u v width height) in texels, texture size (tw th) in texels
 // Returns texture coords for a rectangle: [[u,v] * 4]
-function rectUVs(iu: number, iv: number, iw: number, ih: number, tw: number, th: number, flip?: boolean) {
+function rectUVs(iu: number, iv: number, iw: number, ih: number, tw: number, th: number, flip?: boolean): Vec2[] {
   if (!tw || !tw) throw new Error('missing tex dims')
   var u0 = iu / tw
   var v0 = iv / th
@@ -290,12 +292,12 @@ function cubeUVs(iu: number, iv: number, width: number, depth: number, height: n
   if (!tw || !tw) throw new Error('missing tex dims')
 
   // scale factor from world to texture coordinates
-  return [
+  return ([] as Vec2[]).concat(
     rectUVs(iu, iv, depth, height, tw, th), // x0 face: depth x height
     rectUVs(iu, iv, depth, height, tw, th),
     rectUVs(iu, iv, width, height, tw, th), // y0 face: width x height
     rectUVs(iu, iv, width, height, tw, th),
     rectUVs(iu, iv, width, depth, tw, th, true), // z0 face: width x depth
-    rectUVs(iu, iv, width, depth, tw, th, true),
-  ]
+    rectUVs(iu, iv, width, depth, tw, th, true)
+  )
 }

@@ -24,10 +24,11 @@ import drawHud from './draw/draw-hud'
 import drawSky from './draw/draw-sky'
 
 import Player from './models/player'
-import { PlayerMode, PlayerSituation } from '../types'
+import { PlayerMode, PlayerSituation, CameraMode, GameState, GameObj, GameMsgConfig, GameMsgObjects } from '../types'
+import { Vec3, DefaultContext } from 'regl'
 
 // All game state lives here
-var state = {
+var state: GameState = {
   startTime: 0,
   paused: true,
 
@@ -42,14 +43,14 @@ var state = {
     // Situation can also be 'on-ground', 'suffocating'
     situation: PlayerSituation.AIRBORNE,
     // Which block we're looking at: {location: {x,y,z}, side: {nx,ny,nz}, voxel}
-    lookAtBlock: null,
+    lookAtBlock: undefined,
     // Camera can also be 'third-person'
-    camera: 'third-person',
+    camera: CameraMode.FIRST_PERSON,
     // Current mode: 'commando', 'bazooka', ...
     mode: PlayerMode.BAZOOKA,
   },
 
-  cameraLoc: vec3.clone([10, 0, 100]),
+  cameraLoc: vec3.clone([10, 0, 100]) as Vec3,
 
   pendingCommands: [],
   pendingChunkUpdates: [],
@@ -69,8 +70,8 @@ var state = {
 
   world: new World(),
   socket: new Socket(),
-  config: null,
-  error: null,
+  config: undefined,
+  error: undefined,
 }
 
 main()
@@ -91,7 +92,7 @@ function main() {
 
 function loadTextures() {
   // Load resources
-  textures.loadAll(function(err) {
+  textures.loadAll(function(err: Error) {
     if (err) splash.showError('failed to load textures', err)
   })
 }
@@ -121,13 +122,13 @@ function initWebsocket() {
   })
 }
 
-function handleConfig(msg) {
+function handleConfig(msg: GameMsgConfig) {
   state.config = msg.config
 }
 
-function handleObjects(msg) {
+function handleObjects(msg: GameMsgObjects) {
   var now = new Date().getTime()
-  var keys = {}
+  var keys = {} as { [key: string]: boolean }
 
   // Create and update new objects
   msg.objects.forEach(function(info) {
@@ -135,8 +136,8 @@ function handleObjects(msg) {
     var obj = state.objects[info.key]
     if (!obj) obj = state.objects[info.key] = createObject(info)
     obj.location = info.location
-    obj.direction = info.direction
     obj.velocity = info.velocity
+    obj.direction = info.direction
     obj.situation = info.situation
     Object.assign(obj.props, info.props)
     obj.lastUpdateMs = now
@@ -151,10 +152,10 @@ function handleObjects(msg) {
   })
 }
 
-function createObject(info) {
+function createObject(info: GameObj) {
   switch (info.type) {
     case 'player':
-      return new Player(info.name)
+      return new Player((info as GameObjPlayer).name)
     case 'block':
       return { type: 'falling-block' }
     default:
@@ -195,7 +196,7 @@ function tick() {
 
 // Renders each frame. Should run at 60Hz.
 // Stops running if the canvas is not visible, for example because the window is minimized.
-function frame(context) {
+function frame(context: DefaultContext) {
   // Track FPS
   var now = new Date().getTime()
   var dt = Math.max(now - state.perf.lastFrameTime, 1) / 1000
@@ -228,7 +229,7 @@ function frame(context) {
   render(dt)
 }
 
-function predictObjects(dt, now) {
+function predictObjects(dt: number, now: number) {
   // Our own player object gets special treatment
   var self = state.objects.self
   self.location = state.player.location
@@ -253,16 +254,18 @@ function predictObjects(dt, now) {
   })
 }
 
-function render(dt) {
+function render(dt: number) {
   env.regl.clear({ color: [1, 1, 1, 1], depth: 1 })
   if (!drawScope) return
   drawScope(state, function() {
     drawSky(state.cameraLoc)
+
     Object.keys(state.objects).forEach(function(key) {
       var obj = state.objects[key]
       obj.tick(dt)
       obj.draw()
     })
+
     drawWorld(state)
     drawFallingBlocks(state.fallingBlocks)
   })
@@ -272,7 +275,7 @@ function render(dt) {
     numPlayersLeft: 17,
   })
   if (state.debug.showHUD) {
-    drawDebug(state)
+    drawDebug({ gameState: state })
   }
   if (state.player.camera === 'first-person') {
     drawHitMarker({ color: [1, 1, 1, 0.5] })

@@ -1,19 +1,21 @@
 import vox from '../vox'
 import config from '../config'
+import { GameState, VecXYZ, DirAzAlt } from '../types'
+import World from '../world'
 
-module.exports = {
-  pick: pick,
+export default {
+  pick,
 }
 
-var SIDE_0 = { nx: 0, ny: 0, nz: 0 }
-var SIDE_X = [{ nx: 1, ny: 0, nz: 0 }, { nx: -1, ny: 0, nz: 0 }]
-var SIDE_Y = [{ nx: 0, ny: 1, nz: 0 }, { nx: 0, ny: -1, nz: 0 }]
-var SIDE_Z = [{ nx: 0, ny: 0, nz: 1 }, { nx: 0, ny: 0, nz: -1 }]
+var SIDE_0 = { x: 0, y: 0, z: 0 }
+var SIDE_X = [{ x: 1, y: 0, z: 0 }, { x: -1, y: 0, z: 0 }]
+var SIDE_Y = [{ x: 0, y: 1, z: 0 }, { x: 0, y: -1, z: 0 }]
+var SIDE_Z = [{ x: 0, y: 0, z: 1 }, { x: 0, y: 0, z: -1 }]
 var EPS = 1e-6
 
 // Picking algorithm
 // Finds what the player is pointing at
-function pick(state) {
+function pick(state: GameState) {
   var loc = state.player.location
   var dir = state.player.direction
   var world = state.world
@@ -23,9 +25,9 @@ function pick(state) {
 // Follows a ray until it intersects a block
 // Returns { location: {x, y, z}, side: {nx, ny, nz} }
 // ...where x, y, and z are integers and {nx, ny, nx} is an axis aligned unit normal.
-// Returns null if the ray leaves the world (enters a missing chunk) before intersecting anything.
+// Returns undefined if the ray leaves the world (enters a missing chunk) before intersecting anything.
 // Returns { location: floor(loc), side: (0, 0, 0) } if loc is inside a block.
-function raycastBlock(loc, dir, world, maxDistance) {
+function raycastBlock(loc: VecXYZ, dir: DirAzAlt, world: World, maxDistance: number) {
   var distance = 0
   var lx = loc.x
   var ly = loc.y
@@ -42,7 +44,7 @@ function raycastBlock(loc, dir, world, maxDistance) {
     var iy = Math.floor(ly)
     var iz = Math.floor(lz)
     var v = world.getVox(ix, iy, iz)
-    if (v < 0) return null // off-world
+    if (v < 0) return undefined // off-world
     if (vox.isSolid(v)) return { location: { x: ix, y: iy, z: iz }, side: side, voxel: v }
     // If we're here, (lx, ly, lz) is in an air or water block
     // Intersect the nearest integer x, y, and z planes, then see which is closest
@@ -67,10 +69,10 @@ function raycastBlock(loc, dir, world, maxDistance) {
     lz += dist * dz
 
     distance += dist
-    if (distance > maxDistance) return null // past max pick distance
+    if (distance > maxDistance) return undefined // past max pick distance
   }
 }
 
-function nonzero(x) {
+function nonzero(x: number) {
   return Math.abs(x) < EPS ? EPS : x
 }

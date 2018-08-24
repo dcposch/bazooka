@@ -3,30 +3,14 @@ import gen from '../gen'
 import config from '../config'
 import { toCartesian } from '../math/geometry/coordinates'
 import vox from '../vox'
-import { VecXYZ } from '../types'
+import { VecXYZ, GameObj, GameCmd, GameCmdSetVox, GameObjPlayer } from '../types'
 import PlayerConn from './player-conn'
+import Chunk from '../chunk'
 
 const CB = config.CHUNK_BITS
 const CS = config.CHUNK_SIZE
 const PAD = 3
 const PAD2 = 2 * PAD
-
-interface GameObj {
-  position: VecXYZ
-  velocity: VecXYZ
-}
-
-interface GameCmd {
-  type: string
-}
-
-interface GameCmdSetVox {
-  type: 'set'
-  x: number
-  y: number
-  z: number
-  v: number
-}
 
 // Represents one Bazooka City game.
 // Battle royale. Players land on a procgen voxel sky island and fight until one is left.
@@ -96,7 +80,7 @@ class BazookaGame {
     playerConn.conn.on('update', obj => this._handleUpdate(playerConn, obj))
   }
 
-  removePlayer(id) {
+  removePlayer(id: string) {
     const ix = this.playerConns.findIndex(c => c.id === id)
     console.log('bazooka removing player %s: %s', id, ix)
     if (ix < 0) return undefined
@@ -115,7 +99,9 @@ class BazookaGame {
     // Kill players who fall
     this.playerConns.forEach(function(pc) {
       var loc = pc.player.location
-      if (loc && loc.z < -100) pc.conn.die({ message: 'you fell' })
+      if (loc && loc.z < -100) {
+        pc.conn.die(new Error('you fell'))
+      }
     })
 
     this._simulate(0.1) // TODO
@@ -188,7 +174,7 @@ class BazookaGame {
           name: b.name,
           direction: b.direction,
           situation: b.situation,
-        })
+        } as GameObjPlayer)
       }
 
       // Send missiles, etc
@@ -205,7 +191,7 @@ class BazookaGame {
   _updateChunks(tick: number) {
     // Figure out which conns need which chunks.
     // TODO: this runs in O(numConns * numChunks). Needs a better algorithm.
-    var chunksToSend = []
+    const chunksToSend = [] as Chunk[][]
     for (var j = 0; j < this.playerConns.length; j++) {
       chunksToSend.push([])
     }

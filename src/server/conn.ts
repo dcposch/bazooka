@@ -2,6 +2,9 @@ import EventEmitter from 'events'
 import FlexBuffer from '../protocol/flex-buffer'
 import ChunkIO from '../protocol/chunk-io'
 import config from '../config'
+import Chunk from '../chunk'
+import { GameObj, GameCmd, GameCmdHandshake } from '../types'
+import WebSocket from 'ws'
 
 // Allocate once and re-use
 var buf = new FlexBuffer()
@@ -41,23 +44,32 @@ class Conn extends EventEmitter {
       bytesReceived: 0,
     }
     this.error = null
-    ws.on('message', handleMessage.bind(this))
-    ws.on('close', handleClose.bind(this))
+
+    ws.on('message', this.handleMessage)
+    ws.on('close', this.handleClose)
   }
 
-  send(message) {
+  send(message: Object | Uint8Array | string) {
     if (this.closed) return console.error('Ignoring message, socket closed')
-    if (!(message instanceof Uint8Array)) message = JSON.stringify(message)
     try {
-      this.ws.send(message)
+      let toSend
+      if (message instanceof Uint8Array) {
+        toSend = message
+      } else if (typeof message === 'string') {
+        toSend = message
+      } else {
+        toSend = JSON.stringify(message)
+      }
+
+      this.ws.send(toSend)
       this.perf.messagesSent++
-      this.perf.bytesSent += message.length
+      this.perf.bytesSent += toSend.length
     } catch (e) {
       console.error('websocket send failed', e)
     }
   }
 
-  die(error) {
+  die(error: Error) {
     if (this.error) return
     this.error = error
     this.send({ type: 'error', error: error })
@@ -72,7 +84,7 @@ class Conn extends EventEmitter {
     this.send({ type: 'handshake', serverVersion: config.SERVER.VERSION })
   }
 
-  sendObjects(objects) {
+  sendObjects(objects: GameObj[]) {
     if (!objects.length) return
     this.send({
       type: 'objects',
@@ -80,19 +92,19 @@ class Conn extends EventEmitter {
     })
   }
 
-  sendChunks(chunks) {
+  sendChunks(chunks: Chunk[]) {
     if (!chunks.length) return
     buf.reset()
     ChunkIO.write(buf, chunks)
     this.send(buf.slice())
   }
 
-  handleClose() {
+  handleClose = () => {
     this.closed = true
     this.emit('close')
   }
 
-  handleMessage(data) {
+  handleMessage = (data: string | Buffer) => {
     try {
       this.perf.messagesReceived++
       this.perf.bytesReceived += data.length // Approximate. Doesn't count overhead or non-ASCII chars
@@ -104,14 +116,14 @@ class Conn extends EventEmitter {
   }
 }
 
-function handleBinaryMessage(conn: Conn, data) {
+function handleBinaryMessage(conn: Conn, data: Buffer) {
   console.error('Ignoring unimplemented binary message, length ' + data.length)
 }
 
-function handleJsonMessage(conn: Conn, obj) {
+function handleJsonMessage(conn: Conn, obj: GameCmd) {
   switch (obj.type) {
     case 'handshake':
-      return handleHandshake(conn, obj)
+      return handleHandshake(conn, obj as GameCmdHandshake)
     case 'update':
       return conn.emit('update', obj)
     default:
@@ -119,7 +131,7 @@ function handleJsonMessage(conn: Conn, obj) {
   }
 }
 
-function handleHandshake(conn: Conn, obj) {
+function handleHandshake(conn: Conn, obj: GameCmdHandshake) {
   conn.clientVersion = obj.clientVersion
 }
 
