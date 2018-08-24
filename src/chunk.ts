@@ -1,10 +1,6 @@
 import config from './config'
 import nextPow2 from './math/bit'
-<<<<<<< HEAD
-import Mesh from './math/geometry/mesh'
-=======
 import { Buffer } from 'regl'
->>>>>>> unfucking wip
 
 var CS = config.CHUNK_SIZE
 var CB = config.CHUNK_BITS
@@ -48,7 +44,7 @@ export default class Chunk {
     this.x = x || 0
     this.y = y || 0
     this.z = z || 0
-    
+
     this.packed = !!packed
     this.data = data
     this.length = packed && data ? data.length : 0
