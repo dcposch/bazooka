@@ -2,7 +2,7 @@ import env from '../env'
 import shaders from '../shaders'
 import textures from '../textures'
 import { DefaultContext } from 'regl'
-import { PlayerMode } from '../../types'
+import { PlayerMode, GameStatus } from '../../types'
 
 var STATUS_WIDTH_PX = 66 * 2
 var STATUS_HEIGHT_PX = 32 * 2
@@ -20,6 +20,7 @@ export interface HudProps {
   health: number
   mode: PlayerMode
   numPlayersLeft: number
+  gameStatus: GameStatus
 }
 
 /**
@@ -91,7 +92,7 @@ var drawHud = env.regl<{}, {}, HudProps>({
 
       // Rect 7: victory
       // Texel: (72, 14) to (126, 48), 54 x 34
-      const win = 2
+      const win = props.gameStatus === GameStatus.COMPLETED && props.health > 0 ? 2 : 0
       rects.push(makeQuad(pxW * -54 * win, pxH * 34 * win, pxW * 54 * win, pxH * -34 * win))
 
       return rects

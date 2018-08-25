@@ -51,6 +51,12 @@ export interface AABB {
   z1: number
 }
 
+export enum GameStatus {
+  LOBBY = 'LOBBY',
+  ACTIVE = 'ACTIVE',
+  COMPLETED = 'COMPLETED',
+}
+
 /** DEPRECATED. Will replace with GameObjPlayer */
 export interface GamePlayerState {
   location: VecXYZ
@@ -74,6 +80,8 @@ export interface GameState {
   paused: boolean
   player: GamePlayerState
   cameraLoc: Vec3
+
+  gameStatus: GameStatus
 
   pendingCommands: GameCmd[]
   pendingChunkUpdates: Chunk[]

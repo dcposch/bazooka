@@ -84,7 +84,7 @@ function startGame() {
 
   canvas.addEventListener('click', function() {
     if (state.error) return
-    // env.shell.fullscreen = true
+    env.shell.fullscreen = true
     env.shell.pointerLock = true
   })
 

@@ -3,7 +3,7 @@ import gen from '../gen'
 import config from '../config'
 import { toCartesian } from '../math/coordinates'
 import vox from '../protocol/vox'
-import { VecXYZ, GameCmd, GameCmdSetVox, ObjSituation } from '../types'
+import { VecXYZ, GameCmd, GameCmdSetVox, ObjSituation, GameStatus } from '../types'
 import PlayerConn from './player-conn'
 import Chunk from '../protocol/chunk'
 import Player from '../protocol/obj/player-obj'
@@ -16,12 +16,6 @@ const CB = config.CHUNK_BITS
 const CS = config.CHUNK_SIZE
 const PAD = 3
 const PAD2 = 2 * PAD
-
-enum GameStatus {
-  LOBBY = 'LOBBY',
-  ACTIVE = 'ACTIVE',
-  COMPLETED = 'COMPLETED',
-}
 
 // Represents one Bazooka City game.
 // Battle royale. Players land on a procgen voxel sky island and fight until one is left.

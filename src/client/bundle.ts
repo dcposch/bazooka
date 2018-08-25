@@ -25,7 +25,7 @@ import drawSky from './draw/draw-sky'
 import drawPlayers from './draw/draw-players'
 import drawMissiles from './draw/draw-missiles'
 
-import { PlayerMode, ObjSituation, CameraMode, GameState, GameMsgConfig, GameMsgObjects } from '../types'
+import { PlayerMode, ObjSituation, CameraMode, GameState, GameMsgConfig, GameMsgObjects, GameStatus } from '../types'
 import { Vec3, DefaultContext } from 'regl'
 import FallingBlockObj from '../protocol/obj/falling-block-obj'
 import GameObj from '../protocol/obj/game-obj'
@@ -70,6 +70,8 @@ var state: GameState = {
     showHUD: true,
   },
 
+  gameStatus: GameStatus.ACTIVE, // TODO
+
   objects: {},
 
   world: new World(),
@@ -92,6 +94,7 @@ function main() {
   // For debugging
   ;(window as any).state = state
   ;(window as any).config = config
+  splash.startGame()
 }
 
 function loadTextures() {
@@ -283,6 +286,7 @@ function render() {
     mode: state.player.mode,
     health: 10,
     numPlayersLeft: 17,
+    gameStatus: state.gameStatus,
   })
   if (state.debug.showHUD) {
     drawDebug({ gameState: state })
