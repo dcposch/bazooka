@@ -36,12 +36,6 @@ function main() {
   httpServer.listen(config.SERVER.PORT, function() {
     console.log('Listening on ' + JSON.stringify(httpServer.address()))
   })
-
-  // Generate the world
-  state.game.generate()
-
-  // Start the tick
-  process.nextTick(tick)
 }
 
 // Update the world, handle client commands, send client updates
@@ -70,7 +64,16 @@ function addWebsocketConn(ws: WebSocket) {
   // For now, create a new player immediately for every conn, add to single game
   var player = new PlayerConn(conn)
   state.game.addPlayer(player)
+
   conn.on('close', function() {
     state.game.removePlayer(player.id)
   })
+
+  if (state.game.getNumPlayersConnected() == config.BAZOOKA.MAX_PLAYERS) {
+    // Generate the world
+    state.game.generate()
+
+    // Start the tick
+    process.nextTick(tick)
+  }
 }

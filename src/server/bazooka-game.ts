@@ -38,7 +38,7 @@ class BazookaGame {
   constructor() {
     this.playerConns = []
     this.world = new World()
-    this.status = 'ACTIVE'
+    this.status = 'LOBBY'
     this.objects = []
     this.nextObjKey = 0
     this.columnsToFall = []
@@ -74,6 +74,7 @@ class BazookaGame {
       return c2.distance - c1.distance
     })
     console.log('generated ' + this.world.chunks.length + ' chunks')
+    this.status = 'ACTIVE'
   }
 
   addPlayer(playerConn: PlayerConn) {
@@ -87,6 +88,10 @@ class BazookaGame {
     console.log('bazooka removing player %s: %s', id, ix)
     if (ix < 0) return undefined
     return this.playerConns.splice(ix, 1)[0]
+  }
+
+  getNumPlayersConnected() {
+    return this.playerConns.length
   }
 
   getNumPlayersAlive() {
