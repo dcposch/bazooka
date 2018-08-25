@@ -1,6 +1,6 @@
 import env from '../env'
 import shaders from '../shaders'
-import vox from '../../vox'
+import vox from '../../protocol/vox'
 import { DefaultContext } from 'regl'
 import { VecXYZ, GameState } from '../../types'
 

@@ -6,7 +6,7 @@ import picker from './picker'
 import mesher from './mesher'
 import Socket from './socket'
 import config from '../config'
-import World from '../world'
+import World from '../protocol/world'
 import ChunkIO from '../protocol/chunk-io'
 import textures from './textures'
 import splash from './splash'
@@ -19,23 +19,15 @@ import drawScope from './draw/draw-scope'
 import drawHitMarker from './draw/draw-hit-marker'
 import drawWorld from './draw/draw-world'
 import drawDebug from './draw/draw-debug'
-import drawFallingBlocks from './draw/draw-falling-blocks'
+// import drawFallingBlocks from './draw/draw-falling-blocks'
 import drawHud from './draw/draw-hud'
 import drawSky from './draw/draw-sky'
+import Player from './draw/draw-players'
 
-import Player from './models/player'
-import {
-  PlayerMode,
-  PlayerSituation,
-  CameraMode,
-  GameState,
-  GameMsgConfig,
-  GameMsgObjects,
-  GameClientObj,
-} from '../types'
+import { PlayerMode, PlayerSituation, CameraMode, GameState, GameMsgConfig, GameMsgObjects } from '../types'
 import { Vec3, DefaultContext } from 'regl'
-import FallingBlock from './models/falling-block'
-import GameObj from './models/game-obj'
+import FallingBlock from '../protocol/obj/falling-block-obj'
+import GameObj from '../protocol/obj/game-obj'
 
 // All game state lives here
 var state: GameState = {
@@ -76,7 +68,6 @@ var state: GameState = {
   },
 
   objects: {},
-  fallingBlocks: [],
 
   world: new World(),
   socket: new Socket(),
@@ -153,12 +144,14 @@ function handleObjects(msg: GameMsgObjects) {
   Object.keys(state.objects).forEach(function(key) {
     if (keys[key]) return
     if (key === 'self') return
-    state.objects[key].destroy()
+
+    // state.objects[key].destroy()
+
     delete state.objects[key]
   })
 }
 
-function createObject(info: GameObj): GameClientObj {
+function createObject(info: GameObj): GameObj {
   switch (info.type) {
     case 'player':
       return new Player(info.key, (info as Player).name)
@@ -178,9 +171,10 @@ function tick() {
 
   // Block interactions
   picker.pick(state)
-  var command = null
-  if (!state.paused) command = playerControls.interact(state)
-  if (command) state.pendingCommands.push(command)
+  if (!state.paused) {
+    const command = playerControls.interact(state)
+    if (command) state.pendingCommands.push(command)
+  }
 
   // Client / server
   // TODO: enqueue actions to send to the server
@@ -267,14 +261,9 @@ function render(dt: number) {
   drawScope(state, function() {
     drawSky(state.cameraLoc)
 
-    Object.keys(state.objects).forEach(function(key) {
-      var obj = state.objects[key]
-      obj.tick(dt)
-      obj.draw()
-    })
+    // TODO: draw objects
 
     drawWorld(state)
-    drawFallingBlocks(state.fallingBlocks)
   })
   drawHud({
     mode: state.player.mode,
@@ -284,7 +273,7 @@ function render(dt: number) {
   if (state.debug.showHUD) {
     drawDebug({ gameState: state })
   }
-  if (state.player.camera === 'first-person') {
+  if (state.player.camera === CameraMode.FIRST_PERSON) {
     drawHitMarker({ color: [1, 1, 1, 0.5] })
   }
 }

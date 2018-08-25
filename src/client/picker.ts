@@ -1,7 +1,7 @@
-import vox from '../vox'
+import vox from '../protocol/vox'
 import config from '../config'
 import { GameState, VecXYZ, DirAzAlt } from '../types'
-import World from '../world'
+import World from '../protocol/world'
 
 export default {
   pick,

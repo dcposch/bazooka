@@ -1,5 +1,5 @@
-import config from './config'
-import nextPow2 from './math/bit'
+import config from '../config'
+import nextPow2 from '../math/bit'
 
 import { Buffer } from 'regl'
 
@@ -9,6 +9,16 @@ var CB = config.CHUNK_BITS
 interface ChunkMeshes {
   opaque?: ChunkMesh
   trans?: ChunkMesh
+}
+
+interface Quad {
+  x0: number
+  y0: number
+  z0: number
+  x1: number
+  y1: number
+  z1: number
+  v: number
 }
 
 export interface ChunkMesh {
@@ -155,7 +165,7 @@ function setVoxPacked(chunk: Chunk, ix: number, iy: number, iz: number, v: numbe
   chunk.dirty = true
 
   // First, create a 1x1x1 quad for the voxel we're setting
-  var add = []
+  var add = [] as Quad[]
   if (v !== 0) add.push({ x0: ix, y0: iy, z0: iz, x1: ix + 1, y1: iy + 1, z1: iz + 1, v: v })
 
   // If we found an existing quad that covers (ix, iy, iz), split it as needed
@@ -277,7 +287,7 @@ function packGreedyQuads(chunk: Chunk) {
   if (packed.data) packed.data.fill(0)
 
   // Write quads into a flat array, minimize allocations
-  var quads = []
+  var quads = [] as number[]
   var ix, iy, iz
   for (ix = 0; ix < CS; ix++) {
     for (iy = 0; iy < CS; iy++) {

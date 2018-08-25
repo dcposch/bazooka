@@ -2,7 +2,7 @@ import Mesh from './mesh'
 import vec3 from 'gl-vec3'
 import vec2 from 'gl-vec2'
 import { Vec3, Vec2 } from 'regl'
-import { AABB } from '../../types'
+import { AABB } from '../types'
 
 // Each face consists of two triangles
 var FACE = [[0, 0], [0, 1], [1, 0], [1, 0], [0, 1], [1, 1]] as Vec2[]

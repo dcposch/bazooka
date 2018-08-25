@@ -2,7 +2,7 @@ import GameObj from './game-obj'
 import vec3 from 'gl-vec3'
 import { Vec3 } from 'regl'
 
-export default class FallingBlock extends GameObj {
+export default class FallingBlockObj extends GameObj {
   rotAxis: Vec3
   rotTheta: number
   rotVel: number
@@ -16,8 +16,4 @@ export default class FallingBlock extends GameObj {
     this.rotVel = 0
     this.typeIndex = 0
   }
-
-  tick(dt: number) {}
-  draw() {}
-  destroy() {}
 }

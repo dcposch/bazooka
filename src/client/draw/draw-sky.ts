@@ -1,6 +1,6 @@
 import env from '../env'
 import shaders from '../shaders'
-import Poly8 from '../../math/geometry/poly8'
+import Poly8 from '../../math/poly8'
 import { Vec3, DefaultContext } from 'regl'
 
 var mesh = Poly8.axisAligned(-1, -1, -1, 1, 1, 1).createMesh()

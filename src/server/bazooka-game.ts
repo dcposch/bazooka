@@ -1,11 +1,13 @@
-import World from '../world'
+import World from '../protocol/world'
 import gen from '../gen'
 import config from '../config'
-import { toCartesian } from '../math/geometry/coordinates'
-import vox from '../vox'
-import { VecXYZ, GameObj, GameCmd, GameCmdSetVox, GameObjPlayer } from '../types'
+import { toCartesian } from '../math/coordinates'
+import vox from '../protocol/vox'
+import { VecXYZ, GameCmd, GameCmdSetVox } from '../types'
 import PlayerConn from './player-conn'
-import Chunk from '../chunk'
+import Chunk from '../protocol/chunk'
+import Player from '../protocol/obj/player-obj'
+import GameObj from '../protocol/obj/game-obj'
 
 const CB = config.CHUNK_BITS
 const CS = config.CHUNK_SIZE
@@ -154,7 +156,7 @@ class BazookaGame {
     for (var i = 0; i < n; i++) {
       var pc = this.playerConns[i]
       var a = pc.player
-      var objsToSend = []
+      var objsToSend = [] as GameObj[]
 
       for (var j = 0; j < n; j++) {
         if (j === i) continue
@@ -174,7 +176,7 @@ class BazookaGame {
           name: b.name,
           direction: b.direction,
           situation: b.situation,
-        } as GameObjPlayer)
+        } as Player)
       }
 
       // Send missiles, etc

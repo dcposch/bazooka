@@ -1,4 +1,4 @@
-import Chunk from '../chunk'
+import Chunk from './chunk'
 import FlexBuffer from './flex-buffer'
 
 export default { read, write }

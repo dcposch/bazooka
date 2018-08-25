@@ -1,5 +1,6 @@
 import config from '../config'
 import { GameState, GamePlayerState, PlayerSituation } from '../types'
+import FallingBlockObj from '../protocol/obj/falling-block-obj'
 
 export default {
   simulate,
@@ -32,8 +33,10 @@ function simulate(state: GameState, dt: number) {
 }
 
 function simFallingBlocks(state: GameState, dt: number) {
-  for (var i = 0; i < state.fallingBlocks.length; i++) {
-    var block = state.fallingBlocks[i]
+  var fallingBlocks = Object.values(state.objects).filter(o => o.type === 'falling-block') as FallingBlockObj[]
+
+  for (var i = 0; i < fallingBlocks.length; i++) {
+    var block = fallingBlocks[i]
 
     // Spin
     block.rotTheta += block.rotVel * dt

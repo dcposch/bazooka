@@ -1,16 +1,15 @@
 import env from '../env'
 import shaders from '../shaders'
 import textures from '../textures'
-import Poly8 from '../../math/geometry/poly8'
-import Mesh from '../../math/geometry/mesh'
-import { toCartesian } from '../../math/geometry/coordinates'
+import Poly8 from '../../math/poly8'
+import Mesh from '../../math/mesh'
 import config from '../../config'
 import mat4 from 'gl-mat4'
 import mat3 from 'gl-mat3'
 import vec3 from 'gl-vec3'
-import { PlayerMode, DirAzAlt, PlayerSituation, Bone } from '../../types'
+import { PlayerMode, Bone } from '../../types'
 import { Buffer, DefaultContext, Vec2 } from 'regl'
-import GameObj from './game-obj'
+import PlayerObj from '../../protocol/obj/player-obj'
 
 const { regl } = env
 
@@ -45,13 +44,7 @@ var meshTemplate = makeMesh()
 // Vertex positions and normals vary from player to player, but UVs are shared
 var bufferUVs = regl.buffer(meshTemplate.uvs)
 
-export default class Player extends GameObj {
-  mode: PlayerMode
-  name: string
-  direction: DirAzAlt
-  situation: PlayerSituation
-  walk: number
-
+export default class Player extends PlayerObj {
   bones: {
     head: Bone
     armL: Bone
@@ -67,14 +60,7 @@ export default class Player extends GameObj {
   }
 
   constructor(key: string, name: string) {
-    super(key, 'player')
-
-    // Which mode you're in-- bazooka, commando, ...
-    this.mode = PlayerMode.BAZOOKA
-    this.situation = PlayerSituation.AIRBORNE
-    this.direction = { azimuth: 0, altitude: 0 }
-    this.walk = 0
-    this.name = ''
+    super(key, name)
 
     this.bones = {
       head: { rot: vec3.fromValues(0, 0, 0), center: vec3.fromValues(0, 0, 0) },
@@ -95,49 +81,26 @@ export default class Player extends GameObj {
     }
   }
 
-  intersect(aabb: any) {
-    return false // TODO
-  }
-
-  tick(dt: number) {
-    var vel = this.velocity
-    var props = this
-    var cdir = toCartesian(props.direction.azimuth, 0, 1)
-
-    // Update bones
-    var dStand = 0.15
-    var forwardSpeed = cdir[0] * vel.x + cdir[1] * vel.y
-    if (Math.abs(forwardSpeed) < 1) {
-      // Stand
-      if (props.walk < Math.PI && props.walk > dStand) props.walk -= dStand
-      else if (props.walk > Math.PI && props.walk < 2 * Math.PI - dStand) props.walk += dStand
-    } else {
-      // Walk
-      var dWalk = forwardSpeed * dt * 1.5
-      props.walk = (props.walk + dWalk + 2 * Math.PI) % (2 * Math.PI)
-    }
-
-    var legAngle = Math.sin(props.walk)
+  draw() {
+    var legAngle = Math.sin(this.walk)
     this.bones.legL.rot[1] = -legAngle
     this.bones.legR.rot[1] = legAngle
     this.bones.legL.center[0] = legAngle > 0 ? -2 : 2
     this.bones.legR.center[0] = legAngle < 0 ? -2 : 2
-    this.bones.armL.rot[1] = Math.sin(props.walk)
-    this.bones.armR.rot[1] = -Math.sin(props.walk)
+    this.bones.armL.rot[1] = Math.sin(this.walk)
+    this.bones.armR.rot[1] = -Math.sin(this.walk)
 
     // Aim
-    var rotAimUpDown = -0.2 - props.direction.altitude
+    var rotAimUpDown = -0.2 - this.direction.altitude
     if (this.mode === 'bazooka') {
       this.bones.armR.rot[1] = -1.5 + rotAimUpDown
       this.bones.bazooka.rot[1] = rotAimUpDown
     }
 
     // Look
-    var rotLookUpDown = Math.min(1, Math.max(-1, -props.direction.altitude))
+    var rotLookUpDown = Math.min(1, Math.max(-1, -this.direction.altitude))
     this.bones.head.rot[1] = rotLookUpDown
-  }
 
-  draw() {
     var loc = this.location
     var azimuth = this.direction.azimuth
     var altitude = 0 // Player head moves, body stays level

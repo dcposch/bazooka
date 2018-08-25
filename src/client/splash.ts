@@ -1,6 +1,6 @@
 import sound from './sound'
 import env from './env'
-import Player from './models/player'
+import Player from '../protocol/obj/player-obj'
 
 export default {
   init: init,
@@ -74,7 +74,11 @@ function startGame() {
   divSplash.remove()
 
   state.player.name = inputName.value
-  state.objects.self = new Player(state.player.name)
+
+  // TODO: do not create this player object here
+  // We'll get it anyway with the first objects update
+  state.objects.self = new Player('self', state.player.name)
+
   state.startTime = new Date().getTime()
 
   canvas.addEventListener('click', function() {

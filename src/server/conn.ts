@@ -2,10 +2,11 @@ import EventEmitter from 'events'
 import FlexBuffer from '../protocol/flex-buffer'
 import ChunkIO from '../protocol/chunk-io'
 import config from '../config'
-import Chunk from '../chunk'
-import { GameObj, GameCmd, GameCmdHandshake } from '../types'
+import Chunk from '../protocol/chunk'
+import { GameCmd, GameCmdHandshake } from '../types'
 import WebSocket from 'ws'
 
+import GameObj from '../protocol/obj/game-obj'
 // Allocate once and re-use
 var buf = new FlexBuffer()
 

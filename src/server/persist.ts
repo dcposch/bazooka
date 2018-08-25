@@ -1,8 +1,8 @@
 import fs from 'fs'
 import ChunkIO from '../protocol/chunk-io'
 import FlexBuffer from '../protocol/flex-buffer'
-import World from '../world'
-import Chunk from '../chunk'
+import World from '../protocol/world'
+import Chunk from '../protocol/chunk'
 
 export default {
   load: load,

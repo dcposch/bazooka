@@ -1,11 +1,11 @@
 import env from './env'
 import config from '../config'
-import vox from '../vox'
+import vox from '../protocol/vox'
 import vec3 from 'gl-vec3'
 import vec2 from 'gl-vec2'
-import World from '../world'
+import World from '../protocol/world'
 import { VecXYZ } from '../types'
-import Chunk from '../chunk'
+import Chunk from '../protocol/chunk'
 
 // Meshes and renders voxels chunks
 export default {

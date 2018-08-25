@@ -1,9 +1,9 @@
 import { Vec3 } from 'regl'
-import Chunk from './chunk'
-import World from './world'
+import Chunk from './protocol/chunk'
+import World from './protocol/world'
 import Socket from './client/socket'
-import FallingBlock from './client/models/falling-block'
-import GameObj from './client/models/game-obj'
+import FallingBlock from './protocol/obj/falling-block-obj'
+import GameObj from './protocol/obj/game-obj'
 
 export interface VecXYZ {
   x: number
@@ -89,19 +89,12 @@ export interface GameState {
     showHUD: boolean
   }
 
-  objects: { [key: string]: GameClientObj }
-  fallingBlocks: FallingBlock[]
+  objects: { [key: string]: GameObj }
 
   world: World
   socket: Socket
   config: ClientConfig
   error: Error | undefined
-}
-
-export interface GameClientObj extends GameObj {
-  draw: () => void
-  tick: (dt: number) => void
-  destroy: () => void
 }
 
 /*export interface GameObjFallingBlock extends GameObj {

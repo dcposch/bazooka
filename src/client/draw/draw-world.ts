@@ -5,7 +5,7 @@ import camera from '../camera'
 import textures from '../textures'
 import vec3 from 'gl-vec3'
 import { DrawCommand, Mat4, DefaultContext } from 'regl'
-import Chunk, { ChunkMesh } from '../../chunk'
+import Chunk, { ChunkMesh } from '../../protocol/chunk'
 import { GameState } from '../../types'
 
 var CS = config.CHUNK_SIZE

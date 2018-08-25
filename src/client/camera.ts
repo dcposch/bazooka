@@ -1,7 +1,7 @@
 import mat4 from 'gl-mat4'
 import vec3 from 'gl-vec3'
 
-import { toCartesian } from '../math/geometry/coordinates'
+import { toCartesian } from '../math/coordinates'
 import { DefaultContext, Vec3 } from 'regl'
 
 import { GamePlayerState } from '../types'

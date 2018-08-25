@@ -1,7 +1,7 @@
 import perlin from '../math/perlin'
-import vox from '../vox'
+import vox from '../protocol/vox'
 import config from '../config'
-import Chunk from '../chunk'
+import Chunk from '../protocol/chunk'
 
 // Generate the world
 export default {

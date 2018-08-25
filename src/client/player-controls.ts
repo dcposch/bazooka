@@ -1,18 +1,7 @@
 import config from '../config'
 import env from './env'
-import vox from '../vox'
-import {
-  GameState,
-  PlayerMode,
-  CameraMode,
-  GameCmdSetVox,
-  GameObjFallingBlock,
-  GamePlayerState,
-  VecXYZ,
-  PlayerSituation,
-} from '../types'
-import vec3 from 'gl-vec3'
-import { Vec3 } from 'regl'
+import vox from '../protocol/vox'
+import { GameState, PlayerMode, CameraMode, GamePlayerState, VecXYZ, PlayerSituation, GameCmdSetVox } from '../types'
 
 var shell = env.shell
 
@@ -32,7 +21,7 @@ function interact(state: GameState) {
   } else if (shell.wasDown('2')) {
     state.player.mode = PlayerMode.COMMANDO
   } else if (shell.wasDown('3')) {
-    dbgSpawnBlocks(state)
+    //dbgSpawnBlocks(state)
   } else if (shell.wasDown('F')) {
     state.pendingCommands.push({ type: 'fire-bazooka' })
   }
@@ -52,6 +41,7 @@ function interact(state: GameState) {
   return undefined
 }
 
+/*
 function dbgSpawnBlocks(state: GameState) {
   state.fallingBlocks = []
   for (var i = 0; i < 100; i++) {
@@ -74,7 +64,7 @@ function dbgSpawnBlocks(state: GameState) {
       rotTheta: 0,
       rotVel: Math.random() * 5,
       typeIndex: Math.random() < 0.5 ? vox.INDEX.STONE : vox.INDEX.BROWN,
-    } as GameObjFallingBlock)
+    } as FallingBlock)
   }
 }
 
@@ -89,6 +79,7 @@ function dbgRandomRotAxis(): Vec3 {
   ret[2] /= det
   return ret
 }
+*/
 
 // Let the player move
 function navigate(player: GamePlayerState, dt: number) {
