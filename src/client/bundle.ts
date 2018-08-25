@@ -19,15 +19,16 @@ import drawScope from './draw/draw-scope'
 import drawHitMarker from './draw/draw-hit-marker'
 import drawWorld from './draw/draw-world'
 import drawDebug from './draw/draw-debug'
-// import drawFallingBlocks from './draw/draw-falling-blocks'
+import drawFallingBlocks from './draw/draw-falling-blocks'
 import drawHud from './draw/draw-hud'
 import drawSky from './draw/draw-sky'
-import Player from './draw/draw-players'
+import drawPlayers from './draw/draw-players'
 
 import { PlayerMode, PlayerSituation, CameraMode, GameState, GameMsgConfig, GameMsgObjects } from '../types'
 import { Vec3, DefaultContext } from 'regl'
-import FallingBlock from '../protocol/obj/falling-block-obj'
+import FallingBlockObj from '../protocol/obj/falling-block-obj'
 import GameObj from '../protocol/obj/game-obj'
+import PlayerObj from '../protocol/obj/player-obj'
 
 // All game state lives here
 var state: GameState = {
@@ -132,11 +133,11 @@ function handleObjects(msg: GameMsgObjects) {
   var keys = {} as { [key: string]: boolean }
 
   // Create and update new objects
-  msg.objects.forEach(function(info) {
-    keys[info.key] = true
-    var obj = state.objects[info.key]
-    if (!obj) obj = state.objects[info.key] = createObject(info)
-    Object.assign(obj, info)
+  msg.objects.forEach(function(newObj: GameObj) {
+    keys[newObj.key] = true
+    var obj = state.objects[newObj.key]
+    if (!obj) obj = state.objects[newObj.key] = createObject(newObj)
+    Object.assign(obj, newObj)
     obj.lastUpdateMs = now
   })
 
@@ -144,21 +145,18 @@ function handleObjects(msg: GameMsgObjects) {
   Object.keys(state.objects).forEach(function(key) {
     if (keys[key]) return
     if (key === 'self') return
-
-    // state.objects[key].destroy()
-
     delete state.objects[key]
   })
 }
 
-function createObject(info: GameObj): GameObj {
-  switch (info.type) {
+function createObject(obj: GameObj): GameObj {
+  switch (obj.type) {
     case 'player':
-      return new Player(info.key, (info as Player).name)
+      return new PlayerObj(obj.key, (obj as PlayerObj).name)
     case 'block':
-      return new FallingBlock(info.key)
+      return new FallingBlockObj(obj.key)
     default:
-      throw new Error('unrecognized object type ' + info.type)
+      throw new Error('unrecognized object type ' + obj.type)
   }
 }
 
@@ -225,8 +223,9 @@ function frame(context: DefaultContext) {
 
   // Prediction: extrapolate object positions from latest server update
   predictObjects(dt, now)
+
   // Draw the frame
-  render(dt)
+  render()
 }
 
 function predictObjects(dt: number, now: number) {
@@ -248,20 +247,23 @@ function predictObjects(dt: number, now: number) {
     if (obj.lastUpdateMs - now > config.MAX_EXTRAPOLATE_MS) return
     var loc = obj.location
     var vel = obj.velocity
-    if ((obj as Player).situation === 'airborne') vel.z -= config.PHYSICS.GRAVITY * dt
+    if (obj.situation === 'airborne') vel.z -= config.PHYSICS.GRAVITY * dt
     loc.x += vel.x * dt
     loc.y += vel.y * dt
     loc.z += vel.z * dt
   })
 }
 
-function render(dt: number) {
+function render() {
   env.regl.clear({ color: [1, 1, 1, 1], depth: 1 })
   if (!drawScope) return
   drawScope(state, function() {
     drawSky(state.cameraLoc)
 
-    // TODO: draw objects
+    // Draw objects
+    const objs = Object.values(state.objects)
+    drawFallingBlocks(objs.filter(o => o.type === 'falling-block') as FallingBlockObj[])
+    drawPlayers(objs.filter(o => o.type === 'player') as PlayerObj[])
 
     drawWorld(state)
   })

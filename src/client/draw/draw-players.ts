@@ -44,7 +44,7 @@ var meshTemplate = makeMesh()
 // Vertex positions and normals vary from player to player, but UVs are shared
 var bufferUVs = regl.buffer(meshTemplate.uvs)
 
-export default class Player extends PlayerObj {
+class PlayerModel {
   bones: {
     head: Bone
     armL: Bone
@@ -59,9 +59,7 @@ export default class Player extends PlayerObj {
     norms: Buffer
   }
 
-  constructor(key: string, name: string) {
-    super(key, name)
-
+  constructor() {
     this.bones = {
       head: { rot: vec3.fromValues(0, 0, 0), center: vec3.fromValues(0, 0, 0) },
       armL: { rot: vec3.fromValues(0, 0, 0), center: vec3.fromValues(0, 4, -4) },
@@ -81,28 +79,28 @@ export default class Player extends PlayerObj {
     }
   }
 
-  draw() {
-    var legAngle = Math.sin(this.walk)
+  draw(pl: PlayerObj) {
+    var legAngle = Math.sin(pl.walk)
     this.bones.legL.rot[1] = -legAngle
     this.bones.legR.rot[1] = legAngle
     this.bones.legL.center[0] = legAngle > 0 ? -2 : 2
     this.bones.legR.center[0] = legAngle < 0 ? -2 : 2
-    this.bones.armL.rot[1] = Math.sin(this.walk)
-    this.bones.armR.rot[1] = -Math.sin(this.walk)
+    this.bones.armL.rot[1] = Math.sin(pl.walk)
+    this.bones.armR.rot[1] = -Math.sin(pl.walk)
 
     // Aim
-    var rotAimUpDown = -0.2 - this.direction.altitude
-    if (this.mode === 'bazooka') {
+    var rotAimUpDown = -0.2 - pl.direction.altitude
+    if (pl.mode === 'bazooka') {
       this.bones.armR.rot[1] = -1.5 + rotAimUpDown
       this.bones.bazooka.rot[1] = rotAimUpDown
     }
 
     // Look
-    var rotLookUpDown = Math.min(1, Math.max(-1, -this.direction.altitude))
+    var rotLookUpDown = Math.min(1, Math.max(-1, -pl.direction.altitude))
     this.bones.head.rot[1] = rotLookUpDown
 
-    var loc = this.location
-    var azimuth = this.direction.azimuth
+    var loc = pl.location
+    var azimuth = pl.direction.azimuth
     var altitude = 0 // Player head moves, body stays level
 
     // Update the mesh
@@ -126,7 +124,7 @@ export default class Player extends PlayerObj {
     this.buffers.verts.subdata(this.mesh.verts)
     this.buffers.norms.subdata(this.mesh.norms)
 
-    drawCommand({ player: this })
+    drawCommand({ model: this, obj: pl })
   }
 
   destroy() {
@@ -136,7 +134,8 @@ export default class Player extends PlayerObj {
 }
 
 interface DrawPlayerProps {
-  player: Player
+  model: PlayerModel
+  obj: PlayerObj
 }
 
 var drawCommand = regl<{}, {}, DrawPlayerProps>({
@@ -144,16 +143,16 @@ var drawCommand = regl<{}, {}, DrawPlayerProps>({
   vert: shaders.vert.uvWorld,
   attributes: {
     aPosition: function(context: DefaultContext, props: DrawPlayerProps) {
-      return props.player.buffers.verts
+      return props.model.buffers.verts
     },
     aNormal: function(context: DefaultContext, props: DrawPlayerProps) {
-      return props.player.buffers.norms
+      return props.model.buffers.norms
     },
     aUV: bufferUVs,
   },
   uniforms: {
     uTexture: function(context: DefaultContext, props: DrawPlayerProps) {
-      var mode = props.player.mode
+      var mode = props.obj.mode
       if (mode === PlayerMode.COMMANDO) return textures.loaded.skinCommando
       else if (mode === PlayerMode.BAZOOKA) return textures.loaded.skinArmy
       else throw new Error('Unsupported mode ' + mode)
@@ -251,4 +250,18 @@ function cubeUVs(iu: number, iv: number, width: number, depth: number, height: n
     rectUVs(iu, iv, width, depth, tw, th, true), // z0 face: width x depth
     rectUVs(iu, iv, width, depth, tw, th, true)
   )
+}
+
+// TODO: Is it better to
+// A: create one small set of buffers, set data + draw call n times
+// B: create n sets of buffers, set data + draw call on each one
+// C: create one big set of buffers, set data (for all players) + draw call one time
+// Going with option A for now.
+
+const model = new PlayerModel()
+
+export default function drawPlayers(players: PlayerObj[]) {
+  for (const pl of players) {
+    model.draw(pl)
+  }
 }
