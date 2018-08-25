@@ -36,6 +36,7 @@ class BazookaGame {
   nextObjKey: number
 
   columnsToFall: Array<any>
+  totalPlayers: number
 
   constructor() {
     this.playerConns = []
@@ -44,6 +45,7 @@ class BazookaGame {
     this.objects = []
     this.nextObjKey = 0
     this.columnsToFall = []
+    this.totalPlayers = 0
   }
 
   generate() {
@@ -81,7 +83,7 @@ class BazookaGame {
   sendStatus() {
     const alive = this.getNumPlayersAlive()
     this.playerConns.forEach(playerConn => {
-      playerConn.conn.sendStatus(this.status, alive, this.playerConns.length)
+      playerConn.conn.sendStatus(this.status, alive, this.totalPlayers)
     })
   }
 
@@ -93,6 +95,7 @@ class BazookaGame {
     if (this.status === GameStatus.LOBBY && this.playerConns.length === config.BAZOOKA.MAX_PLAYERS) {
       this.status = GameStatus.ACTIVE
       this.generate()
+      this.totalPlayers = this.playerConns.length
       this.sendStatus()
     }
   }
@@ -110,6 +113,9 @@ class BazookaGame {
     this.playerConns.forEach(function(pc) {
       ret += pc.player.health > 0 ? 1 : 0
     })
+    if (ret <= 1) {
+      this.status = GameStatus.COMPLETED
+    }
     return ret
   }
 
