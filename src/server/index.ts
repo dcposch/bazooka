@@ -1,5 +1,4 @@
 import http from 'http'
-import ws from 'ws'
 import express from 'express'
 import config from '../config'
 import BazookaGame from './bazooka-game'
@@ -23,7 +22,7 @@ main()
 function main() {
   // Serve websocket API
   var httpServer = http.createServer()
-  var wsServer = new ws.Server({ server: httpServer })
+  var wsServer = new WebSocket.Server({ server: httpServer })
   wsServer.on('connection', addWebsocketConn)
 
   // Serve the client files
