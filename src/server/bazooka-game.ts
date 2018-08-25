@@ -114,20 +114,22 @@ class BazookaGame {
   }
 
   _makeColumnsFall(tick: number) {
-    const firstTick = config.SERVER.FIRST_FALLING_TICK
-    const lastTick = config.SERVER.LAST_FALLING_TICK
-    if (tick < firstTick || tick >= lastTick) {
-      return
-    }
-    var totalColumns = this.columnsToFall.length
-    var startIndex = (((tick - firstTick) / (lastTick - firstTick)) * totalColumns) | 0
-    var endIndex = (((tick + 1 - firstTick) / (lastTick - firstTick)) * totalColumns) | 0
+    const { ROUNDS, ROUND_LENGTH_TICKS, FALLING_LENGTH_TICKS } = config.CRUMBLING
+    const totalColumns = this.columnsToFall.length
+    const round = Math.floor(tick / ROUND_LENGTH_TICKS)
+    const tickInRound = tick - round * ROUND_LENGTH_TICKS
+    if (tickInRound > ROUND_LENGTH_TICKS - FALLING_LENGTH_TICKS) {
+      const totalFallingTicks = ROUNDS * FALLING_LENGTH_TICKS
+      const currentFallingTick = round * FALLING_LENGTH_TICKS + ROUND_LENGTH_TICKS - tickInRound
+      const startIndex = ((currentFallingTick * totalColumns) / totalFallingTicks) | 0
+      const endIndex = (((1 + currentFallingTick) * totalColumns) / totalFallingTicks) | 0
 
-    for (var i = startIndex; i < endIndex; i++) {
-      var column = this.columnsToFall[i]
-      if (this.columnsToFall[i].height) {
-        for (var z = -this.columnsToFall[i].height; z < this.columnsToFall[i].height; z++) {
-          this.world.setVox(column.x, column.y, z, vox.INDEX.AIR)
+      for (let i = startIndex; i < endIndex; i++) {
+        const column = this.columnsToFall[i]
+        if (this.columnsToFall[i].height) {
+          for (let z = -this.columnsToFall[i].height; z < this.columnsToFall[i].height; z++) {
+            this.world.setVox(column.x, column.y, z, vox.INDEX.AIR)
+          }
         }
       }
     }

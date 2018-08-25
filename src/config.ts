@@ -40,8 +40,11 @@ export default {
     CHUNK_SEND_RADIUS: 15,
     VERSION: 0,
     PORT: 8080,
-    FIRST_FALLING_TICK: 100,
-    LAST_FALLING_TICK: 1000,
+  },
+  CRUMBLING: {
+    ROUNDS: 10,
+    ROUND_LENGTH_TICKS: 300, // ~one minute
+    FALLING_LENGTH_TICKS: 100,
   },
   BAZOOKA: {
     MAX_PLAYERS: 20,
