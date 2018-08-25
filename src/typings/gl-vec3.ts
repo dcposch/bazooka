@@ -10,6 +10,8 @@ declare module 'gl-vec3' {
     transformMat4: (o: Vec3, i: Vec3, m: Mat4) => void
     transformMat3: (o: Vec3, i: Vec3, m: Mat3) => void
     scale: (o: Vec3, i: Vec3, v: number) => void
+    add: (a: Vec3, b: Vec3, c: Vec3) => void
+    scaleAndAdd: (a: Vec3, b: Vec3, c: Vec3, weight: number) => void
   }
 
   export default GlVec3
