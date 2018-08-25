@@ -92,6 +92,9 @@ class BazookaGame {
     if (this.status === GameStatus.LOBBY && this.playerConns.length === config.BAZOOKA.MAX_PLAYERS) {
       this.status = GameStatus.ACTIVE
       this.generate()
+      this.playerConns.forEach(playerConn => {
+        playerConn.conn.sendStart()
+      })
     }
   }
 

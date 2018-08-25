@@ -93,6 +93,12 @@ class Conn extends EventEmitter {
     this.send(msg)
   }
 
+  sendStart() {
+    this.send({
+      type: 'start',
+    })
+  }
+
   sendChunks(chunks: Chunk[]) {
     if (!chunks.length) return
     buf.reset()

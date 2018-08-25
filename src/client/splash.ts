@@ -5,9 +5,10 @@ import Player from '../protocol/obj/player-obj'
 export default {
   init: init,
   showError: showError,
+  startGame: startGame,
 }
 
-// Spash screen
+// Splash screen
 let divSplash: HTMLDivElement
 let inputName: HTMLInputElement
 let btnStart: HTMLButtonElement
@@ -42,8 +43,8 @@ function init(st: any) {
   btnStart.addEventListener('click', enterLobby)
 
   // DBG: dev quickstart
-  inputName.value = 'test'
-  btnStart.click()
+  // inputName.value = 'test'
+  // btnStart.click()
 }
 
 function updateSplash(e?: KeyboardEvent) {
@@ -66,7 +67,7 @@ function enterLobby() {
   document.querySelector('.splash-start')!.remove()
 
   // TODO: get lobby / game  state from server
-  window.setTimeout(startGame, 2000)
+  // window.setTimeout(startGame, 2000)
 }
 
 // ...then, click to start
@@ -83,7 +84,7 @@ function startGame() {
 
   canvas.addEventListener('click', function() {
     if (state.error) return
-    env.shell.fullscreen = true
+    // env.shell.fullscreen = true
     env.shell.pointerLock = true
   })
 

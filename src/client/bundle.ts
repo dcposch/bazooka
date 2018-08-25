@@ -116,6 +116,8 @@ function initWebsocket() {
         return handleObjects(msg)
       case 'error':
         return splash.showError(msg.error.message)
+      case 'start':
+        return splash.startGame()
       default:
         console.error('Ignoring unknown message type ' + msg.type)
     }
