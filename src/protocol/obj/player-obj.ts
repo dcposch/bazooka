@@ -1,12 +1,12 @@
 import { toCartesian } from '../../math/coordinates'
-import { PlayerMode, DirAzAlt, PlayerSituation } from '../../types'
+import { PlayerMode, DirAzAlt, ObjSituation } from '../../types'
 import GameObj from './game-obj'
 
 export default class PlayerObj extends GameObj {
   mode: PlayerMode
   name: string
   direction: DirAzAlt
-  situation: PlayerSituation
+  situation: ObjSituation
   walk: number
 
   constructor(key: string, name: string) {
@@ -14,7 +14,7 @@ export default class PlayerObj extends GameObj {
 
     // Which mode you're in-- bazooka, commando, ...
     this.mode = PlayerMode.BAZOOKA
-    this.situation = PlayerSituation.AIRBORNE
+    this.situation = ObjSituation.AIRBORNE
     this.direction = { azimuth: 0, altitude: 0 }
     this.walk = 0
     this.name = ''

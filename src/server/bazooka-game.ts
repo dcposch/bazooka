@@ -3,13 +3,14 @@ import gen from '../gen'
 import config from '../config'
 import { toCartesian } from '../math/coordinates'
 import vox from '../protocol/vox'
-import { VecXYZ, GameCmd, GameCmdSetVox } from '../types'
+import { VecXYZ, GameCmd, GameCmdSetVox, ObjSituation } from '../types'
 import PlayerConn from './player-conn'
 import Chunk from '../protocol/chunk'
 import Player from '../protocol/obj/player-obj'
 import GameObj from '../protocol/obj/game-obj'
 import MissileObj from '../protocol/obj/missile-obj'
 import PlayerObj from '../protocol/obj/player-obj'
+import { simObjects } from '../protocol/physics'
 
 const CB = config.CHUNK_BITS
 const CS = config.CHUNK_SIZE
@@ -47,17 +48,17 @@ class BazookaGame {
 
   generate() {
     console.log('generating island...')
-    var genRad = config.BAZOOKA.GEN_RADIUS_CHUNKS
-    for (var x = -CS * genRad; x < CS * genRad; x += CS) {
-      for (var y = -CS * genRad; y < CS * genRad; y += CS) {
-        var column = gen.generateColumn(x, y)
-        for (var i = 0; i < column.chunks.length; i++) {
+    const genRad = config.BAZOOKA.GEN_RADIUS_CHUNKS
+    for (let x = -CS * genRad; x < CS * genRad; x += CS) {
+      for (let y = -CS * genRad; y < CS * genRad; y += CS) {
+        const column = gen.generateColumn(x, y)
+        for (let i = 0; i < column.chunks.length; i++) {
           this.world.addChunk(column.chunks[i])
         }
-        for (var ix = 0; ix < CS; ix++) {
-          for (var iy = 0; iy < CS; iy++) {
-            var height = (column.heightMap[(ix + PAD) * (CS + PAD2) + iy + PAD] | 0) + 10 // extra for trees
-            var distanceToCenter = Math.sqrt(Math.pow(x + ix, 2) + Math.pow(y + iy, 2))
+        for (let ix = 0; ix < CS; ix++) {
+          for (let iy = 0; iy < CS; iy++) {
+            const height = (column.heightMap[(ix + PAD) * (CS + PAD2) + iy + PAD] | 0) + 10 // extra for trees
+            const distanceToCenter = Math.sqrt(Math.pow(x + ix, 2) + Math.pow(y + iy, 2))
             if (height) {
               this.columnsToFall.push({
                 x: x + ix,
@@ -95,25 +96,26 @@ class BazookaGame {
   }
 
   getNumPlayersAlive() {
-    var ret = 0
+    let ret = 0
     this.playerConns.forEach(function(pc) {
       ret += pc.player.health > 0 ? 1 : 0
     })
     return ret
   }
 
-  tick(tick: number) {
+  tick(tick: number, dt: number) {
     // Kill players who fall
     this.playerConns.forEach(function(pc) {
-      var loc = pc.player.location
+      const loc = pc.player.location
       if (loc && loc.z < -100) {
         pc.conn.die(new Error('you fell'))
       }
     })
 
-    this._simulate(0.1) // TODO
+    this._simulate(dt) // TODO
 
-    this._makeColumnsFall(tick)
+    // this._makeColumnsFall(tick)
+
     this._updateObjects()
     this._updateChunks(tick)
   }
@@ -141,34 +143,42 @@ class BazookaGame {
   }
 
   _simulate(dt: number) {
-    var n = this.objects.length
-    for (var i = 0; i < n; i++) {
-      var o = this.objects[i]
-      // vec3.scaleAndAdd(m.location, m.location, m.velocity, dt)
-      o.velocity.z = o.velocity.z - config.PHYSICS.GRAVITY * dt
+    simObjects(this.objects, this.world, dt)
 
-      // TODO:
-      // - check collision
-      // - if shell/ground, crater
-      // - if shell/player, inflict damage
-      // - if block/trerain, bounce or stick1
-      // - otherwise, fall
+    let offset = 0
+    for (let i = 0; i < this.objects.length; i++) {
+      const obj = this.objects[i]
+      if (obj.type === 'missile' && obj.situation === ObjSituation.IN_GROUND) {
+        console.log('missile strike at ' + JSON.stringify(obj.location))
+        offset++
+        // TODO: block explosion
+      } else {
+        this.objects[i - offset] = this.objects[i]
+      }
     }
+    this.objects.length = this.objects.length - offset
+
+    // TODO:
+    // - check collision
+    // - if shell/ground, crater
+    // - if shell/player, inflict damage
+    // - if block/trerain, bounce or stick1
+    // - otherwise, fall
   }
 
   // Tell each player about objects around them, including other players
   _updateObjects() {
     // TODO: this runs in O(numConns ^ 2). Needs a better algorithm.
-    var n = this.playerConns.length
-    for (var i = 0; i < n; i++) {
-      var pc = this.playerConns[i]
-      var a = pc.player
-      var objsToSend = [] as GameObj[]
+    const n = this.playerConns.length
+    for (let i = 0; i < n; i++) {
+      const pc = this.playerConns[i]
+      const a = pc.player
+      const objsToSend = [] as GameObj[]
 
-      for (var j = 0; j < n; j++) {
+      for (let j = 0; j < n; j++) {
         if (j === i) continue
-        var pcb = this.playerConns[j]
-        var b = pcb.player
+        const pcb = this.playerConns[j]
+        const b = pcb.player
         if (!a.location || !b.location) continue
         if (!b.name) continue
         if (!isInRange(a.location, b.location)) continue
@@ -187,8 +197,8 @@ class BazookaGame {
       }
 
       // Send missiles, etc
-      for (j = 0; j < this.objects.length; i++) {
-        var object = this.objects[j]
+      for (let j = 0; j < this.objects.length; j++) {
+        const object = this.objects[j]
         objsToSend.push(object)
       }
 
@@ -201,22 +211,22 @@ class BazookaGame {
     // Figure out which conns need which chunks.
     // TODO: this runs in O(numConns * numChunks). Needs a better algorithm.
     const chunksToSend = [] as Chunk[][]
-    for (var j = 0; j < this.playerConns.length; j++) {
+    for (let j = 0; j < this.playerConns.length; j++) {
       chunksToSend.push([])
     }
-    var numMod = 0
-    var numSending = 0
-    var chunks = this.world.chunks
-    for (var i = 0; i < chunks.length; i++) {
-      var chunk = chunks[i]
-      var wasDirty = chunk.dirty
+    let numMod = 0
+    let numSending = 0
+    const chunks = this.world.chunks
+    for (let i = 0; i < chunks.length; i++) {
+      const chunk = chunks[i]
+      const wasDirty = chunk.dirty
       chunk.dirty = false
       numMod += wasDirty ? 1 : 0
-      var key = chunk.getKey()
-      for (j = 0; j < this.playerConns.length; j++) {
-        var pc = this.playerConns[j]
-        var cts = chunksToSend[j]
-        var loc = pc.player.location
+      const key = chunk.getKey()
+      for (let j = 0; j < this.playerConns.length; j++) {
+        const pc = this.playerConns[j]
+        const cts = chunksToSend[j]
+        const loc = pc.player.location
         if (!loc) continue
         if (!isInRange(loc, chunk)) continue // player too far away
         if (pc.chunksSent[key] && !wasDirty) continue // up-to-date
@@ -228,7 +238,7 @@ class BazookaGame {
     if (numMod > 0 || numSending > 0) console.log('chunk updates: sending %s, %s modified', numSending, numMod)
 
     // Send chunk updates
-    for (j = 0; j < this.playerConns.length; j++) {
+    for (let j = 0; j < this.playerConns.length; j++) {
       this.playerConns[j].conn.sendChunks(chunksToSend[j])
     }
   }
@@ -241,9 +251,9 @@ class BazookaGame {
     }
     Object.assign(pc.player, update.player)
 
+    if (update.commands.length === 0) return
     console.log('update from ' + pc.id + ', ' + update.commands.length + ' cmds')
     update.commands.forEach((command: GameCmd) => {
-      console.log('DBG HANDLING ' + command.type)
       switch (command.type) {
         case 'set':
           return this._handleSet(command as GameCmdSetVox)
@@ -260,8 +270,8 @@ class BazookaGame {
   }
 
   _handleFireBazooka(pc: PlayerConn) {
-    var dir = pc.player.direction
-    var vel = toCartesian(dir.azimuth, dir.altitude, 15)
+    const dir = pc.player.direction
+    const vel = toCartesian(dir.azimuth, dir.altitude + 0.5, 15)
 
     const key = 'missile-' + ++this.nextObjKey
     const missile = new MissileObj(key)
@@ -273,11 +283,11 @@ class BazookaGame {
 }
 
 function isInRange(a: VecXYZ, b: VecXYZ) {
-  var dx = (b.x >> CB) - (a.x >> CB)
-  var dy = (b.y >> CB) - (a.y >> CB)
-  var dz = (b.z >> CB) - (a.z >> CB)
-  var r2 = dx * dx + dy * dy + dz * dz
-  var rmax = config.SERVER.CHUNK_SEND_RADIUS
+  const dx = (b.x >> CB) - (a.x >> CB)
+  const dy = (b.y >> CB) - (a.y >> CB)
+  const dz = (b.z >> CB) - (a.z >> CB)
+  const r2 = dx * dx + dy * dy + dz * dz
+  const rmax = config.SERVER.CHUNK_SEND_RADIUS
   return r2 < rmax * rmax
 }
 

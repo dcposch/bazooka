@@ -25,10 +25,10 @@ export enum CameraMode {
   THIRD_PERSON = 'third-person',
 }
 
-export enum PlayerSituation {
+export enum ObjSituation {
   ON_GROUND = 'on-ground',
   AIRBORNE = 'airborne',
-  SUFFOCATING = 'suffocating',
+  IN_GROUND = 'in-ground',
 }
 
 /**
@@ -56,7 +56,7 @@ export interface GamePlayerState {
   location: VecXYZ
   direction: DirAzAlt
   velocity: VecXYZ
-  situation: PlayerSituation
+  situation: ObjSituation
   lookAtBlock:
     | {
         location: VecXYZ
@@ -106,7 +106,7 @@ export interface GameState {
 export interface GameObjPlayer extends GameObj {
   name: string
   direction: DirAzAlt
-  situation: PlayerSituation
+  situation: ObjSituation
   mode: PlayerMode
 }*/
 

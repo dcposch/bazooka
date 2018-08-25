@@ -78,12 +78,14 @@ function updateMesh(blocks: Block[]) {
   for (var i = 0; i < n; i++) {
     var block = blocks[i]
     var loc = block.location
+
     mat4.identity(mat)
     mat4.translate(mat, mat, [loc.x, loc.y, loc.z])
     mat4.rotate(mat, mat, block.rotTheta, block.rotAxis)
     mat3.identity(matN)
     mat3.rotate(matN, matN, block.rotTheta, block.rotAxis)
     Mesh.transformPart(mesh, meshBlock, mat, matN, i * VERTS_PER_BLOCK)
+
     if (blockTypes[i] !== block.typeIndex) {
       dirtyUVs = true
       blockTypes[i] = block.typeIndex
@@ -122,6 +124,7 @@ function maybeCompileCommands() {
     attributes: {
       aPosition: bufVerts,
       aNormal: bufNorms,
+      aUV: bufUV,
     },
     uniforms: {
       uTexture: textures.loaded.atlas,

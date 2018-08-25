@@ -19,4 +19,6 @@ void main(void) {
 
   float diffuse = max(0.0, dot(aNormal, uLightDir));
   vLight = diffuse * uLightDiffuse + uLightAmbient;
+
+  vUV = aUV;
 }

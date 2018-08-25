@@ -1,7 +1,7 @@
 import config from '../config'
 import env from './env'
 import vox from '../protocol/vox'
-import { GameState, PlayerMode, CameraMode, GamePlayerState, VecXYZ, PlayerSituation, GameCmdSetVox } from '../types'
+import { GameState, PlayerMode, CameraMode, GamePlayerState, VecXYZ, ObjSituation, GameCmdSetVox } from '../types'
 
 var shell = env.shell
 
@@ -107,7 +107,7 @@ function navigate(player: GamePlayerState, dt: number) {
   // Jumping (space) only works if we're on solid ground
   if (shell.wasDown('nav-jump') && player.situation === 'on-ground') {
     vel.z = shell.wasDown('nav-sprint') ? config.SPEED_SPRINT_JUMP : config.SPEED_JUMP
-    player.situation = PlayerSituation.AIRBORNE
+    player.situation = ObjSituation.AIRBORNE
   }
 }
 

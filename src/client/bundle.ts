@@ -1,7 +1,7 @@
 import vec3 from 'gl-vec3'
 
 import playerControls from './player-controls'
-import physics from './physics'
+import { simulateClient } from '../protocol/physics'
 import picker from './picker'
 import mesher from './mesher'
 import Socket from './socket'
@@ -23,12 +23,14 @@ import drawFallingBlocks from './draw/draw-falling-blocks'
 import drawHud from './draw/draw-hud'
 import drawSky from './draw/draw-sky'
 import drawPlayers from './draw/draw-players'
+import drawMissiles from './draw/draw-missiles'
 
-import { PlayerMode, PlayerSituation, CameraMode, GameState, GameMsgConfig, GameMsgObjects } from '../types'
+import { PlayerMode, ObjSituation, CameraMode, GameState, GameMsgConfig, GameMsgObjects } from '../types'
 import { Vec3, DefaultContext } from 'regl'
 import FallingBlockObj from '../protocol/obj/falling-block-obj'
 import GameObj from '../protocol/obj/game-obj'
 import PlayerObj from '../protocol/obj/player-obj'
+import MissileObj from '../protocol/obj/missile-obj'
 
 // All game state lives here
 var state: GameState = {
@@ -44,7 +46,7 @@ var state: GameState = {
     // Physics
     velocity: { x: 0, y: 0, z: 0 },
     // Situation can also be 'on-ground', 'suffocating'
-    situation: PlayerSituation.AIRBORNE,
+    situation: ObjSituation.AIRBORNE,
     // Which block we're looking at: {location: {x,y,z}, side: {nx,ny,nz}, voxel}
     lookAtBlock: undefined,
     // Camera can also be 'third-person'
@@ -136,7 +138,10 @@ function handleObjects(msg: GameMsgObjects) {
   msg.objects.forEach(function(newObj: GameObj) {
     keys[newObj.key] = true
     var obj = state.objects[newObj.key]
-    if (!obj) obj = state.objects[newObj.key] = createObject(newObj)
+    if (!obj) {
+      console.log('creating obj ' + newObj.key)
+      obj = state.objects[newObj.key] = createObject(newObj)
+    }
     Object.assign(obj, newObj)
     obj.lastUpdateMs = now
   })
@@ -145,6 +150,7 @@ function handleObjects(msg: GameMsgObjects) {
   Object.keys(state.objects).forEach(function(key) {
     if (keys[key]) return
     if (key === 'self') return
+    console.log('deleting obj ' + key)
     delete state.objects[key]
   })
 }
@@ -155,6 +161,9 @@ function createObject(obj: GameObj): GameObj {
       return new PlayerObj(obj.key, (obj as PlayerObj).name)
     case 'block':
       return new FallingBlockObj(obj.key)
+    case 'missile':
+      return new MissileObj(obj.key)
+
     default:
       throw new Error('unrecognized object type ' + obj.type)
   }
@@ -217,7 +226,7 @@ function frame(context: DefaultContext) {
   for (var t = 0.0; t < dt; t += config.PHYSICS.MAX_DT) {
     var stepDt = Math.min(config.PHYSICS.MAX_DT, dt - t)
     if (!state.paused) playerControls.navigate(state.player, stepDt)
-    physics.simulate(state, stepDt)
+    simulateClient(state, stepDt)
   }
   if (!state.paused) playerControls.look(state.player)
 
@@ -264,6 +273,7 @@ function render() {
     const objs = Object.values(state.objects)
     drawFallingBlocks(objs.filter(o => o.type === 'falling-block') as FallingBlockObj[])
     drawPlayers(objs.filter(o => o.type === 'player') as PlayerObj[])
+    drawMissiles(objs.filter(o => o.type === 'missile') as MissileObj[])
 
     drawWorld(state)
   })

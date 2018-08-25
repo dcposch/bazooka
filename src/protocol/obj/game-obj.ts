@@ -1,4 +1,4 @@
-import { VecXYZ, DirAzAlt, PlayerSituation, PlayerMode } from '../../types'
+import { VecXYZ, DirAzAlt, ObjSituation, PlayerMode } from '../../types'
 import { Vec3 } from 'regl'
 
 export default class GameObj {
@@ -11,7 +11,7 @@ export default class GameObj {
   // Player
   name?: string
   direction?: DirAzAlt
-  situation?: PlayerSituation
+  situation?: ObjSituation
   mode?: PlayerMode
 
   // Falling block

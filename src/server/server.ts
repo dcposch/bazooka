@@ -53,10 +53,10 @@ function tick() {
   state.perf.lastTickTime = nowMs
 
   // Update the game
-  state.game.tick(state.tick)
+  state.game.tick(state.tick, Math.min(1, Math.max(0.01, dt)))
 
   // Run up to 10 ticks per second, depending on server load
-  setTimeout(tick, 100)
+  setTimeout(tick, 500) // DBG
   state.tick++
   if (state.tick % 100 === 0) console.log('tick %s, tps %s', state.tick, state.perf.tps)
 }

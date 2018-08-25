@@ -1,15 +1,12 @@
 import mat4 from 'gl-mat4'
-import mat3 from 'gl-mat3'
 import env from '../env'
 import shaders from '../shaders'
-import textures from '../textures'
 import Poly8 from '../../math/poly8'
 import Mesh from '../../math/mesh'
-import { VecXYZ } from '../../types'
-import { Buffer, DrawCommand, DefaultContext, Vec3 } from 'regl'
+import { Buffer, DrawCommand, DefaultContext } from 'regl'
 import MissileObj from '../../protocol/obj/missile-obj'
 import vec3 from 'gl-vec3'
-import quat from 'gl-quat'
+import mat3 from 'gl-mat3'
 
 const { regl } = env
 
@@ -23,49 +20,45 @@ const TX = 1 / 16.0
 const mat = mat4.create()
 const matN = mat3.create()
 
-// Vertex positions, normals, etc for each block
+// Vertex positions, normals, etc
 const meshMissile = Mesh.combine([
   Poly8.axisAligned(0, -4 * TX, -4 * TX, 8 * TX, 4 * TX, 4 * TX).createMesh(),
   Poly8.axisAligned(8 * TX, -3 * TX, -3 * TX, 10 * TX, 3 * TX, 3 * TX).createMesh(),
 ])
 
 const mesh = Mesh.combine(new Array(MAX_OBJS).fill(0).map(x => meshMissile.clone()))
-mesh.uvs = new Array(MAX_OBJS * VERTS_PER_OBJ).fill([0, 0])
-const blockTypes = new Uint8Array(MAX_OBJS)
+// mesh.uvs = new Array(MAX_OBJS * VERTS_PER_OBJ).fill([0, 0])
 
 // Compiled lazily
 let triedCompile = false
 let bufVerts: Buffer | undefined
 let bufNorms: Buffer | undefined
-let bufUV: Buffer | undefined
-var drawCommand: DrawCommand<DefaultContext, DrawFallingBlocksProps> | undefined
+var drawCommand: DrawCommand<DefaultContext, DrawObjsProps> | undefined
 
-export interface DrawFallingBlocksProps {
+interface DrawObjsProps {
   numVerts: number
 }
 
-export interface Block {
-  location: VecXYZ
-  rotTheta: number
-  rotAxis: Vec3
-  typeIndex: number
-}
-
-/**
- * Draws up to MAX_BLOCKS falling blocks efficiently.
- */
-export default function drawFallingBlocks(objs: MissileObj[]) {
+export default function drawMissiles(objs: MissileObj[]) {
   maybeCompileCommands()
-  if (!bufVerts || !bufNorms || !bufUV || !drawCommand) return
+  if (!bufVerts || !bufNorms || !drawCommand) return
 
   var n = objs.length
   if (n > MAX_OBJS) {
     throw new Error('MAX_OBJS exceeded: ' + n)
+  } else if (n === 0) {
+    return
   }
 
   updateMesh(objs)
-  bufVerts.subdata(mesh.verts)
-  bufNorms.subdata(mesh.norms)
+  //bufVerts.subdata(mesh.verts)
+  //bufNorms.subdata(mesh.norms)
+  bufVerts(mesh.verts)
+  bufNorms(mesh.norms)
+
+  if (Math.random() < 0.1) {
+    console.log('FUCK ', mesh)
+  }
 
   var props = { numVerts: n * VERTS_PER_OBJ }
   drawCommand(props)
@@ -75,13 +68,8 @@ const vPlusZ = vec3.fromValues(0, 0, 1)
 const vUp = vec3.create()
 const vSide = vec3.create()
 const vForward = vec3.create()
-var quatRot = quat.create()
+// var quatRot = quat.create()
 
-/**
- * Updates the mesh: moves, rotates the blocks, applies textures.
- *
- * Returns true if we need to update UVs. Verts and norms always need to be updated.
- */
 function updateMesh(objs: MissileObj[]) {
   var n = objs.length
 
@@ -90,15 +78,16 @@ function updateMesh(objs: MissileObj[]) {
     var loc = obj.location
     var vel = obj.velocity
 
+    mat4.identity(mat)
+    mat4.translate(mat, mat, [loc.x, loc.y, loc.z])
+    Mesh.transformPart(mesh, meshMissile, mat, matN, i * VERTS_PER_OBJ)
+
     // Cross product
     vForward[0] = vel.x
     vForward[1] = vel.y
     vForward[2] = vel.z
     vec3.cross(vSide, vPlusZ, vForward)
     vec3.cross(vUp, vSide, vForward)
-    mat4.identity(mat)
-    mat4.translate(mat, mat, [loc.x, loc.y, loc.z])
-
     // TODO: also rotate
     // mat3.identity(matN)
     // mat3.rotate(matN, matN, block.rotTheta, block.rotAxis)
@@ -108,24 +97,27 @@ function updateMesh(objs: MissileObj[]) {
 
 function maybeCompileCommands() {
   if (triedCompile) return
-  if (!textures.loaded.atlas) return
   triedCompile = true
 
   bufVerts = regl.buffer({ usage: 'stream', data: mesh.verts })
   bufNorms = regl.buffer({ usage: 'stream', data: mesh.norms })
-  bufUV = regl.buffer({ usage: 'static', data: mesh.uvs })
+  // bufUV = regl.buffer({ usage: 'static', data: mesh.uvs })
+
+  const arrCols = new Array(mesh.verts.length).fill([1, 0.5, 0])
+  const bufCol = regl.buffer({ usage: 'static', data: arrCols })
 
   drawCommand = regl({
-    vert: shaders.vert.fallingBlocks,
-    frag: shaders.frag.textureLight,
+    vert: shaders.vert.colorWorld,
+    frag: shaders.frag.color,
     attributes: {
       aPosition: bufVerts,
       aNormal: bufNorms,
+      aColor: bufCol,
     },
     uniforms: {
-      uTexture: textures.loaded.atlas,
+      // uTexture: textures.loaded.atlas,
     },
-    count: function(context: DefaultContext, props: DrawFallingBlocksProps) {
+    count: function(context: DefaultContext, props: DrawObjsProps) {
       return props.numVerts
     },
   })
