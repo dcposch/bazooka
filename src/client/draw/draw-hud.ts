@@ -89,6 +89,11 @@ var drawHud = env.regl<{}, {}, HudProps>({
         )
       )
 
+      // Rect 7: victory
+      // Texel: (72, 14) to (126, 48), 54 x 34
+      const win = 2
+      rects.push(makeQuad(pxW * -54 * win, pxH * 34 * win, pxW * 54 * win, pxH * -34 * win))
+
       return rects
     },
 
@@ -104,7 +109,7 @@ var drawHud = env.regl<{}, {}, HudProps>({
       if (voff == null) {
         throw new Error('Unsupported mode: ' + props.mode)
       }
-      rects.push(makeQuad(tx * 4, voff * ty, tx * 70, voff * ty + (STATUS_HEIGHT_PX / STATUS_WIDTH_PX) * 0.5))
+      rects.push(makeQuad(tx * 4, voff * ty, tx * 70, ty * (voff + (32 * STATUS_HEIGHT_PX) / STATUS_WIDTH_PX)))
 
       // Rect 2: health bar
       var healthU = tx * (4 + 5 + props.health)
@@ -125,6 +130,10 @@ var drawHud = env.regl<{}, {}, HudProps>({
       rects.push(makeQuad(tx * (5 * dig1 + 72), ty * 4, tx * (5 * dig1 + 76), ty * 10))
       rects.push(makeQuad(tx * (5 * dig2 + 72), ty * 4, tx * (5 * dig2 + 76), ty * 10))
 
+      // Rect 7: victory
+      // Texel: (72, 14) to (126, 48), 54 x 34
+      rects.push(makeQuad(tx * 72, ty * 14, tx * 126, ty * 48))
+
       return rects
     },
   },
@@ -139,7 +148,7 @@ var drawHud = env.regl<{}, {}, HudProps>({
   blend: {
     enable: false,
   },
-  count: 6 * 6,
+  count: 6 * 7,
   primitive: 'triangles',
 })
 
