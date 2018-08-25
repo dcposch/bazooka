@@ -1,6 +1,6 @@
 import uuid from 'uuid/v4'
-import Player from './player'
 import Conn from './conn'
+import PlayerObj from '../protocol/obj/player-obj'
 
 export default class PlayerConn {
   /** Each connection gets a unique ID */
@@ -13,12 +13,12 @@ export default class PlayerConn {
   chunksSent: { [key: string]: number }
 
   /** Bazooka player */
-  player: Player
+  player: PlayerObj
 
   constructor(conn: any) {
     this.id = uuid()
     this.conn = conn
     this.chunksSent = {}
-    this.player = new Player()
+    this.player = new PlayerObj(this.id, 'anon')
   }
 }

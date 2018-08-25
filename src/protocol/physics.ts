@@ -1,5 +1,5 @@
 import config from '../config'
-import { GameState, GamePlayerState, ObjSituation } from '../types'
+import { GamePlayerState, ObjSituation } from '../types'
 import FallingBlockObj from './obj/falling-block-obj'
 import World from './world'
 import MissileObj from './obj/missile-obj'
@@ -19,23 +19,14 @@ var HORIZONTAL_COLLISION_DIRS = [
   [0, -PW, -1],
 ]
 
-/**
- * Runs a single step of the physics simulation.
- *
- * Moves objects, checks for collisions, updates their velocities and states.
- */
-export function simulateClient(state: GameState, dt: number) {
-  // TODO: loop thru objects
-  // TODO: move to common
-  simPlayer(state.player, state.world, dt)
-
-  simObjects(Object.values(state.objects), state.world, dt)
-}
-
 export function simObjects(objects: GameObj[], world: World, nowMs: number) {
   for (let i = 0; i < objects.length; i++) {
     const obj = objects[i]
-    const dt = nowMs - obj.lastUpdateMs
+    if (obj.lastUpdateMs === 0) {
+      continue
+    }
+    const dt = (nowMs - obj.lastUpdateMs) * 1e-3
+
     switch (obj.type) {
       case 'falling-block':
         simFallingBlock(obj as FallingBlockObj, world, dt)
@@ -44,6 +35,7 @@ export function simObjects(objects: GameObj[], world: World, nowMs: number) {
         simMissile(obj as MissileObj, world, dt)
         break
     }
+    // console.log('DBG ' + obj.key + ' ' + nowMs + ' dt ' + dt + ' ' + JSON.stringify(obj.location))
   }
 }
 

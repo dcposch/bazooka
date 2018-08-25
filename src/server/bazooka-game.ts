@@ -6,7 +6,6 @@ import vox from '../protocol/vox'
 import { VecXYZ, GameCmd, GameCmdSetVox, ObjSituation, GameStatus } from '../types'
 import PlayerConn from './player-conn'
 import Chunk from '../protocol/chunk'
-import Player from '../protocol/obj/player-obj'
 import GameObj from '../protocol/obj/game-obj'
 import MissileObj from '../protocol/obj/missile-obj'
 import PlayerObj from '../protocol/obj/player-obj'
@@ -122,20 +121,25 @@ class BazookaGame {
     if (this.status === 'LOBBY') {
       return
     }
-    // Kill players who fall
-    this.playerConns.forEach(function(pc) {
-      const loc = pc.player.location
-      if (loc && loc.z < -100) {
-        pc.conn.die(new Error('you fell'))
-      }
-    })
 
-    this._simulate(dt) // TODO
-
+    // UPDATE THE GAME
+    const nowMs = new Date().getTime()
+    this._simulate(nowMs)
     // this._makeColumnsFall(tick)
 
-    this._updateObjects()
-    this._updateChunks(tick)
+    // SEND UPDATES TO PLAYERS
+    if (tick % 20 === 0) {
+      this._sendObjects()
+      this._sendChunks(tick)
+
+      // Kill players who fall
+      this.playerConns.forEach(function(pc) {
+        const loc = pc.player.location
+        if (loc && loc.z < -100) {
+          pc.conn.die(new Error('you fell'))
+        }
+      })
+    }
   }
 
   _makeColumnsFall(tick: number) {
@@ -161,12 +165,13 @@ class BazookaGame {
     }
   }
 
-  _simulate(dt: number) {
-    simObjects(this.objects, this.world, dt)
+  _simulate(nowMs: number) {
+    simObjects(this.objects, this.world, nowMs)
 
     let offset = 0
     for (let i = 0; i < this.objects.length; i++) {
       const obj = this.objects[i]
+      obj.lastUpdateMs = nowMs
       if (obj.type === 'missile' && obj.situation === ObjSituation.IN_GROUND) {
         console.log('missile strike at ' + JSON.stringify(obj.location))
         offset++
@@ -186,7 +191,7 @@ class BazookaGame {
   }
 
   // Tell each player about objects around them, including other players
-  _updateObjects() {
+  _sendObjects() {
     // TODO: this runs in O(numConns ^ 2). Needs a better algorithm.
     const n = this.playerConns.length
     for (let i = 0; i < n; i++) {
@@ -204,6 +209,7 @@ class BazookaGame {
 
         objsToSend.push({
           // Common to all objects
+          lastUpdateMs: b.lastUpdateMs,
           type: 'player',
           key: 'player-' + pcb.id,
           location: b.location,
@@ -212,7 +218,7 @@ class BazookaGame {
           name: b.name,
           direction: b.direction,
           situation: b.situation,
-        } as Player)
+        })
       }
 
       // Send missiles, etc
@@ -226,7 +232,7 @@ class BazookaGame {
   }
 
   // Tell each conn about the blocks around them. Send chunks where a voxel has changed.
-  _updateChunks(tick: number) {
+  _sendChunks(tick: number) {
     // Figure out which conns need which chunks.
     // TODO: this runs in O(numConns * numChunks). Needs a better algorithm.
     const chunksToSend = [] as Chunk[][]

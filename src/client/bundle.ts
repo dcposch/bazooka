@@ -151,19 +151,19 @@ function handleConfig(msg: GameMsgConfig) {
 }
 
 function handleObjects(msg: GameMsgObjects) {
-  var now = new Date().getTime()
+  // TODO: client-server time diff
   var keys = {} as { [key: string]: boolean }
 
   // Create and update new objects
   msg.objects.forEach(function(newObj: GameObj) {
     keys[newObj.key] = true
     var obj = state.objects[newObj.key]
+    console.log('WTF: ' + JSON.stringify(newObj))
     if (!obj) {
       console.log('creating obj ' + newObj.key)
       obj = state.objects[newObj.key] = createObject(newObj)
     }
     Object.assign(obj, newObj)
-    obj.lastUpdateMs = now
   })
 
   // Delete objects that no longer exist or are too far away
@@ -248,6 +248,9 @@ function frame(context: DefaultContext) {
     simPlayer(state.player, state.world, stepDt)
   }
   simObjects(Object.values(state.objects), state.world, nowMs)
+  for (const obj of Object.values(state.objects)) {
+    obj.lastUpdateMs = nowMs
+  }
 
   if (!state.paused) playerControls.look(state.player)
 

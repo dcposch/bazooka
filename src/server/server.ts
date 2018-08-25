@@ -54,9 +54,9 @@ function tick() {
   state.game.tick(state.tick, Math.min(1, Math.max(0.01, dt)))
 
   // Run up to 10 ticks per second, depending on server load
-  setTimeout(tick, 500) // DBG
+  setTimeout(tick, 15) // Tick fast for smooth physics
   state.tick++
-  if (state.tick % 100 === 0) console.log('tick %s, tps %s', state.tick, state.perf.tps)
+  if (state.tick % 1000 === 0) console.log('tick %s, tps %s', state.tick, state.perf.tps)
 }
 
 // Handles a new websocket connection = a player opening the game

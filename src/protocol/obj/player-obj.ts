@@ -8,6 +8,7 @@ export default class PlayerObj extends GameObj {
   direction: DirAzAlt
   situation: ObjSituation
   walk: number
+  health: number
 
   constructor(key: string, name: string) {
     super(key, 'player')
@@ -18,6 +19,7 @@ export default class PlayerObj extends GameObj {
     this.direction = { azimuth: 0, altitude: 0 }
     this.walk = 0
     this.name = ''
+    this.health = 50
   }
 
   tick(dt: number) {
