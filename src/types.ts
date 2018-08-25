@@ -2,7 +2,6 @@ import { Vec3 } from 'regl'
 import Chunk from './protocol/chunk'
 import World from './protocol/world'
 import Socket from './client/socket'
-import FallingBlock from './protocol/obj/falling-block-obj'
 import GameObj from './protocol/obj/game-obj'
 
 export interface VecXYZ {

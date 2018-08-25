@@ -1,5 +1,5 @@
 .*.swp
-build
+dist
 node_modules
 .DS_Store
 *.sublime-workspace

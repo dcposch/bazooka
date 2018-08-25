@@ -28,7 +28,7 @@ function main() {
   // Serve the client files
   var app = express()
   app.use(compression())
-  app.use(express.static('build'))
+  app.use(express.static('dist'))
   app.use(express.static('static'))
   app.use('/monitor', monitor.init(state))
   httpServer.on('request', app)

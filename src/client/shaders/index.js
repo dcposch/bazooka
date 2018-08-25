@@ -4,17 +4,17 @@ import fs from 'fs'
 // https://github.com/parcel-bundler/parcel/issues/1736
 export default {
   vert: {
-    uvWorld: fs.readFileSync(require.resolve('./vert-uv-world.glsl'), 'utf8'),
-    uvClip: fs.readFileSync(require.resolve('./vert-uv-clip.glsl'), 'utf8'),
-    colorWorld: fs.readFileSync(require.resolve('./vert-color-world.glsl'), 'utf8'),
-    colorClip: fs.readFileSync(require.resolve('./vert-color-clip.glsl'), 'utf8'),
-    fallingBlocks: fs.readFileSync(require.resolve('./vert-falling-blocks.glsl'), 'utf8'),
-    sky: fs.readFileSync(require.resolve('./vert-sky.glsl'), 'utf8'),
+    uvWorld: fs.readFileSync(__dirname + '/vert-uv-world.glsl', 'utf8'),
+    uvClip: fs.readFileSync(__dirname + '/vert-uv-clip.glsl', 'utf8'),
+    colorWorld: fs.readFileSync(__dirname + '/vert-color-world.glsl', 'utf8'),
+    colorClip: fs.readFileSync(__dirname + '/vert-color-clip.glsl', 'utf8'),
+    fallingBlocks: fs.readFileSync(__dirname + '/vert-falling-blocks.glsl', 'utf8'),
+    sky: fs.readFileSync(__dirname + '/vert-sky.glsl', 'utf8'),
   },
   frag: {
-    color: fs.readFileSync(require.resolve('./frag-color.glsl'), 'utf8'),
-    texture: fs.readFileSync(require.resolve('./frag-texture.glsl'), 'utf8'),
-    textureLight: fs.readFileSync(require.resolve('./frag-texture-light.glsl'), 'utf8'),
-    voxel: fs.readFileSync(require.resolve('./frag-voxel.glsl'), 'utf8'),
+    color: fs.readFileSync(__dirname + '/frag-color.glsl', 'utf8'),
+    texture: fs.readFileSync(__dirname + '/frag-texture.glsl', 'utf8'),
+    textureLight: fs.readFileSync(__dirname + '/frag-texture-light.glsl', 'utf8'),
+    voxel: fs.readFileSync(__dirname + '/frag-voxel.glsl', 'utf8'),
   },
 }

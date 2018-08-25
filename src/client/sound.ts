@@ -1,11 +1,10 @@
-import soundNames from './sound-names'
-
 export default { play }
 
 // Cache <audio> elements for instant playback
 const cache: { [name: string]: HTMLAudioElement } = {}
 
 // Preload any short sounds checked into the repo
+const soundNames = [] // ['win95.mp3']
 soundNames.forEach(function(name: string) {
   var audio = new Audio()
   audio.src = 'sounds/' + name
