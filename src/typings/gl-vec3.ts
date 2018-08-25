@@ -12,6 +12,7 @@ declare module 'gl-vec3' {
     scale: (o: Vec3, i: Vec3, v: number) => void
     add: (a: Vec3, b: Vec3, c: Vec3) => void
     scaleAndAdd: (a: Vec3, b: Vec3, c: Vec3, weight: number) => void
+    cross: (o: Vec3, a: Vec3, b: Vec3) => void
   }
 
   export default GlVec3

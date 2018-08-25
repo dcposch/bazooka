@@ -97,7 +97,7 @@ var drawHud = env.regl<{}, {}, HudProps>({
 
       // Each texel is 1/128 UV coords
       var tx = 1 / 128
-      var ty = 1 / 64
+      var ty = 1 / 128
 
       // Rect 1
       var voff = STATUS_OFFSETS[props.mode]

@@ -8,6 +8,8 @@ import PlayerConn from './player-conn'
 import Chunk from '../protocol/chunk'
 import Player from '../protocol/obj/player-obj'
 import GameObj from '../protocol/obj/game-obj'
+import MissileObj from '../protocol/obj/missile-obj'
+import PlayerObj from '../protocol/obj/player-obj'
 
 const CB = config.CHUNK_BITS
 const CS = config.CHUNK_SIZE
@@ -33,7 +35,6 @@ class BazookaGame {
   nextObjKey: number
 
   columnsToFall: Array<any>
-  missiles: Array<any>
 
   constructor() {
     this.playerConns = []
@@ -42,7 +43,6 @@ class BazookaGame {
     this.objects = []
     this.nextObjKey = 0
     this.columnsToFall = []
-    this.missiles = []
   }
 
   generate() {
@@ -233,7 +233,7 @@ class BazookaGame {
     }
   }
 
-  _handleUpdate(pc: PlayerConn, update: any) {
+  _handleUpdate(pc: PlayerConn, update: { player: PlayerObj; commands: GameCmd[] }) {
     // TODO: doing this 10x per second per client is not ideal. use binary.
     // TODO: validation
     if (!pc.player.name && update.player.name) {
@@ -241,7 +241,9 @@ class BazookaGame {
     }
     Object.assign(pc.player, update.player)
 
+    console.log('update from ' + pc.id + ', ' + update.commands.length + ' cmds')
     update.commands.forEach((command: GameCmd) => {
+      console.log('DBG HANDLING ' + command.type)
       switch (command.type) {
         case 'set':
           return this._handleSet(command as GameCmdSetVox)
@@ -260,14 +262,13 @@ class BazookaGame {
   _handleFireBazooka(pc: PlayerConn) {
     var dir = pc.player.direction
     var vel = toCartesian(dir.azimuth, dir.altitude, 15)
-    var missile = {
-      type: 'missile',
-      key: 'missile-' + ++this.nextObjKey,
-      location: pc.player.location,
-      velocity: { x: vel[0], y: vel[1], z: vel[2] },
-    }
 
-    this.missiles.push(missile)
+    const key = 'missile-' + ++this.nextObjKey
+    const missile = new MissileObj(key)
+    missile.location = pc.player.location
+    missile.velocity = { x: vel[0], y: vel[1], z: vel[2] }
+
+    this.objects.push(missile)
   }
 }
 
