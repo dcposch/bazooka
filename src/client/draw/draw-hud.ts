@@ -43,7 +43,7 @@ var drawHud = env.regl<{}, {}, HudProps>({
   frag: shaders.frag.texture,
   attributes: {
     aPosition: function(context: DefaultContext, props: HudProps) {
-      var rects = []
+      var rects = [] as number[][][]
 
       // Single px, x and y, in clip coordinates (which go from bottom left (-1, -1) to top right (1, 1))
       var pxW = 2 / context.viewportWidth
@@ -93,7 +93,7 @@ var drawHud = env.regl<{}, {}, HudProps>({
     },
 
     aUV: function(context: DefaultContext, props: HudProps) {
-      var rects = []
+      var rects = [] as number[][][]
 
       // Each texel is 1/128 UV coords
       var tx = 1 / 128

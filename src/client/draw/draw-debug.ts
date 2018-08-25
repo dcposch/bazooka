@@ -69,7 +69,7 @@ function createContext2D(canvas: HTMLCanvasElement) {
 }
 
 function createDebugText(state: any) {
-  const ret = []
+  const ret = [] as string[]
   ret.push('P9 ' + version)
 
   const loc = state.player.location

@@ -1,6 +1,6 @@
 import env from '../env'
 import shaders from '../shaders'
-import { DefaultContext, Vec3, Vec4 } from 'regl'
+import { DefaultContext, Vec4 } from 'regl'
 
 const CROSSHAIR_RADIUS = 10 // Pixels
 const CROSSHAIR_WIDTH = 1
