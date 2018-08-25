@@ -51,14 +51,8 @@ export default function drawMissiles(objs: MissileObj[]) {
   }
 
   updateMesh(objs)
-  //bufVerts.subdata(mesh.verts)
-  //bufNorms.subdata(mesh.norms)
-  bufVerts(mesh.verts)
-  bufNorms(mesh.norms)
-
-  if (Math.random() < 0.1) {
-    console.log('FUCK ', mesh)
-  }
+  bufVerts.subdata(mesh.verts)
+  bufNorms.subdata(mesh.norms)
 
   var props = { numVerts: n * VERTS_PER_OBJ }
   drawCommand(props)

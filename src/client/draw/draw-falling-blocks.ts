@@ -57,8 +57,8 @@ export default function drawFallingBlocks(blocks: Block[]) {
 
   var hasDirtyUVs = updateMesh(blocks)
 
-  bufVerts(mesh.verts)
-  bufNorms(mesh.norms)
+  bufVerts.subdata(mesh.verts)
+  bufNorms.subdata(mesh.norms)
   if (hasDirtyUVs) {
     bufUV(mesh.uvs)
   }
