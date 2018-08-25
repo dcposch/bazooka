@@ -86,7 +86,7 @@ class World {
   }
 
   // Returns the voxel at (x, y, z), or -1 if that chunk doesn't exist
-  getVox(x: number, y: number, z: number) {
+  getVox(x: number, y: number, z: number): number {
     var cx = (x >> CB) << CB
     var cy = (y >> CB) << CB
     var cz = (z >> CB) << CB

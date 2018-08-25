@@ -4,6 +4,7 @@ import FallingBlockObj from './obj/falling-block-obj'
 import World from './world'
 import MissileObj from './obj/missile-obj'
 import GameObj from './obj/game-obj'
+import vox from '../protocol/vox'
 
 var EPS = 0.001
 var PW = config.PLAYER_WIDTH
@@ -53,6 +54,22 @@ function simMissile(obj: MissileObj, world: World, dt: number) {
   // Collide w world
   if (collide(world, loc.x, loc.y, loc.z)) {
     obj.situation = ObjSituation.IN_GROUND
+
+    // Explode some blocks
+    let ix = loc.x | 0
+    let iy = loc.y | 0
+    let iz = (loc.z - 1) | 0
+    for (let x = ix - 2; x <= ix + 2; x++) {
+      for (let y = iy - 2; y <= iy + 2; y++) {
+        for (let z = iz - 2; z <= iz + 2; z++) {
+          const v = world.getVox(x, y, z)
+          if (!vox.isSolid(v)) continue
+          world.setVox(x, y, z, vox.INDEX.AIR)
+
+          // TODO: add objects
+        }
+      }
+    }
   }
 }
 
