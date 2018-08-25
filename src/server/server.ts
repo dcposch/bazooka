@@ -37,9 +37,6 @@ function main() {
     console.log('Listening on ' + JSON.stringify(httpServer.address()))
   })
 
-  // Generate the world
-  state.game.generate()
-
   // Start the tick
   process.nextTick(tick)
 }

@@ -17,6 +17,12 @@ const CS = config.CHUNK_SIZE
 const PAD = 3
 const PAD2 = 2 * PAD
 
+enum GameStatus {
+  LOBBY = 'LOBBY',
+  ACTIVE = 'ACTIVE',
+  COMPLETED = 'COMPLETED',
+}
+
 // Represents one Bazooka City game.
 // Battle royale. Players land on a procgen voxel sky island and fight until one is left.
 //
@@ -40,7 +46,7 @@ class BazookaGame {
   constructor() {
     this.playerConns = []
     this.world = new World()
-    this.status = 'LOBBY'
+    this.status = GameStatus.LOBBY
     this.objects = []
     this.nextObjKey = 0
     this.columnsToFall = []
@@ -82,6 +88,11 @@ class BazookaGame {
     console.log('bazooka adding player %s', playerConn.id)
     this.playerConns.push(playerConn)
     playerConn.conn.on('update', obj => this._handleUpdate(playerConn, obj))
+
+    if (this.status === GameStatus.LOBBY && this.playerConns.length === config.BAZOOKA.MAX_PLAYERS) {
+      this.status = GameStatus.ACTIVE
+      this.generate()
+    }
   }
 
   removePlayer(id: string) {
@@ -89,10 +100,6 @@ class BazookaGame {
     console.log('bazooka removing player %s: %s', id, ix)
     if (ix < 0) return undefined
     return this.playerConns.splice(ix, 1)[0]
-  }
-
-  getNumPlayersConnected() {
-    return this.playerConns.length
   }
 
   getNumPlayersAlive() {
@@ -104,6 +111,9 @@ class BazookaGame {
   }
 
   tick(tick: number, dt: number) {
+    if (this.status === 'LOBBY') {
+      return
+    }
     // Kill players who fall
     this.playerConns.forEach(function(pc) {
       const loc = pc.player.location
@@ -127,7 +137,8 @@ class BazookaGame {
     const tickInRound = tick - round * ROUND_LENGTH_TICKS
     if (tickInRound > ROUND_LENGTH_TICKS - FALLING_LENGTH_TICKS) {
       const totalFallingTicks = ROUNDS * FALLING_LENGTH_TICKS
-      const currentFallingTick = round * FALLING_LENGTH_TICKS + ROUND_LENGTH_TICKS - tickInRound
+      const currentFallingTick =
+        round * FALLING_LENGTH_TICKS + FALLING_LENGTH_TICKS - (ROUND_LENGTH_TICKS - tickInRound)
       const startIndex = ((currentFallingTick * totalColumns) / totalFallingTicks) | 0
       const endIndex = (((1 + currentFallingTick) * totalColumns) / totalFallingTicks) | 0
 
