@@ -6,8 +6,8 @@ import { PlayerMode, GameStatus } from '../../types'
 
 var STATUS_WIDTH_PX = 66 * 2
 var STATUS_HEIGHT_PX = 32 * 2
-var HEALTH_WIDTH_PX = 60 * 3
-var HEALTH_HEIGHT_PX = 5 * 3
+var HEALTH_WIDTH_PX = 60 * 5
+var HEALTH_HEIGHT_PX = 5 * 5
 var NUM_LEFT_WIDTH_PX = 60 * 2
 var NUM_LEFT_HEIGHT_PX = 32 * 2
 

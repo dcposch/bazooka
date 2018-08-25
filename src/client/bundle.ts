@@ -1,7 +1,7 @@
 import vec3 from 'gl-vec3'
 
 import playerControls from './player-controls'
-import { simulateClient } from '../protocol/physics'
+import { simPlayer, simObjects } from '../protocol/physics'
 import picker from './picker'
 import mesher from './mesher'
 import Socket from './socket'
@@ -169,7 +169,6 @@ function handleObjects(msg: GameMsgObjects) {
   // Delete objects that no longer exist or are too far away
   Object.keys(state.objects).forEach(function(key) {
     if (keys[key]) return
-    if (key === 'self') return
     console.log('deleting obj ' + key)
     delete state.objects[key]
   })
@@ -225,10 +224,10 @@ function tick() {
 // Stops running if the canvas is not visible, for example because the window is minimized.
 function frame(context: DefaultContext) {
   // Track FPS
-  var now = new Date().getTime()
-  var dt = Math.max(now - state.perf.lastFrameTime, 1) / 1000
+  var nowMs = new Date().getTime()
+  var dt = Math.max(nowMs - state.perf.lastFrameTime, 1) / 1000
   state.perf.fps = 0.99 * state.perf.fps + 0.01 / dt // Exponential moving average
-  state.perf.lastFrameTime = now
+  state.perf.lastFrameTime = nowMs
   state.paused = !env.shell.fullscreen
 
   // Update the terrain
@@ -246,42 +245,43 @@ function frame(context: DefaultContext) {
   for (var t = 0.0; t < dt; t += config.PHYSICS.MAX_DT) {
     var stepDt = Math.min(config.PHYSICS.MAX_DT, dt - t)
     if (!state.paused) playerControls.navigate(state.player, stepDt)
-    simulateClient(state, stepDt)
+    simPlayer(state.player, state.world, stepDt)
   }
+  simObjects(Object.values(state.objects), state.world, nowMs)
+
   if (!state.paused) playerControls.look(state.player)
 
   // Prediction: extrapolate object positions from latest server update
-  predictObjects(dt, now)
+  // predictObjects(dt, now)
 
   // Draw the frame
   render()
 }
 
-function predictObjects(dt: number, now: number) {
-  // Our own player object gets special treatment
-  // TODO: remove
-  var self = state.objects.self
-  self.location = state.player.location
-  self.velocity = state.player.velocity
-  self.direction = state.player.direction
-  self.name = state.player.name
-  self.mode = state.player.mode
-
-  // All other object positions are extrapolated from the latest server position + velocity
-  Object.keys(state.objects).forEach(function(key) {
-    if (key === 'self') return
-    var obj = state.objects[key]
-    // Don't extrapolate too far. If there's too much lag, it's better for objects to stop moving
-    // than to teleport through blocks.
-    if (obj.lastUpdateMs - now > config.MAX_EXTRAPOLATE_MS) return
-    var loc = obj.location
-    var vel = obj.velocity
-    if (obj.situation === 'airborne') vel.z -= config.PHYSICS.GRAVITY * dt
-    loc.x += vel.x * dt
-    loc.y += vel.y * dt
-    loc.z += vel.z * dt
-  })
-}
+// function predictObjects(dt: number, now: number) {
+//   // Our own player object gets special treatment
+//   // TODO: remove
+//   var self = state.objects.self
+//   self.location = state.player.location
+//   self.velocity = state.player.velocity
+//   self.direction = state.player.direction
+//   self.name = state.player.name
+//   self.mode = state.player.mode
+//   // All other object positions are extrapolated from the latest server position + velocity
+//   Object.keys(state.objects).forEach(function(key) {
+//     if (key === 'self') return
+//     var obj = state.objects[key]
+//     // Don't extrapolate too far. If there's too much lag, it's better for objects to stop moving
+//     // than to teleport through blocks.
+//     if (obj.lastUpdateMs - now > config.MAX_EXTRAPOLATE_MS) return
+//     var loc = obj.location
+//     var vel = obj.velocity
+//     if (obj.situation === 'airborne') vel.z -= config.PHYSICS.GRAVITY * dt
+//     loc.x += vel.x * dt
+//     loc.y += vel.y * dt
+//     loc.z += vel.z * dt
+//   })
+// }
 
 function render() {
   env.regl.clear({ color: [1, 1, 1, 1], depth: 1 })

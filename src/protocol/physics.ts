@@ -32,9 +32,10 @@ export function simulateClient(state: GameState, dt: number) {
   simObjects(Object.values(state.objects), state.world, dt)
 }
 
-export function simObjects(objects: GameObj[], world: World, dt: number) {
+export function simObjects(objects: GameObj[], world: World, nowMs: number) {
   for (let i = 0; i < objects.length; i++) {
     const obj = objects[i]
+    const dt = nowMs - obj.lastUpdateMs
     switch (obj.type) {
       case 'falling-block':
         simFallingBlock(obj as FallingBlockObj, world, dt)
@@ -116,7 +117,7 @@ function simFallingBlock(block: FallingBlockObj, world: World, dt: number) {
   }
 }
 
-function simPlayer(player: GamePlayerState, world: World, dt: number) {
+export function simPlayer(player: GamePlayerState, world: World, dt: number) {
   var loc = player.location
   var vel = player.velocity
 

@@ -37,7 +37,8 @@ function main() {
     console.log('Listening on ' + JSON.stringify(httpServer.address()))
   })
 
-  // Start the tick
+  // Start the game
+  state.game.generate()
   process.nextTick(tick)
 }
 
