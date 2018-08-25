@@ -93,9 +93,12 @@ class Conn extends EventEmitter {
     this.send(msg)
   }
 
-  sendStart() {
+  sendStatus(gameStatus: string, alivePlayers: number, totalPlayers: number) {
     this.send({
-      type: 'start',
+      type: 'status',
+      gameStatus,
+      alivePlayers,
+      totalPlayers,
     })
   }
 

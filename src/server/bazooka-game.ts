@@ -78,6 +78,13 @@ class BazookaGame {
     this.status = 'ACTIVE'
   }
 
+  sendStatus() {
+    const alive = this.getNumPlayersAlive()
+    this.playerConns.forEach(playerConn => {
+      playerConn.conn.sendStatus(this.status, alive, this.playerConns.length)
+    })
+  }
+
   addPlayer(playerConn: PlayerConn) {
     console.log('bazooka adding player %s', playerConn.id)
     this.playerConns.push(playerConn)
@@ -86,17 +93,16 @@ class BazookaGame {
     if (this.status === GameStatus.LOBBY && this.playerConns.length === config.BAZOOKA.MAX_PLAYERS) {
       this.status = GameStatus.ACTIVE
       this.generate()
-      this.playerConns.forEach(playerConn => {
-        playerConn.conn.sendStart()
-      })
+      this.sendStatus()
     }
   }
 
-  removePlayer(id: string) {
+  removePlayer(id: string): void {
     const ix = this.playerConns.findIndex(c => c.id === id)
     console.log('bazooka removing player %s: %s', id, ix)
     if (ix < 0) return undefined
-    return this.playerConns.splice(ix, 1)[0]
+    this.playerConns.splice(ix, 1)[0]
+    this.sendStatus()
   }
 
   getNumPlayersAlive() {

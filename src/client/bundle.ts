@@ -78,6 +78,8 @@ var state: GameState = {
   socket: new Socket(),
   config: undefined,
   error: undefined,
+  alivePlayers: 0,
+  totalPlayers: 0,
 }
 
 main()
@@ -119,8 +121,21 @@ function initWebsocket() {
         return handleObjects(msg)
       case 'error':
         return splash.showError(msg.error.message)
-      case 'start':
-        return splash.startGame()
+      case 'status': {
+        let shouldStart = false
+        if (state.gameStatus === GameStatus.LOBBY && msg.gameStatus === GameStatus.ACTIVE) {
+          shouldStart = true
+        }
+
+        state.gameStatus = msg.gameStatus
+        state.alivePlayers = msg.alivePlayers
+        state.totalPlayers = msg.totalPlayers
+
+        if (shouldStart) {
+          splash.startGame()
+        }
+        return
+      }
       default:
         console.error('Ignoring unknown message type ' + msg.type)
     }

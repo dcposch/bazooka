@@ -102,6 +102,8 @@ export interface GameState {
   socket: Socket
   config: ClientConfig
   error: Error | undefined
+  totalPlayers: number
+  alivePlayers: number
 }
 
 /*export interface GameObjFallingBlock extends GameObj {
