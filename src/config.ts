@@ -45,7 +45,7 @@ export default {
   },
   BAZOOKA: {
     MAX_PLAYERS: 20,
-    GEN_RADIUS_CHUNKS: 15,
+    GEN_RADIUS_CHUNKS: 8,
     MAX_FALLING_BLOCKS: 128,
   },
 }
