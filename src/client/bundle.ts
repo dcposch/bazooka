@@ -24,8 +24,18 @@ import drawHud from './draw/draw-hud'
 import drawSky from './draw/draw-sky'
 
 import Player from './models/player'
-import { PlayerMode, PlayerSituation, CameraMode, GameState, GameObj, GameMsgConfig, GameMsgObjects } from '../types'
+import {
+  PlayerMode,
+  PlayerSituation,
+  CameraMode,
+  GameState,
+  GameMsgConfig,
+  GameMsgObjects,
+  GameClientObj,
+} from '../types'
 import { Vec3, DefaultContext } from 'regl'
+import FallingBlock from './models/falling-block'
+import GameObj from './models/game-obj'
 
 // All game state lives here
 var state: GameState = {
@@ -135,11 +145,7 @@ function handleObjects(msg: GameMsgObjects) {
     keys[info.key] = true
     var obj = state.objects[info.key]
     if (!obj) obj = state.objects[info.key] = createObject(info)
-    obj.location = info.location
-    obj.velocity = info.velocity
-    obj.direction = info.direction
-    obj.situation = info.situation
-    Object.assign(obj.props, info.props)
+    Object.assign(obj, info)
     obj.lastUpdateMs = now
   })
 
@@ -152,12 +158,12 @@ function handleObjects(msg: GameMsgObjects) {
   })
 }
 
-function createObject(info: GameObj) {
+function createObject(info: GameObj): GameClientObj {
   switch (info.type) {
     case 'player':
-      return new Player((info as GameObjPlayer).name)
+      return new Player(info.key, (info as Player).name)
     case 'block':
-      return { type: 'falling-block' }
+      return new FallingBlock(info.key)
     default:
       throw new Error('unrecognized object type ' + info.type)
   }
@@ -231,11 +237,12 @@ function frame(context: DefaultContext) {
 
 function predictObjects(dt: number, now: number) {
   // Our own player object gets special treatment
+  // TODO: remove
   var self = state.objects.self
   self.location = state.player.location
   self.velocity = state.player.velocity
-  self.props.direction = state.player.direction
-  self.props.name = state.player.name
+  self.direction = state.player.direction
+  self.name = state.player.name
   self.mode = state.player.mode
 
   // All other object positions are extrapolated from the latest server position + velocity
@@ -247,7 +254,7 @@ function predictObjects(dt: number, now: number) {
     if (obj.lastUpdateMs - now > config.MAX_EXTRAPOLATE_MS) return
     var loc = obj.location
     var vel = obj.velocity
-    if (obj.situation === 'airborne') vel.z -= config.PHYSICS.GRAVITY * dt
+    if ((obj as Player).situation === 'airborne') vel.z -= config.PHYSICS.GRAVITY * dt
     loc.x += vel.x * dt
     loc.y += vel.y * dt
     loc.z += vel.z * dt

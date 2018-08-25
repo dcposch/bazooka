@@ -52,7 +52,7 @@ export default class Poly8 {
 
         mesh.norms.push(vec3.clone([nx, ny, nz]))
 
-        var uv = faceUVs ? faceUVs[vi[0] * 2 + vi[1]] : vi
+        var uv = faceUVs ? ([faceUVs[vi[0]], faceUVs[vi[1]]] as [number, number]) : vi
         mesh.uvs.push(vec2.clone(uv))
       }
     }

@@ -8,8 +8,9 @@ import config from '../../config'
 import mat4 from 'gl-mat4'
 import mat3 from 'gl-mat3'
 import vec3 from 'gl-vec3'
-import { VecXYZ, PlayerMode, DirAzAlt, PlayerSituation, Bone } from '../../types'
+import { PlayerMode, DirAzAlt, PlayerSituation, Bone } from '../../types'
 import { Buffer, DefaultContext, Vec2 } from 'regl'
+import GameObj from './game-obj'
 
 const { regl } = env
 
@@ -44,18 +45,13 @@ var meshTemplate = makeMesh()
 // Vertex positions and normals vary from player to player, but UVs are shared
 var bufferUVs = regl.buffer(meshTemplate.uvs)
 
-export default class Player {
-  type: string
-  key?: string
-  location: VecXYZ
-  velocity: VecXYZ
+export default class Player extends GameObj {
   mode: PlayerMode
-  props: {
-    name?: string
-    direction: DirAzAlt
-    situation: PlayerSituation
-    walk: number
-  }
+  name: string
+  direction: DirAzAlt
+  situation: PlayerSituation
+  walk: number
+
   bones: {
     head: Bone
     armL: Bone
@@ -70,23 +66,15 @@ export default class Player {
     norms: Buffer
   }
 
-  constructor(name: string) {
-    // Common to all objects
-    this.type = 'player'
-    this.key = undefined
-    this.location = { x: 0, y: 0, z: 0 }
-    this.velocity = { x: 0, y: 0, z: 0 }
+  constructor(key: string, name: string) {
+    super(key, 'player')
 
     // Which mode you're in-- bazooka, commando, ...
     this.mode = PlayerMode.BAZOOKA
-
-    // Specific to Player
-    this.props = {
-      name: undefined,
-      direction: { azimuth: 0, altitude: 0 },
-      situation: PlayerSituation.AIRBORNE,
-      walk: 0,
-    }
+    this.situation = PlayerSituation.AIRBORNE
+    this.direction = { azimuth: 0, altitude: 0 }
+    this.walk = 0
+    this.name = ''
 
     this.bones = {
       head: { rot: vec3.fromValues(0, 0, 0), center: vec3.fromValues(0, 0, 0) },
@@ -113,7 +101,7 @@ export default class Player {
 
   tick(dt: number) {
     var vel = this.velocity
-    var props = this.props
+    var props = this
     var cdir = toCartesian(props.direction.azimuth, 0, 1)
 
     // Update bones
@@ -151,7 +139,7 @@ export default class Player {
 
   draw() {
     var loc = this.location
-    var azimuth = this.props.direction.azimuth
+    var azimuth = this.direction.azimuth
     var altitude = 0 // Player head moves, body stays level
 
     // Update the mesh

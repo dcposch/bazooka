@@ -2,6 +2,8 @@ import { Vec3 } from 'regl'
 import Chunk from './chunk'
 import World from './world'
 import Socket from './client/socket'
+import FallingBlock from './client/models/falling-block'
+import GameObj from './client/models/game-obj'
 
 export interface VecXYZ {
   x: number
@@ -65,6 +67,7 @@ export interface GamePlayerState {
     | undefined
   camera: CameraMode
   mode: PlayerMode
+  name?: string
 }
 
 export interface GameState {
@@ -86,8 +89,8 @@ export interface GameState {
     showHUD: boolean
   }
 
-  objects: { [key: string]: GameObj }
-  fallingBlocks: GameObjFallingBlock[]
+  objects: { [key: string]: GameClientObj }
+  fallingBlocks: FallingBlock[]
 
   world: World
   socket: Socket
@@ -95,14 +98,13 @@ export interface GameState {
   error: Error | undefined
 }
 
-export interface GameObj {
-  type: string
-  key: string
-  location: VecXYZ
-  velocity: VecXYZ
+export interface GameClientObj extends GameObj {
+  draw: () => void
+  tick: (dt: number) => void
+  destroy: () => void
 }
 
-export interface GameObjFallingBlock extends GameObj {
+/*export interface GameObjFallingBlock extends GameObj {
   rotAxis: Vec3
   rotTheta: number
   rotVel: number
@@ -113,7 +115,8 @@ export interface GameObjPlayer extends GameObj {
   name: string
   direction: DirAzAlt
   situation: PlayerSituation
-}
+  mode: PlayerMode
+}*/
 
 export interface GameCmd {
   type: string
