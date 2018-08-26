@@ -79,7 +79,7 @@ var state: GameState = {
     showHUD: true,
   },
 
-  gameStatus: GameStatus.ACTIVE, // TODO
+  gameStatus: GameStatus.LOBBY,
 
   objects: {},
 

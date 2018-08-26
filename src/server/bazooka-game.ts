@@ -76,12 +76,10 @@ class BazookaGame {
       return c2.distance - c1.distance
     })
     console.log('generated ' + this.world.chunks.length + ' chunks')
-    this.status = 'ACTIVE'
   }
 
   sendStatus() {
     const alive = this.getNumPlayersAlive()
-    console.log('alive: ' + alive)
     this.playerConns.forEach(playerConn => {
       playerConn.conn.sendStatus(this.status, alive, this.totalPlayers)
     })
