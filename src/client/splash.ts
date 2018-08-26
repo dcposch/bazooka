@@ -70,6 +70,9 @@ function enterLobby() {
   var bgImg = 'url(img/bazooka-city-dark.gif), url(img/bazooka-city-title.png)'
   divSplash.style.setProperty('background-image', bgImg)
   document.querySelector('.splash-start')!.remove()
+  state.socket.send({
+    type: 'activate',
+  })
 
   // TODO: get lobby / game  state from server
   // window.setTimeout(startGame, 2000)

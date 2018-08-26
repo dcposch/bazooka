@@ -105,7 +105,7 @@ function main() {
   // For debugging
   ;(window as any).state = state
   ;(window as any).config = config
-  splash.startGame()
+  // splash.startGame()
 }
 
 function loadTextures() {

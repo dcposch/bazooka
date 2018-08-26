@@ -136,6 +136,8 @@ function handleJsonMessage(conn: Conn, obj: GameCmd) {
       return handleHandshake(conn, obj as GameCmdHandshake)
     case 'update':
       return conn.emit('update', obj)
+    case 'activate':
+      return conn.emit('activate', obj)
     default:
       console.error('Ignoring unknown message type ' + obj.type)
   }

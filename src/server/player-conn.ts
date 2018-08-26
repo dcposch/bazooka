@@ -15,10 +15,14 @@ export default class PlayerConn {
   /** Bazooka player */
   player: PlayerObj
 
+  /** Past the splash screen or not */
+  active: boolean
+
   constructor(conn: any) {
     this.id = uuid()
     this.conn = conn
     this.chunksSent = {}
     this.player = new PlayerObj(this.id, 'anon')
+    this.active = false
   }
 }

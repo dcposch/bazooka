@@ -40,7 +40,7 @@ class BazookaGame {
   constructor() {
     this.playerConns = []
     this.world = new World()
-    this.status = GameStatus.ACTIVE
+    this.status = GameStatus.LOBBY
     this.objects = []
     this.nextObjKey = 0
     this.columnsToFall = []
@@ -89,14 +89,18 @@ class BazookaGame {
     console.log('bazooka adding player %s', playerConn.id)
     this.playerConns.push(playerConn)
     playerConn.conn.on('update', obj => this._handleUpdate(playerConn, obj))
+    playerConn.conn.on('activate', () => this._activatePlayer(playerConn))
+  }
 
-    if (this.status === GameStatus.LOBBY && this.playerConns.length === config.BAZOOKA.MAX_PLAYERS) {
+  _activatePlayer(playerConn: PlayerConn) {
+    console.log('activate player')
+    playerConn.active = true
+    const activePlayers = this.getNumActivePlayers()
+    if (this.status === GameStatus.LOBBY && activePlayers === config.BAZOOKA.MAX_PLAYERS) {
       this.status = GameStatus.ACTIVE
     }
-
     this.objects.push(playerConn.player)
-
-    this.totalPlayers = this.playerConns.length
+    this.totalPlayers = activePlayers
     this.sendStatus()
   }
 
@@ -125,6 +129,14 @@ class BazookaGame {
     let ret = 0
     this.playerConns.forEach(function(pc) {
       ret += pc.player.health > 0 ? 1 : 0
+    })
+    return ret
+  }
+
+  getNumActivePlayers() {
+    let ret = 0
+    this.playerConns.forEach(pc => {
+      ret += pc.active ? 1 : 0
     })
     return ret
   }
