@@ -94,19 +94,26 @@ class BazookaGame {
       this.status = GameStatus.ACTIVE
     }
 
+    this.objects.push(playerConn.player)
+
     this.totalPlayers = this.playerConns.length
     this.sendStatus()
   }
 
   removePlayer(id: string): void {
+    console.log('bazooka removing player ' + id)
     const ix = this.playerConns.findIndex(c => c.id === id)
-    console.log('bazooka removing player %s: %s', id, ix)
     if (ix < 0) return undefined
-    this.playerConns.splice(ix, 1)[0]
+    this.playerConns.splice(ix, 1)
+
+    const ix2 = this.objects.findIndex(o => o.key === id)
+    this.objects.splice(ix2, 1)
+
     const alive = this.getNumPlayersAlive()
     if (alive <= 1 && this.status == GameStatus.ACTIVE) {
       this.endGame()
     }
+
     this.sendStatus()
   }
 
@@ -197,32 +204,33 @@ class BazookaGame {
       const a = pc.player
       const objsToSend = [] as GameObj[]
 
-      for (let j = 0; j < n; j++) {
-        if (j === i) continue
-        const pcb = this.playerConns[j]
-        const b = pcb.player
-        if (!a.location || !b.location) continue
-        if (!b.name) continue
-        if (!isInRange(a.location, b.location)) continue
+      // for (let j = 0; j < n; j++) {
+      //   if (j === i) continue
+      //   const pcb = this.playerConns[j]
+      //   const b = pcb.player
+      //   if (!a.location || !b.location) continue
+      //   if (!b.name) continue
+      //   if (!isInRange(a.location, b.location)) continue
 
-        /*objsToSend.push({
-          // Common to all objects
-          lastUpdateMs: b.lastUpdateMs,
-          type: ObjType.PLAYER,
-          key: 'player-' + pcb.id,
-          location: b.location,
-          velocity: b.velocity,
-          // Specific to the player object
-          name: b.name,
-          direction: b.direction,
-          situation: b.situation,
-        })*/
-        objsToSend.push(b)
-      }
+      //   /*objsToSend.push({
+      //     // Common to all objects
+      //     lastUpdateMs: b.lastUpdateMs,
+      //     type: ObjType.PLAYER,
+      //     key: 'player-' + pcb.id,
+      //     location: b.location,
+      //     velocity: b.velocity,
+      //     // Specific to the player object
+      //     name: b.name,
+      //     direction: b.direction,
+      //     situation: b.situation,
+      //   })*/
+      //   objsToSend.push(b)
+      // }
 
       // Send missiles, etc
       for (let j = 0; j < this.objects.length; j++) {
         const object = this.objects[j]
+        if (object.key === a.key) continue
         objsToSend.push(object)
       }
 
