@@ -195,10 +195,41 @@ function simFallingBlock(block: FallingBlockObj, world: World, dt: number) {
 function simPlayer(player: PlayerObj, objects: GameObj[], world: World, dt: number): boolean {
   simPlayerNav(player, dt)
   simPlayerPhysics(player, world, dt)
+  simPlayerDamage(player, objects, dt)
 
   player.bazookaJuice = Math.min(50, player.bazookaJuice + 10 * dt)
 
   return false
+}
+
+function simPlayerDamage(player: PlayerObj, objects: GameObj[], dt: number) {
+  if (player.damageHealth < player.health) {
+    player.health = Math.max(player.damageHealth, player.health - dt * 10)
+    return
+  }
+
+  const hb = 2 // hitbox
+  const x0 = player.location.x - hb
+  const x1 = player.location.x + hb
+  const y0 = player.location.y - hb
+  const y1 = player.location.y + hb
+  const z0 = player.location.z - 1
+  const z1 = player.location.z + 1
+
+  let hit = false
+  const n = objects.length
+  for (let i = 0; i < n; i++) {
+    const obj = objects[i]
+    if (obj.type === ObjType.PLAYER) continue
+    const { x, y, z } = obj.location
+    if (x > x0 && x < x1 && y > y0 && y < y1 && z > z0 && z < z1) {
+      hit = true
+    }
+  }
+
+  if (hit) {
+    player.damageHealth = Math.max(0, player.health - 10)
+  }
 }
 
 function simPlayerNav(player: PlayerObj, dt: number) {

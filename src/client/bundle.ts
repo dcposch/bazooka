@@ -295,8 +295,8 @@ function render() {
   })
   drawHud({
     mode: state.player.mode,
-    health: 30,
-    numPlayersLeft: 17,
+    health: state.player.health,
+    numPlayersLeft: state.alivePlayers,
     gameStatus: state.gameStatus,
     bazookaJuice: state.player.bazookaJuice,
   })

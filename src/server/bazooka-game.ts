@@ -155,7 +155,7 @@ class BazookaGame {
     // UPDATE THE GAME
     const nowMs = new Date().getTime()
     this._simulate(nowMs)
-    this._makeColumnsFall(tick - this.firstTick)
+    // this._makeColumnsFall(tick - this.firstTick)
 
     // SEND UPDATES TO PLAYERS
     const sendAll = tick % 20 === 0
@@ -335,7 +335,7 @@ class BazookaGame {
 
     // Missile velocity = muzzle velocity + player velocity
     const pvel = pc.player.velocity
-    const vel = toCartesian(dir.azimuth, dir.altitude + 0.5, 15)
+    const vel = toCartesian(dir.azimuth, dir.altitude + 0.5, 30)
     vel[0] += pvel.x
     vel[1] += pvel.y
     vel[2] += pvel.z

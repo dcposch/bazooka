@@ -11,7 +11,7 @@ import mat3 from 'gl-mat3'
 const { regl } = env
 
 const MAX_OBJS = 64
-const VERTS_PER_OBJ = 36 * 2
+const VERTS_PER_OBJ = 36 // * 2
 
 // One texel: 1/16th of a block
 const TX = 1 / 16.0
@@ -21,10 +21,12 @@ const mat = mat4.create()
 const matN = mat3.create()
 
 // Vertex positions, normals, etc
-const meshMissile = Mesh.combine([
-  Poly8.axisAligned(0, -4 * TX, -4 * TX, 8 * TX, 4 * TX, 4 * TX).createMesh(),
-  Poly8.axisAligned(8 * TX, -3 * TX, -3 * TX, 10 * TX, 3 * TX, 3 * TX).createMesh(),
-])
+// const meshMissile = Mesh.combine([
+//   Poly8.axisAligned(0, -4 * TX, -4 * TX, 4 * TX, 4 * TX, 4 * TX).createMesh(),
+//    Poly8.axisAligned(8 * TX, -3 * TX, -3 * TX, 10 * TX, 3 * TX, 3 * TX).createMesh(),
+// ])
+
+const meshMissile = Poly8.axisAligned(-3 * TX, -3 * TX, -3 * TX, 3 * TX, 3 * TX, 3 * TX).createMesh()
 
 const mesh = Mesh.combine(new Array(MAX_OBJS).fill(0).map(x => meshMissile.clone()))
 // mesh.uvs = new Array(MAX_OBJS * VERTS_PER_OBJ).fill([0, 0])
@@ -97,7 +99,7 @@ function maybeCompileCommands() {
   bufNorms = regl.buffer({ usage: 'stream', data: mesh.norms })
   // bufUV = regl.buffer({ usage: 'static', data: mesh.uvs })
 
-  const arrCols = new Array(mesh.verts.length).fill([1, 0.5, 0])
+  const arrCols = new Array(mesh.verts.length).fill([123.0 / 255.0, 172.0 / 255.0, 186.0 / 255.0, 1])
   const bufCol = regl.buffer({ usage: 'static', data: arrCols })
 
   drawCommand = regl({

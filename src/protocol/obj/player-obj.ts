@@ -11,6 +11,8 @@ export default class PlayerObj extends GameObj {
   health: number
   bazookaJuice: number
 
+  damageHealth: number
+
   input: {
     forward: boolean
     back: boolean
@@ -29,7 +31,10 @@ export default class PlayerObj extends GameObj {
     this.direction = { azimuth: 0, altitude: 0 }
     this.walk = 0
     this.name = ''
+
     this.health = 50
+    this.damageHealth = 50
+
     this.bazookaJuice = 50
 
     this.input = {
