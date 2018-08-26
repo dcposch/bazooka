@@ -21,6 +21,7 @@ export interface HudProps {
   mode: PlayerMode
   numPlayersLeft: number
   gameStatus: GameStatus
+  bazookaJuice: number
 }
 
 /**
@@ -37,6 +38,7 @@ export default function draw(props: HudProps) {
     health: props.health,
     numPlayersLeft: props.numPlayersLeft,
     gameStatus: props.gameStatus,
+    bazookaJuice: props.bazookaJuice,
   })
 }
 
@@ -57,7 +59,7 @@ var drawHud = env.regl<{}, {}, HudProps>({
       )
 
       // Rect 2: health bar
-      var healthX = pxW * (HEALTH_WIDTH_PX * -0.5 + 15 + props.health * 3)
+      var healthX = pxW * (HEALTH_WIDTH_PX * -0.5 + 15 + props.health * 5)
       rects.push(makeQuad(pxW * HEALTH_WIDTH_PX * -0.5, -1 + pxH * (24 + HEALTH_HEIGHT_PX), healthX, -1 + pxH * 24))
 
       // Rect 3: health bar consumed
@@ -95,6 +97,18 @@ var drawHud = env.regl<{}, {}, HudProps>({
       // Texel: (72, 14) to (126, 48), 54 x 34
       const win = props.gameStatus === GameStatus.COMPLETED && props.health > 0 ? 2 : 0
       rects.push(makeQuad(pxW * -54 * win, pxH * 34 * win, pxW * 54 * win, pxH * -34 * win))
+
+      // Rect 8: bazooka juice
+      const bj = props.bazookaJuice
+      var healthX = pxW * (HEALTH_WIDTH_PX * -0.5 + 15 + bj * 5)
+      rects.push(
+        makeQuad(
+          pxW * HEALTH_WIDTH_PX * -0.5,
+          -1 + pxH * (24 + HEALTH_HEIGHT_PX + 8),
+          healthX,
+          -1 + pxH * (24 + HEALTH_HEIGHT_PX + 4)
+        )
+      )
 
       return rects
     },
@@ -136,6 +150,9 @@ var drawHud = env.regl<{}, {}, HudProps>({
       // Texel: (72, 14) to (126, 48), 54 x 34
       rects.push(makeQuad(tx * 72, ty * 14, tx * 126, ty * 48))
 
+      // Rect 8: bazooka juice
+      rects.push(makeQuad(tx * 72, ty * 12, tx * 73, ty * 13))
+
       return rects
     },
   },
@@ -150,7 +167,7 @@ var drawHud = env.regl<{}, {}, HudProps>({
   blend: {
     enable: false,
   },
-  count: 6 * 7,
+  count: 6 * 8,
   primitive: 'triangles',
 })
 

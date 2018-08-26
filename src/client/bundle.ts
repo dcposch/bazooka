@@ -18,7 +18,7 @@ import env from './env'
 import drawScope from './draw/draw-scope'
 import drawHitMarker from './draw/draw-hit-marker'
 import drawWorld from './draw/draw-world'
-import drawDebug from './draw/draw-debug'
+// import drawDebug from './draw/draw-debug'
 import drawFallingBlocks from './draw/draw-falling-blocks'
 import drawHud from './draw/draw-hud'
 import drawSky from './draw/draw-sky'
@@ -299,10 +299,11 @@ function render() {
     health: 30,
     numPlayersLeft: 17,
     gameStatus: state.gameStatus,
+    bazookaJuice: state.player.bazookaJuice,
   })
-  if (state.debug.showHUD) {
-    drawDebug({ gameState: state })
-  }
+  // if (state.debug.showHUD) {
+  //   drawDebug({ gameState: state })
+  // }
   if (state.cameraMode === CameraMode.FIRST_PERSON && state.player.mode !== PlayerMode.BAZOOKA) {
     drawHitMarker({ color: [1, 1, 1, 0.5] })
   }

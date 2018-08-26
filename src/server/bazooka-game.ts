@@ -322,6 +322,12 @@ class BazookaGame {
   }
 
   _handleFireBazooka(pc: PlayerConn) {
+    if (pc.player.bazookaJuice < 50) {
+      return
+    }
+
+    pc.player.bazookaJuice = 0
+
     // Shoot the direction the player is facing
     const dir = pc.player.direction
 
