@@ -7,6 +7,7 @@ export default class GameObj {
   location: VecXYZ
   velocity: VecXYZ
   lastUpdateMs: number
+  isDirty: boolean
 
   // Player
   name?: string
@@ -26,5 +27,6 @@ export default class GameObj {
     this.location = { x: 0, y: 0, z: 0 }
     this.velocity = { x: 0, y: 0, z: 0 }
     this.lastUpdateMs = 0
+    this.isDirty = true
   }
 }

@@ -88,7 +88,7 @@ class Conn extends EventEmitter {
   sendObjects(objects: GameObj[]) {
     const msg = {
       type: 'objects',
-      objects: objects,
+      objects,
     }
     this.send(msg)
   }

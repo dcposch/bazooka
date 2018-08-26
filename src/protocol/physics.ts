@@ -98,7 +98,7 @@ function simMissile(obj: MissileObj, objects: GameObj[], world: World, dt: numbe
           world.setVox(x, y, z, vox.INDEX.AIR)
 
           // Falling block explodes up from its place
-          const fb = new FallingBlockObj('fb-' + x + '-' + y + '-' + z)
+          const fb = new FallingBlockObj('fb_' + x + '_' + y + '_' + z)
           const loc = { x: (x + ix) / 2, y: (y + iy) / 2, z: (z + iz) / 2 }
           fb.location = loc
           const splodiness = 4

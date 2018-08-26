@@ -133,8 +133,15 @@ class BazookaGame {
     // this._makeColumnsFall(tick)
 
     // SEND UPDATES TO PLAYERS
-    if (tick % 20 === 0) {
+    const sendAll = tick % 20 === 0
+    const anyDirty = this.objects.some(o => o.isDirty)
+    if (sendAll || anyDirty) {
+      for (let j = 0; j < this.objects.length; j++) {
+        this.objects[j].isDirty = false
+      }
       this._sendObjects()
+    }
+    if (sendAll) {
       this._sendChunks(tick)
 
       // Kill players who fall
@@ -299,17 +306,18 @@ class BazookaGame {
 
     // Missile position = just in front & to the right of player
     const ploc = pc.player.location
-    const offset = toCartesian(dir.azimuth - 0.5, dir.altitude + 0.5, 1)
+    const offset = toCartesian(dir.azimuth - 0.3, dir.altitude - 0.2, 0.8)
     const loc = {
       x: ploc.x + offset[0],
-      y: ploc.x + offset[1],
-      z: ploc.x + offset[2],
+      y: ploc.y + offset[1],
+      z: ploc.z + offset[2],
     }
 
     // Fire ze missile
     const key = 'missile-' + ++this.nextObjKey
     const missile = new MissileObj(key)
-    missile.location = missile.velocity = {
+    missile.location = loc
+    missile.velocity = {
       x: vel[0],
       y: vel[1],
       z: vel[2],

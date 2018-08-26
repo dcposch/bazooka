@@ -70,7 +70,7 @@ function createContext2D(canvas: HTMLCanvasElement) {
 
 function createDebugText(state: any) {
   const ret = [] as string[]
-  ret.push('P9 ' + version)
+  ret.push('BAZOOKA CITY')
 
   const loc = state.player.location
   const vel = state.player.velocity
