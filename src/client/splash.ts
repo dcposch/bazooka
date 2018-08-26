@@ -13,7 +13,7 @@ let divSplash: HTMLDivElement
 let inputName: HTMLInputElement
 let btnStart: HTMLButtonElement
 let divControls: HTMLDivElement
-
+let lobbyStatus: HTMLDivElement | null
 // Error overlay
 let divError: HTMLDivElement
 
@@ -31,6 +31,10 @@ function init(st: any) {
   divControls = document.querySelector('div.splash-controls') as HTMLDivElement
   divError = document.querySelector('div.error') as HTMLDivElement
   canvas = document.querySelector('canvas') as HTMLCanvasElement
+  lobbyStatus = document.querySelector('div.splash-lobby-players') as HTMLDivElement | null
+  if (lobbyStatus !== null) {
+    lobbyStatus.style.display = 'none'
+  }
 
   // Focus player name entry
   inputName.focus()
@@ -62,7 +66,6 @@ function updateSplash(e?: KeyboardEvent) {
 }
 
 function updatePlayers(totalPlayers: number, maxPlayers: number) {
-  const lobbyStatus = document.querySelector('div.splash-lobby-players') as HTMLDivElement | null
   if (lobbyStatus !== null) {
     lobbyStatus.innerHTML = totalPlayers + ' of ' + maxPlayers
   }
@@ -75,6 +78,9 @@ function enterLobby() {
   state.socket.send({
     type: 'activate',
   })
+  if (lobbyStatus !== null) {
+    lobbyStatus.style.display = ''
+  }
 
   // TODO: get lobby / game  state from server
   // window.setTimeout(startGame, 2000)
