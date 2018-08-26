@@ -153,7 +153,9 @@ function getVoxPacked(data: Uint8Array, n: number, ix: number, iy: number, iz: n
 function setVoxPacked(chunk: Chunk, ix: number, iy: number, iz: number, v: number) {
   var data = chunk.data
   if (!data) {
-    throw new Error('Chunk data missing')
+    console.error('Chunk data missing')
+    // throw new Error('Chunk data missing')
+    return
   }
 
   // Find the quad that this point belongs to

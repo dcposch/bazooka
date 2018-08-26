@@ -128,7 +128,7 @@ class BazookaGame {
   getNumPlayersAlive() {
     let ret = 0
     this.playerConns.forEach(function(pc) {
-      ret += pc.player.health > 0 ? 1 : 0
+      ret += pc.player.health > 0 && pc.active ? 1 : 0
     })
     return ret
   }
@@ -280,7 +280,6 @@ class BazookaGame {
       }
     }
     if (numMod > 0 || numSending > 0) console.log('chunk updates: sending %s, %s modified', numSending, numMod)
-
     // Send chunk updates
     for (let j = 0; j < this.playerConns.length; j++) {
       this.playerConns[j].conn.sendChunks(chunksToSend[j])
