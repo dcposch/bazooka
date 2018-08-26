@@ -299,9 +299,11 @@ class BazookaGame {
     }
     // Object.assign(pc.player, update.player)
 
+    // INPUTS:
     pc.player.name = update.player.name
     Object.assign(pc.player.input, update.player.input)
     Object.assign(pc.player.direction, update.player.direction)
+    pc.player.mode = update.player.mode
 
     if (update.commands.length === 0) return
     console.log('update from ' + pc.id + ', ' + update.commands.length + ' cmds')

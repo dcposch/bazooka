@@ -100,14 +100,10 @@ var drawHud = env.regl<{}, {}, HudProps>({
 
       // Rect 8: bazooka juice
       const bj = props.bazookaJuice
-      var healthX = pxW * (HEALTH_WIDTH_PX * -0.5 + 15 + bj * 5)
+      var bjX0 = HEALTH_WIDTH_PX * -0.5 + 25
+      var bjX1 = HEALTH_WIDTH_PX * -0.5 + 25 + bj * 5
       rects.push(
-        makeQuad(
-          pxW * HEALTH_WIDTH_PX * -0.5,
-          -1 + pxH * (24 + HEALTH_HEIGHT_PX + 8),
-          healthX,
-          -1 + pxH * (24 + HEALTH_HEIGHT_PX + 4)
-        )
+        makeQuad(pxW * bjX0, -1 + pxH * (24 + HEALTH_HEIGHT_PX + 8), pxW * bjX1, -1 + pxH * (24 + HEALTH_HEIGHT_PX + 4))
       )
 
       return rects
