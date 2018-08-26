@@ -40,7 +40,7 @@ class BazookaGame {
   constructor() {
     this.playerConns = []
     this.world = new World()
-    this.status = GameStatus.LOBBY
+    this.status = GameStatus.ACTIVE
     this.objects = []
     this.nextObjKey = 0
     this.columnsToFall = []

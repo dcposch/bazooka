@@ -310,7 +310,7 @@ function render() {
   })
   drawHud({
     mode: state.player.mode,
-    health: 10,
+    health: 50,
     numPlayersLeft: 17,
     gameStatus: state.gameStatus,
   })
