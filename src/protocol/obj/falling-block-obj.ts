@@ -1,6 +1,7 @@
 import GameObj from './game-obj'
 import vec3 from 'gl-vec3'
 import { Vec3 } from 'regl'
+import { ObjType } from '../../types'
 
 export default class FallingBlockObj extends GameObj {
   rotAxis: Vec3
@@ -9,7 +10,7 @@ export default class FallingBlockObj extends GameObj {
   typeIndex: number
 
   constructor(key: string) {
-    super(key, 'falling-block')
+    super(key, ObjType.FALLING_BLOCK)
 
     this.rotAxis = vec3.create()
     this.rotTheta = 0

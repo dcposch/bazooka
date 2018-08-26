@@ -1,5 +1,5 @@
 import { toCartesian } from '../../math/coordinates'
-import { PlayerMode, DirAzAlt, ObjSituation } from '../../types'
+import { PlayerMode, DirAzAlt, ObjSituation, ObjType } from '../../types'
 import GameObj from './game-obj'
 
 export default class PlayerObj extends GameObj {
@@ -11,7 +11,7 @@ export default class PlayerObj extends GameObj {
   health: number
 
   constructor(key: string, name: string) {
-    super(key, 'player')
+    super(key, ObjType.PLAYER)
 
     // Which mode you're in-- bazooka, commando, ...
     this.mode = PlayerMode.BAZOOKA

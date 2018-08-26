@@ -41,46 +41,6 @@ function interact(state: GameState) {
   return undefined
 }
 
-/*
-function dbgSpawnBlocks(state: GameState) {
-  state.fallingBlocks = []
-  for (var i = 0; i < 100; i++) {
-    var loc = {
-      x: Math.random() * 20 - 10,
-      y: Math.random() * 20 - 10,
-      z: Math.random() * 20 + 100,
-    }
-
-    state.fallingBlocks.push({
-      type: 'falling-block',
-      key: 'blk-' + i,
-      location: loc,
-      velocity: {
-        x: loc.x + Math.random() * 6 - 3,
-        y: loc.x + Math.random() * 6 - 3,
-        z: 0,
-      },
-      rotAxis: dbgRandomRotAxis(),
-      rotTheta: 0,
-      rotVel: Math.random() * 5,
-      typeIndex: Math.random() < 0.5 ? vox.INDEX.STONE : vox.INDEX.BROWN,
-    } as FallingBlock)
-  }
-}
-
-function dbgRandomRotAxis(): Vec3 {
-  var ret = vec3.create()
-  ret[0] = Math.random()
-  ret[1] = Math.random()
-  ret[2] = Math.random()
-  var det = Math.sqrt(vec3.dot(ret, ret))
-  ret[0] /= det
-  ret[1] /= det
-  ret[2] /= det
-  return ret
-}
-*/
-
 // Let the player move
 function navigate(player: GamePlayerState, dt: number) {
   var loc = player.location

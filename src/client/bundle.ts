@@ -25,7 +25,16 @@ import drawSky from './draw/draw-sky'
 import drawPlayers from './draw/draw-players'
 import drawMissiles from './draw/draw-missiles'
 
-import { PlayerMode, ObjSituation, CameraMode, GameState, GameMsgConfig, GameMsgObjects, GameStatus } from '../types'
+import {
+  PlayerMode,
+  ObjSituation,
+  CameraMode,
+  GameState,
+  GameMsgConfig,
+  GameMsgObjects,
+  GameStatus,
+  ObjType,
+} from '../types'
 import { Vec3, DefaultContext } from 'regl'
 import FallingBlockObj from '../protocol/obj/falling-block-obj'
 import GameObj from '../protocol/obj/game-obj'
@@ -176,11 +185,11 @@ function handleObjects(msg: GameMsgObjects) {
 
 function createObject(obj: GameObj): GameObj {
   switch (obj.type) {
-    case 'player':
+    case ObjType.PLAYER:
       return new PlayerObj(obj.key, (obj as PlayerObj).name)
-    case 'block':
+    case ObjType.FALLING_BLOCK:
       return new FallingBlockObj(obj.key)
-    case 'missile':
+    case ObjType.MISSILE:
       return new MissileObj(obj.key)
 
     default:
@@ -294,9 +303,9 @@ function render() {
 
     // Draw objects
     const objs = Object.values(state.objects)
-    drawFallingBlocks(objs.filter(o => o.type === 'falling-block') as FallingBlockObj[])
-    drawPlayers(objs.filter(o => o.type === 'player') as PlayerObj[])
-    drawMissiles(objs.filter(o => o.type === 'missile') as MissileObj[])
+    drawFallingBlocks(objs.filter(o => o.type === ObjType.FALLING_BLOCK) as FallingBlockObj[])
+    drawPlayers(objs.filter(o => o.type === ObjType.PLAYER) as PlayerObj[])
+    drawMissiles(objs.filter(o => o.type === ObjType.MISSILE) as MissileObj[])
 
     drawWorld(state)
   })

@@ -213,10 +213,10 @@ class BazookaGame {
         if (!b.name) continue
         if (!isInRange(a.location, b.location)) continue
 
-        objsToSend.push({
+        /*objsToSend.push({
           // Common to all objects
           lastUpdateMs: b.lastUpdateMs,
-          type: 'player',
+          type: ObjType.PLAYER,
           key: 'player-' + pcb.id,
           location: b.location,
           velocity: b.velocity,
@@ -224,7 +224,8 @@ class BazookaGame {
           name: b.name,
           direction: b.direction,
           situation: b.situation,
-        })
+        })*/
+        objsToSend.push(b)
       }
 
       // Send missiles, etc

@@ -31,6 +31,12 @@ export enum ObjSituation {
   IN_GROUND = 'in-ground',
 }
 
+export enum ObjType {
+  PLAYER = 'player',
+  FALLING_BLOCK = 'block',
+  MISSILE = 'missile',
+}
+
 /**
  * Primitive "bone" for rotating some part of a mesh around a point.
  */
@@ -105,20 +111,6 @@ export interface GameState {
   totalPlayers: number
   alivePlayers: number
 }
-
-/*export interface GameObjFallingBlock extends GameObj {
-  rotAxis: Vec3
-  rotTheta: number
-  rotVel: number
-  typeIndex: number
-}
-
-export interface GameObjPlayer extends GameObj {
-  name: string
-  direction: DirAzAlt
-  situation: ObjSituation
-  mode: PlayerMode
-}*/
 
 export interface GameCmd {
   type: string

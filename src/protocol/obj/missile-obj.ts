@@ -1,7 +1,8 @@
 import GameObj from './game-obj'
+import { ObjType } from '../../types'
 
 export default class MissileObj extends GameObj {
   constructor(key: string) {
-    super(key, 'missile')
+    super(key, ObjType.MISSILE)
   }
 }

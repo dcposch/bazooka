@@ -1,8 +1,8 @@
-import { VecXYZ, DirAzAlt, ObjSituation, PlayerMode } from '../../types'
+import { VecXYZ, DirAzAlt, ObjSituation, PlayerMode, ObjType } from '../../types'
 import { Vec3 } from 'regl'
 
 export default class GameObj {
-  type: string
+  type: ObjType
   key: string
   location: VecXYZ
   velocity: VecXYZ
@@ -20,7 +20,7 @@ export default class GameObj {
   rotVel?: number
   typeIndex?: number
 
-  constructor(key: string, type: string) {
+  constructor(key: string, type: ObjType) {
     this.key = key
     this.type = type
     this.location = { x: 0, y: 0, z: 0 }

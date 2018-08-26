@@ -1,10 +1,12 @@
 import config from '../config'
-import { GamePlayerState, ObjSituation } from '../types'
+import { GamePlayerState, ObjSituation, ObjType } from '../types'
 import FallingBlockObj from './obj/falling-block-obj'
 import World from './world'
 import MissileObj from './obj/missile-obj'
 import GameObj from './obj/game-obj'
 import vox from '../protocol/vox'
+import vec3 from 'gl-vec3'
+import { Vec3 } from 'regl'
 
 var EPS = 0.001
 var PW = config.PLAYER_WIDTH
@@ -29,18 +31,18 @@ export function simObjects(objects: GameObj[], world: World, nowMs: number) {
     const dt = (nowMs - obj.lastUpdateMs) * 1e-3
 
     switch (obj.type) {
-      case 'falling-block':
+      case ObjType.FALLING_BLOCK:
         simFallingBlock(obj as FallingBlockObj, world, dt)
         break
-      case 'missile':
-        simMissile(obj as MissileObj, world, dt)
+      case ObjType.MISSILE:
+        simMissile(obj as MissileObj, objects, world, dt)
         break
     }
     // console.log('DBG ' + obj.key + ' ' + nowMs + ' dt ' + dt + ' ' + JSON.stringify(obj.location))
   }
 }
 
-function simMissile(obj: MissileObj, world: World, dt: number) {
+function simMissile(obj: MissileObj, objects: GameObj[], world: World, dt: number) {
   // Move
   var loc = obj.location
   var vel = obj.velocity
@@ -64,13 +66,38 @@ function simMissile(obj: MissileObj, world: World, dt: number) {
         for (let z = iz - 2; z <= iz + 2; z++) {
           const v = world.getVox(x, y, z)
           if (!vox.isSolid(v)) continue
+
+          // Solid block disappears
           world.setVox(x, y, z, vox.INDEX.AIR)
 
-          // TODO: add objects
+          // Falling block explodes up from its place
+          const fb = new FallingBlockObj('fb-' + x + '-' + y + '-' + z)
+          const loc = { x: (x + ix) / 2, y: (y + iy) / 2, z: (z + iz) / 2 }
+          fb.location = loc
+          const s = 4
+          fb.velocity = {
+            x: (loc.x - ix) * s,
+            y: (loc.x - ix) * s,
+            z: (loc.x - ix + 5) * s,
+          }
+          randomRotAxis(fb.rotAxis)
+          fb.rotVel = Math.random() * 4 - 2
+
+          objects.push(fb)
         }
       }
     }
   }
+}
+
+function randomRotAxis(v: Vec3) {
+  v[0] = Math.random()
+  v[1] = Math.random()
+  v[2] = Math.random()
+  var det = Math.sqrt(vec3.dot(v, v))
+  v[0] /= det
+  v[1] /= det
+  v[2] /= det
 }
 
 function simFallingBlock(block: FallingBlockObj, world: World, dt: number) {
