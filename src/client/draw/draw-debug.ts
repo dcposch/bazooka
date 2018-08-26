@@ -4,7 +4,7 @@ import vox from '../../protocol/vox'
 import { DefaultContext } from 'regl'
 import { VecXYZ, GameState } from '../../types'
 
-const version = 'TODO' // Read from package.json
+// const version = 'TODO' // Read from package.json
 
 const canvas = createHiddenCanvas()
 const context2D = createContext2D(canvas)
