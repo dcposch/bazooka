@@ -9,6 +9,7 @@ export default class PlayerObj extends GameObj {
   situation: ObjSituation
   walk: number
   health: number
+  bazookaJuice: number
 
   constructor(key: string, name: string) {
     super(key, ObjType.PLAYER)
@@ -20,6 +21,7 @@ export default class PlayerObj extends GameObj {
     this.walk = 0
     this.name = ''
     this.health = 50
+    this.bazookaJuice = 50
   }
 
   tick(dt: number) {
