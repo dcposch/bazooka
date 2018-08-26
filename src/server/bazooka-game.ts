@@ -36,6 +36,7 @@ class BazookaGame {
 
   columnsToFall: Array<any>
   totalPlayers: number
+  firstTick: number
 
   constructor() {
     this.playerConns = []
@@ -45,6 +46,7 @@ class BazookaGame {
     this.nextObjKey = 0
     this.columnsToFall = []
     this.totalPlayers = 0
+    this.firstTick = 0
   }
 
   generate() {
@@ -146,10 +148,14 @@ class BazookaGame {
       return
     }
 
+    if (this.firstTick == 0) {
+      this.firstTick = tick
+    }
+
     // UPDATE THE GAME
     const nowMs = new Date().getTime()
     this._simulate(nowMs)
-    // this._makeColumnsFall(tick)
+    this._makeColumnsFall(tick - this.firstTick)
 
     // SEND UPDATES TO PLAYERS
     const sendAll = tick % 20 === 0
@@ -178,7 +184,7 @@ class BazookaGame {
     const totalColumns = this.columnsToFall.length
     const round = Math.floor(tick / ROUND_LENGTH_TICKS)
     const tickInRound = tick - round * ROUND_LENGTH_TICKS
-    if (tickInRound > ROUND_LENGTH_TICKS - FALLING_LENGTH_TICKS) {
+    if (tickInRound >= ROUND_LENGTH_TICKS - FALLING_LENGTH_TICKS) {
       const totalFallingTicks = ROUNDS * FALLING_LENGTH_TICKS
       const currentFallingTick =
         round * FALLING_LENGTH_TICKS + FALLING_LENGTH_TICKS - (ROUND_LENGTH_TICKS - tickInRound)
