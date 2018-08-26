@@ -213,7 +213,6 @@ class BazookaGame {
     const n = this.playerConns.length
     for (let i = 0; i < n; i++) {
       const pc = this.playerConns[i]
-      const a = pc.player
       const objsToSend = [] as GameObj[]
 
       // for (let j = 0; j < n; j++) {
@@ -242,7 +241,7 @@ class BazookaGame {
       // Send missiles, etc
       for (let j = 0; j < this.objects.length; j++) {
         const object = this.objects[j]
-        if (object.key === a.key) continue
+        // if (object.key === a.key) continue
         objsToSend.push(object)
       }
 
@@ -294,7 +293,9 @@ class BazookaGame {
     }
     // Object.assign(pc.player, update.player)
 
+    pc.player.name = update.player.name
     Object.assign(pc.player.input, update.player.input)
+    Object.assign(pc.player.direction, update.player.direction)
 
     if (update.commands.length === 0) return
     console.log('update from ' + pc.id + ', ' + update.commands.length + ' cmds')

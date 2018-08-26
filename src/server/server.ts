@@ -66,10 +66,14 @@ function addWebsocketConn(ws: WebSocket) {
   conn.sendHandshake()
 
   // For now, create a new player immediately for every conn, add to single game
-  var player = new PlayerConn(conn)
-  state.game.addPlayer(player)
+  var pc = new PlayerConn(conn)
+  pc.player.location.x = Math.random() * 100 - 50
+  pc.player.location.y = Math.random() * 100 - 50
+  pc.player.location.z = 90
+
+  state.game.addPlayer(pc)
 
   conn.on('close', function() {
-    state.game.removePlayer(player.id)
+    state.game.removePlayer(pc.id)
   })
 }
