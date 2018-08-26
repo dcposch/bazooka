@@ -85,9 +85,10 @@ class Conn extends EventEmitter {
     this.send({ type: 'handshake', serverVersion: config.SERVER.VERSION })
   }
 
-  sendObjects(objects: GameObj[]) {
+  sendObjects(playerKey: string, objects: GameObj[]) {
     const msg = {
       type: 'objects',
+      playerKey,
       objects,
     }
     this.send(msg)

@@ -32,8 +32,10 @@ export default class Socket extends EventEmitter {
   _onMessage = (e: MessageEvent) => {
     if (typeof e.data === 'string') {
       const msg = JSON.parse(e.data)
-      if (msg.type === 'handshake') this.serverVersion = msg.serverVersion
-      else this.emit('json', msg)
+      if (msg.type === 'handshake') {
+        this.serverVersion = msg.serverVersion
+      }
+      this.emit('json', msg)
     } else {
       this.emit('binary', e.data)
     }

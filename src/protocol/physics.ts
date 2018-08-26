@@ -1,5 +1,5 @@
 import config from '../config'
-import { GamePlayerState, ObjSituation, ObjType } from '../types'
+import { ObjSituation, ObjType, VecXYZ } from '../types'
 import FallingBlockObj from './obj/falling-block-obj'
 import World from './world'
 import MissileObj from './obj/missile-obj'
@@ -7,6 +7,7 @@ import GameObj from './obj/game-obj'
 import vox from '../protocol/vox'
 import vec3 from 'gl-vec3'
 import { Vec3 } from 'regl'
+import PlayerObj from './obj/player-obj'
 
 var EPS = 0.001
 var PW = config.PLAYER_WIDTH
@@ -61,6 +62,8 @@ function simObject(obj: GameObj, objects: GameObj[], world: World, dt: number) {
       return simFallingBlock(obj as FallingBlockObj, world, dt)
     case ObjType.MISSILE:
       return simMissile(obj as MissileObj, objects, world, dt)
+    case ObjType.PLAYER:
+      return simPlayer(obj as PlayerObj, objects, world, dt)
   }
   return false
 }
@@ -189,7 +192,52 @@ function simFallingBlock(block: FallingBlockObj, world: World, dt: number) {
   return ret
 }
 
-export function simPlayer(player: GamePlayerState, world: World, dt: number) {
+function simPlayer(player: PlayerObj, objects: GameObj[], world: World, dt: number): boolean {
+  simPlayerNav(player, dt)
+  simPlayerPhysics(player, world, dt)
+
+  player.bazookaJuice = Math.min(50, player.bazookaJuice + 10 * dt)
+
+  return false
+}
+
+function simPlayerNav(player: PlayerObj, dt: number) {
+  var loc = player.location
+  var dir = player.direction
+  var vel = player.velocity
+
+  // Directional input (WASD) always works
+  vel.x = 0
+  vel.y = 0
+  if (player.input.forward) move(vel, 1, dir.azimuth, 0)
+  if (player.input.back) move(vel, 1, dir.azimuth + Math.PI, 0)
+  if (player.input.left) move(vel, 1, dir.azimuth + Math.PI * 0.5, 0)
+  if (player.input.right) move(vel, 1, dir.azimuth + Math.PI * 1.5, 0)
+  var v2 = vel.x * vel.x + vel.y * vel.y
+  if (v2 > 0) {
+    var speed = player.input.sprint ? config.SPEED_SPRINT : config.SPEED_WALK
+    var norm = speed / Math.sqrt(vel.x * vel.x + vel.y * vel.y)
+    vel.x *= norm
+    vel.y *= norm
+  }
+  loc.x += vel.x * dt
+  loc.y += vel.y * dt
+
+  // Jumping (space) only works if we're on solid ground
+  if (player.input.jump && player.situation === 'on-ground') {
+    vel.z = player.input.sprint ? config.SPEED_SPRINT_JUMP : config.SPEED_JUMP
+    player.situation = ObjSituation.AIRBORNE
+  }
+}
+
+// Modify vector {x, y, z} by adding a vector in spherical coordinates
+function move(v: VecXYZ, r: number, azimuth: number, altitude: number) {
+  v.x += Math.cos(azimuth) * Math.cos(altitude) * r
+  v.y += Math.sin(azimuth) * Math.cos(altitude) * r
+  v.z += Math.sin(altitude) * r
+}
+
+function simPlayerPhysics(player: PlayerObj, world: World, dt: number) {
   var loc = player.location
   var vel = player.velocity
 

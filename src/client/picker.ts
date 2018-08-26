@@ -19,7 +19,7 @@ function pick(state: GameState) {
   var loc = state.player.location
   var dir = state.player.direction
   var world = state.world
-  state.player.lookAtBlock = raycastBlock(loc, dir, world, config.MAX_PICK_DISTANCE)
+  state.lookAtBlock = raycastBlock(loc, dir, world, config.MAX_PICK_DISTANCE)
 }
 
 // Follows a ray until it intersects a block

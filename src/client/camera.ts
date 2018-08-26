@@ -3,8 +3,8 @@ import vec3 from 'gl-vec3'
 
 import { toCartesian } from '../math/coordinates'
 import { DefaultContext, Vec3 } from 'regl'
-
-import { GamePlayerState } from '../types'
+import PlayerObj from '../protocol/obj/player-obj'
+import { CameraMode } from '../types'
 
 // Projects the world from 3D to 2D
 // Calculates the view and projection matrices based on player location and orientation
@@ -16,7 +16,8 @@ export default {
 }
 
 export interface CameraProps {
-  player: GamePlayerState
+  player: PlayerObj
+  cameraMode: CameraMode
   cameraLoc: Vec3
 }
 
@@ -37,7 +38,7 @@ function updateMatrix(context: DefaultContext, props: CameraProps) {
   var lookDir = toCartesian(dir.azimuth, caltitude, 1.0)
 
   var cloc = props.cameraLoc
-  switch (props.player.camera) {
+  switch (props.cameraMode) {
     case 'first-person':
       // Camera glued to the front of the player's face, facing forward
       cloc[0] = loc.x + 0.3 * lookDir[0]
@@ -59,7 +60,7 @@ function updateMatrix(context: DefaultContext, props: CameraProps) {
       cloc[2] = (loc.z - dist * cdir[2] + 1) * decay + cloc[2] * (1 - decay)
       break
     default:
-      throw new Error('unknown camera setting ' + props.player.camera)
+      throw new Error('unknown camera setting ' + props.cameraMode)
   }
 
   // Then, make the view matrix

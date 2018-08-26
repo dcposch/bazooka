@@ -1,7 +1,7 @@
 import vec3 from 'gl-vec3'
 
 import playerControls from './player-controls'
-import { simPlayer, simObjects } from '../protocol/physics'
+import { simObjects } from '../protocol/physics'
 import picker from './picker'
 import mesher from './mesher'
 import Socket from './socket'
@@ -25,16 +25,7 @@ import drawSky from './draw/draw-sky'
 import drawPlayers from './draw/draw-players'
 import drawMissiles from './draw/draw-missiles'
 
-import {
-  PlayerMode,
-  ObjSituation,
-  CameraMode,
-  GameState,
-  GameMsgConfig,
-  GameMsgObjects,
-  GameStatus,
-  ObjType,
-} from '../types'
+import { PlayerMode, CameraMode, GameState, GameMsgConfig, GameMsgObjects, GameStatus, ObjType } from '../types'
 import { Vec3, DefaultContext } from 'regl'
 import FallingBlockObj from '../protocol/obj/falling-block-obj'
 import GameObj from '../protocol/obj/game-obj'
@@ -46,25 +37,11 @@ var state: GameState = {
   startTime: 0,
   paused: true,
 
-  player: {
-    // Block coordinates of the player's head. +Z is up. When facing +X, +Y is left.
-    location: { x: 0, y: 0, z: 100 },
-    // Azimuth ranges from 0 (looking at +X) to 2*pi. Azimuth pi/2 looks at +Y.
-    // Altitude ranges from -pi/2 (looking straight down) to pi/2 (up, +Z). 0 looks straight ahead.
-    direction: { azimuth: 0, altitude: 0 },
-    // Physics
-    velocity: { x: 0, y: 0, z: 0 },
-    // Situation can also be 'on-ground', 'suffocating'
-    situation: ObjSituation.AIRBORNE,
-    // Which block we're looking at: {location: {x,y,z}, side: {nx,ny,nz}, voxel}
-    lookAtBlock: undefined,
-    // Camera can also be 'third-person'
-    camera: CameraMode.FIRST_PERSON,
-    // Current mode: 'commando', 'bazooka', ...
-    mode: PlayerMode.BAZOOKA,
-  },
-
+  cameraMode: CameraMode.FIRST_PERSON,
   cameraLoc: vec3.clone([10, 0, 100]) as Vec3,
+  lookAtBlock: undefined,
+
+  player: new PlayerObj('', ''),
 
   pendingCommands: [],
   pendingChunkUpdates: [],
@@ -124,6 +101,8 @@ function initWebsocket() {
 
   state.socket.on('json', function(msg) {
     switch (msg.type) {
+      case 'handshake':
+        break
       case 'config':
         return handleConfig(msg)
       case 'objects':
@@ -175,6 +154,11 @@ function handleObjects(msg: GameMsgObjects) {
       obj = state.objects[newObj.key] = createObject(newObj)
     }
     Object.assign(obj, newObj)
+
+    if (obj.key == msg.playerKey) {
+      console.log('WTF SETTING ' + obj.key)
+      state.player = obj as PlayerObj
+    }
   })
 
   // Delete objects that no longer exist or are too far away
@@ -253,11 +237,11 @@ function frame(context: DefaultContext) {
   // Handle player input, physics, update player position, direction, and velocity
   // If dt is too large, simulate in smaller increments
   // This prevents glitches like jumping through a block, getting stuck inside a block, etc
-  for (var t = 0.0; t < dt; t += config.PHYSICS.MAX_DT) {
-    var stepDt = Math.min(config.PHYSICS.MAX_DT, dt - t)
-    if (!state.paused) playerControls.navigate(state.player, stepDt)
-    simPlayer(state.player, state.world, stepDt)
-  }
+  // for (var t = 0.0; t < dt; t += config.PHYSICS.MAX_DT) {
+  //   var stepDt = Math.min(config.PHYSICS.MAX_DT, dt - t)
+  //   if (!state.paused) playerControls.navigate(state.player, stepDt)
+  //   simPlayer(state.player, state.world, stepDt)
+  // }
   simObjects(Object.values(state.objects), state.world, nowMs)
 
   if (!state.paused) playerControls.look(state.player)
@@ -317,7 +301,7 @@ function render() {
   if (state.debug.showHUD) {
     drawDebug({ gameState: state })
   }
-  if (state.player.camera === CameraMode.FIRST_PERSON) {
+  if (state.cameraMode === CameraMode.FIRST_PERSON && state.player.mode !== PlayerMode.BAZOOKA) {
     drawHitMarker({ color: [1, 1, 1, 0.5] })
   }
 }

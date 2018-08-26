@@ -246,7 +246,7 @@ class BazookaGame {
         objsToSend.push(object)
       }
 
-      pc.conn.sendObjects(objsToSend)
+      pc.conn.sendObjects(pc.id, objsToSend)
     }
   }
 
@@ -292,7 +292,9 @@ class BazookaGame {
     if (!pc.player.name && update.player.name) {
       console.log('Player %s joined', update.player.name)
     }
-    Object.assign(pc.player, update.player)
+    // Object.assign(pc.player, update.player)
+
+    Object.assign(pc.player.input, update.player.input)
 
     if (update.commands.length === 0) return
     console.log('update from ' + pc.id + ', ' + update.commands.length + ' cmds')

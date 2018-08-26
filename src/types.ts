@@ -3,6 +3,7 @@ import Chunk from './protocol/chunk'
 import World from './protocol/world'
 import Socket from './client/socket'
 import GameObj from './protocol/obj/game-obj'
+import PlayerObj from './protocol/obj/player-obj'
 
 export interface VecXYZ {
   x: number
@@ -63,12 +64,12 @@ export enum GameStatus {
   COMPLETED = 'COMPLETED',
 }
 
-/** DEPRECATED. Will replace with GameObjPlayer */
-export interface GamePlayerState {
-  location: VecXYZ
-  direction: DirAzAlt
-  velocity: VecXYZ
-  situation: ObjSituation
+export interface GameState {
+  startTime: number
+  paused: boolean
+  cameraLoc: Vec3
+  cameraMode: CameraMode
+
   lookAtBlock:
     | {
         location: VecXYZ
@@ -76,16 +77,7 @@ export interface GamePlayerState {
         voxel: number
       }
     | undefined
-  camera: CameraMode
-  mode: PlayerMode
-  name?: string
-}
-
-export interface GameState {
-  startTime: number
-  paused: boolean
-  player: GamePlayerState
-  cameraLoc: Vec3
+  player: PlayerObj
 
   gameStatus: GameStatus
 
@@ -133,6 +125,11 @@ export interface GameMsg {
   type: string
 }
 
+export interface GameMsgHandshake extends GameMsg {
+  type: 'config'
+  playerKey: string
+}
+
 export interface GameMsgConfig extends GameMsg {
   type: 'config'
   config: ClientConfig
@@ -140,6 +137,7 @@ export interface GameMsgConfig extends GameMsg {
 
 export interface GameMsgObjects extends GameMsg {
   type: 'objects'
+  playerKey: string
   objects: GameObj[]
 }
 

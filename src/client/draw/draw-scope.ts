@@ -1,9 +1,14 @@
 import env from '../env'
 import camera from '../camera'
-import { DefaultContext } from 'regl'
+import { DefaultContext, Vec3 } from 'regl'
+import PlayerObj from '../../protocol/obj/player-obj'
+import { CameraMode } from '../../types'
 
 interface ScopeProps {
   startTime: number
+  player: PlayerObj
+  cameraMode: CameraMode
+  cameraLoc: Vec3
 }
 
 export default env.regl<{}, {}, ScopeProps>({

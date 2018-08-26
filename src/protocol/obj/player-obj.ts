@@ -11,6 +11,15 @@ export default class PlayerObj extends GameObj {
   health: number
   bazookaJuice: number
 
+  input: {
+    forward: boolean
+    back: boolean
+    left: boolean
+    right: boolean
+    sprint: boolean
+    jump: boolean
+  }
+
   constructor(key: string, name: string) {
     super(key, ObjType.PLAYER)
 
@@ -22,6 +31,15 @@ export default class PlayerObj extends GameObj {
     this.name = ''
     this.health = 50
     this.bazookaJuice = 50
+
+    this.input = {
+      forward: false,
+      back: false,
+      left: false,
+      right: false,
+      sprint: false,
+      jump: false,
+    }
   }
 
   tick(dt: number) {

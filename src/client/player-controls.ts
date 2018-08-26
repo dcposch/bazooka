@@ -1,7 +1,8 @@
 import config from '../config'
 import env from './env'
 import vox from '../protocol/vox'
-import { GameState, PlayerMode, CameraMode, GamePlayerState, VecXYZ, ObjSituation, GameCmdSetVox } from '../types'
+import { GameState, PlayerMode, CameraMode, VecXYZ, ObjSituation, GameCmdSetVox } from '../types'
+import PlayerObj from '../protocol/obj/player-obj'
 
 var shell = env.shell
 
@@ -14,8 +15,6 @@ export default {
 // Lets the player place and break blocks
 // TODO: let the player interact with items
 function interact(state: GameState) {
-  var p = state.player
-
   if (shell.wasDown('1')) {
     state.player.mode = PlayerMode.BAZOOKA
   } else if (shell.wasDown('2')) {
@@ -27,22 +26,19 @@ function interact(state: GameState) {
   }
 
   if (shell.press('9')) {
-    p.camera = p.camera === CameraMode.FIRST_PERSON ? CameraMode.THIRD_PERSON : CameraMode.FIRST_PERSON
+    state.cameraMode = state.cameraMode === CameraMode.FIRST_PERSON ? CameraMode.THIRD_PERSON : CameraMode.FIRST_PERSON
   }
 
   if (shell.press('0')) state.debug.showHUD = !state.debug.showHUD
 
   var left = shell.wasDown('mouse-left')
-  // var right = shell.wasDown('mouse-right')
-  // var shift = shell.wasDown('shift')
   if (left) return breakBlock(state)
-  // else if (right || (shift && left)) return placeBlock(state)
 
   return undefined
 }
 
 // Let the player move
-function navigate(player: GamePlayerState, dt: number) {
+function navigate(player: PlayerObj, dt: number) {
   var loc = player.location
   var dir = player.direction
   var vel = player.velocity
@@ -79,7 +75,7 @@ function move(v: VecXYZ, r: number, azimuth: number, altitude: number) {
 }
 
 // Let the player look around
-function look(player: GamePlayerState) {
+function look(player: PlayerObj) {
   var dx = shell.mouseX - shell.prevMouseX
   var dy = shell.mouseY - shell.prevMouseY
   var dir = player.direction
@@ -111,7 +107,7 @@ function look(player: GamePlayerState) {
 
 // Break the block we're looking at
 function breakBlock(state: GameState) {
-  var block = state.player.lookAtBlock
+  var block = state.lookAtBlock
   if (!block) return
 
   var loc = block.location
