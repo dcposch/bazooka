@@ -104,7 +104,15 @@ class BazookaGame {
     console.log('bazooka removing player %s: %s', id, ix)
     if (ix < 0) return undefined
     this.playerConns.splice(ix, 1)[0]
+    const alive = this.getNumPlayersAlive()
+    if (alive <= 1 && this.status == GameStatus.ACTIVE) {
+      this.endGame()
+    }
     this.sendStatus()
+  }
+
+  endGame() {
+    this.status = GameStatus.COMPLETED
   }
 
   getNumPlayersAlive() {
@@ -112,15 +120,11 @@ class BazookaGame {
     this.playerConns.forEach(function(pc) {
       ret += pc.player.health > 0 ? 1 : 0
     })
-    if (ret <= 1 && this.status == GameStatus.ACTIVE) {
-      console.log('finish game')
-      this.status = GameStatus.COMPLETED
-    }
     return ret
   }
 
   tick(tick: number, dt: number) {
-    if (this.status === 'LOBBY') {
+    if (this.status !== 'ACTIVE') {
       return
     }
 
