@@ -287,13 +287,33 @@ class BazookaGame {
   }
 
   _handleFireBazooka(pc: PlayerConn) {
+    // Shoot the direction the player is facing
     const dir = pc.player.direction
-    const vel = toCartesian(dir.azimuth, dir.altitude + 0.5, 15)
 
+    // Missile velocity = muzzle velocity + player velocity
+    const pvel = pc.player.velocity
+    const vel = toCartesian(dir.azimuth, dir.altitude + 0.5, 15)
+    vel[0] += pvel.x
+    vel[1] += pvel.y
+    vel[2] += pvel.z
+
+    // Missile position = just in front & to the right of player
+    const ploc = pc.player.location
+    const offset = toCartesian(dir.azimuth - 0.5, dir.altitude + 0.5, 1)
+    const loc = {
+      x: ploc.x + offset[0],
+      y: ploc.x + offset[1],
+      z: ploc.x + offset[2],
+    }
+
+    // Fire ze missile
     const key = 'missile-' + ++this.nextObjKey
     const missile = new MissileObj(key)
-    missile.location = pc.player.location
-    missile.velocity = { x: vel[0], y: vel[1], z: vel[2] }
+    missile.location = missile.velocity = {
+      x: vel[0],
+      y: vel[1],
+      z: vel[2],
+    }
 
     this.objects.push(missile)
   }
