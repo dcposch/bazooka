@@ -1,29 +1,31 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Bazooka City</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAG9UlEQVR4Xu3dUZLjNgyEYc8x5mA5Ze61e4xNVd5HqEqHBmB++6qFRDX6d5Oi5fl6/fr15+UfBS5V4AsAl3bebf+rAAAY4WoFAHB1+908AHjgagUAcHX73TwAeOBqBQBwdfvdPAB44GoFAHB1+908AHjgagUAcHX73TwAeOBqBQBwdfvdPAB44GoFAHB1+918OwB/vr91YbECX79/Lx79gK9DA2C1f14ACPsHgFDA5nIAhA0AQChgczkAwgYAIBSwuRwAYQMAEArYXA6AsAEACAVsLgdA2AAAhAI2lwOgaMBxg//91WyBD7/8X9nPRk0H5PhGGACWAwKArIEAyPRrrwZA1gIAZPq1VwMgawEAMv3aqwGQtQAAmX7t1QDIWgCATL/2agBkLQBApl97NQCyFsQAeM6fNeB09XJA5u8DAOC0hbPzA+BZPwmQ+Wt8NQAAMN6kJwcIAACc9Nf4cwMAAONNenKAAADASX+NPzcAADDepCcHCAAAnPTX+nMXgHS/L2AfYL3Dht8AAMJffrMRNtzhxfAAAIDdDg5HDwAAhBbaXQ4AAOx2cDh6AAAgtNDucgAAYLeDw9EDAAChhXaXAwAAux0cjh4AAAgttLscAADY7eBw9AAAQGih3eUAAMBuB4ejBwAAQgvtLgcAAHY7OBw9AJYDEL7wEdonL+/+Ni0AAJC7ODgDAB7F80JM5S0JUCn0fFwCSIDMQWG1BJAAkYUkQCTfSwJIgMxBYbUEkACRhSRAJJ8E+JYAmYPCagkgASILDZ/Dlr++DQAAACBSICse/gFiH6Bq7/AGSoCqgc/HAVDpB4BKIRthTwqUn1CVvOawjwqV+tLPGqBi7PG4BIjk8xj0wx+Ddv+6sQTI+LQGqPSTAJVC1gDWAJlHkmoJkKj3ekmASj8JUCkkASRA5pGkWgIk6kmAWj0JUGv09D+G62cKVLV3eAMlQNVAO8GZQgD4aP0kQNVeAFQKWQRbBGceSapNgRL1LIJr9bwRVmtkEfyzAuUnVCXv8C9zVcNvPz5cv+6vklgDVA6VAJVC1gA3rwEyd7yhWgI8iiwBKg9KgEohCSABMo8crZYAEiAymASI5PNCzIe/EJO54w3VEkACvMFm914iTEiPQSvrdH+CVeO7/TgAnh2wfiPsdoNX9w8AAFQe+ejjAADARxu8ujkAAKDyyEcfBwAAPtrg1c0BAACVRz76OAAAwOA/K9D9nL/qjS/DVQrdfnz5J3zVPgBUCt1+HACZA2yEZfq1VwMgawEAMv3aqwGQtQAAmX7t1QDIWgCATL/2agBkLQBApl97NQCyFgAg02989XJAPAYd77DhAwSAneDhFj07PAAA4KzDhp8dAAAYbtGzwwMAAM46bPjZAQCA4RY9OzwAAOCsw4afHQAfDkDY4Hb7dv+szPC/sGMfoHIoACqFno8D4DsTcPgnWHZzb6gerl/3G2MSoPKgBKgUkgBPCqz/LhAAAJAoAIBEvf+h1hToUURToMpjEqBSyBTIFCjzyNFqCSABIoMNf4xXTjEBAAAARApkxcM/QKwBqvYOb6AEqBr4fBwAlX4AqBSyCL55Edy9kykBMj4lQKWfBKgUkgASIPNIUi0BEvVeLwlQ6ScBKoUkgATIPJJUS4BEPQlQqycBao2e/sdw/UyBqvYOb6AEqBpoHyBTCAAfrZ8EqNoLgEohi2CL4MwjSbUpUKKeRXCtngSoNbII/lmB8hOqktfXeR8VKvWl36N+1gAVgN4IqxSyBrh5DZC54w3VEkACRDaTAJF8r+FrKFOgqr0AqBQyBTIFyjxytNoUyBQoMpgEiOQzBfr226CZg8JqCSABIgtJgEg+CbA9AbL2q/YUaPkUiIUzBQAAgMxBy6sBAIDlFs6GDwAAZA5aXg0AACy3cDZ8AAAgc9DyagAAYLmFs+EDAACZg5ZXAwAAyy2cDR8AAMgctLwaAABYbuFs+AAAQOag5dUAAMByC2fDBwAAMgctrwYAAJZbOBs+AACQOWh4dfjCUPffWPOrEMP9NX54AHhuUfnTfVWHu99prcZ3+3EAAOBqBgAAAAD8dwWsASrtTIEqhXqPSwAJ0OvA5qsDAADNFuy9PAAA0OvAw1dfbvBKHfsAlUK3HwdA5gD7AJl+7dUAyFoAgEy/9moAZC0AQKZfezUAshYAINOvvRoAWQsAkOnXXg2ArAUAyPRrrwZA1oIYgOzyqg8r0P1dnvT25u8DpHeo/qgCACjklQBH/dd+cgAAoN2EnQMAAAA6/dd+bQAAoN2EnQMAAAA6/dd+bQAAoN2EnQMAQKf6rk2BUIHj+wDh+JRT4KgCADgqr5NPVwAA0ztkfEcVAMBReZ18ugIAmN4h4zuqAACOyuvk0xUAwPQOGd9RBf4BhO0hW6d6C9MAAAAASUVORK5CYII=/">
-  </head>
-  <body>
-    <canvas width="600" height="400"></canvas>
-    <div class="splash">
-      <div class="splash-start">
-        <label>enter name</label>
-        <input class="splash-input-name" type="text">
-        <button class="splash-btn-start">start</button>
-        <div class="splash-controls">
-            wasd to move space to jump<br>
-            shift to sprint<br>
-            1 2 3 to switch weapons<br>
-            click to fire
-          </div>
-      </div>
-      <div class="splash-lobby-screen">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Bazooka City</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/png;base64,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/">
+</head>
+
+<body>
+  <canvas width="600" height="400"></canvas>
+  <div class="splash">
+    <div class="splash-start">
+      <label>enter name</label>
+      <input class="splash-input-name" type="text">
+      <button class="splash-btn-start">start</button>
+      <div class="splash-controls">
+        wasd to move space to jump<br> shift to sprint<br> 1 2 3 to switch weapons<br> click to fire
       </div>
     </div>
-    <div class="error"></div>
-    <script src="bundle.js"></script>
-  </body>
+    <div class="splash-lobby-screen">
+      <div class="splash-lobby-players">
+      </div>
+    </div>
+  </div>
+  <div class="error"></div>
+  <script src="bundle.js"></script>
+</body>
+
 </html>

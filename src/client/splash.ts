@@ -5,6 +5,7 @@ export default {
   init: init,
   showError: showError,
   startGame: startGame,
+  updatePlayers: updatePlayers,
 }
 
 // Splash screen
@@ -58,6 +59,11 @@ function updateSplash(e?: KeyboardEvent) {
   divControls.classList.toggle('show', ready)
 
   if (ready && e && e.key === 'Enter') enterLobby()
+}
+
+function updatePlayers(totalPlayers: number, maxPlayers: number) {
+  console.log(totalPlayers, maxPlayers)
+  ;(document.querySelector('div.splash-lobby-players') as HTMLDivElement).innerHTML = totalPlayers + ' of ' + maxPlayers
 }
 
 function enterLobby() {

@@ -92,9 +92,10 @@ class BazookaGame {
 
     if (this.status === GameStatus.LOBBY && this.playerConns.length === config.BAZOOKA.MAX_PLAYERS) {
       this.status = GameStatus.ACTIVE
-      this.totalPlayers = this.playerConns.length
-      this.sendStatus()
     }
+
+    this.totalPlayers = this.playerConns.length
+    this.sendStatus()
   }
 
   removePlayer(id: string): void {

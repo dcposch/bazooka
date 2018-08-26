@@ -140,6 +140,9 @@ function initWebsocket() {
         state.alivePlayers = msg.alivePlayers
         state.totalPlayers = msg.totalPlayers
 
+        splash.updatePlayers(state.totalPlayers, config.BAZOOKA.MAX_PLAYERS)
+        console.log(shouldStart)
+
         if (shouldStart) {
           splash.startGame()
         }
