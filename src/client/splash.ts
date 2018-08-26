@@ -62,8 +62,10 @@ function updateSplash(e?: KeyboardEvent) {
 }
 
 function updatePlayers(totalPlayers: number, maxPlayers: number) {
-  console.log(totalPlayers, maxPlayers)
-  ;(document.querySelector('div.splash-lobby-players') as HTMLDivElement).innerHTML = totalPlayers + ' of ' + maxPlayers
+  const lobbyStatus = document.querySelector('div.splash-lobby-players') as HTMLDivElement | null
+  if (lobbyStatus !== null) {
+    lobbyStatus.innerHTML = totalPlayers + ' of ' + maxPlayers
+  }
 }
 
 function enterLobby() {
