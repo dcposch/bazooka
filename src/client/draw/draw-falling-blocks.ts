@@ -50,12 +50,8 @@ export default function drawFallingBlocks(blocks: Block[]) {
   maybeCompileCommands()
   if (!bufVerts || !bufNorms || !bufUV || !drawCommand) return
 
-  var n = blocks.length
-  if (n > MAX_BLOCKS) {
-    throw new Error('MAX_BLOCKS exceeded: ' + n)
-  }
-
-  var hasDirtyUVs = updateMesh(blocks)
+  var n = Math.min(blocks.length, MAX_BLOCKS)
+  var hasDirtyUVs = updateMesh(blocks, n)
 
   bufVerts.subdata(mesh.verts)
   bufNorms.subdata(mesh.norms)
@@ -72,8 +68,7 @@ export default function drawFallingBlocks(blocks: Block[]) {
  *
  * Returns true if we need to update UVs. Verts and norms always need to be updated.
  */
-function updateMesh(blocks: Block[]) {
-  var n = blocks.length
+function updateMesh(blocks: Block[], n: number) {
   var dirtyUVs = false
   for (var i = 0; i < n; i++) {
     var block = blocks[i]

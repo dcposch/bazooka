@@ -3,7 +3,7 @@ import gen from '../gen'
 import config from '../config'
 import { toCartesian } from '../math/coordinates'
 import vox from '../protocol/vox'
-import { VecXYZ, GameCmd, GameCmdSetVox, ObjSituation, GameStatus } from '../types'
+import { VecXYZ, GameCmd, GameCmdSetVox, GameStatus } from '../types'
 import PlayerConn from './player-conn'
 import Chunk from '../protocol/chunk'
 import GameObj from '../protocol/obj/game-obj'
@@ -173,20 +173,6 @@ class BazookaGame {
 
   _simulate(nowMs: number) {
     simObjects(this.objects, this.world, nowMs)
-
-    let offset = 0
-    for (let i = 0; i < this.objects.length; i++) {
-      const obj = this.objects[i]
-      obj.lastUpdateMs = nowMs
-      if (obj.type === 'missile' && obj.situation === ObjSituation.IN_GROUND) {
-        console.log('missile strike at ' + JSON.stringify(obj.location))
-        offset++
-        // TODO: block explosion
-      } else {
-        this.objects[i - offset] = this.objects[i]
-      }
-    }
-    this.objects.length = this.objects.length - offset
 
     // TODO:
     // - check collision

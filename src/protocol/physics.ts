@@ -22,24 +22,47 @@ var HORIZONTAL_COLLISION_DIRS = [
   [0, -PW, -1],
 ]
 
+/**
+ * Simulates forward by `dt` seconds.
+ *
+ * May modify `world`, placing or breaking blocks.
+ *
+ * May modify `objects`, only by appending or modifying new objects.
+ */
 export function simObjects(objects: GameObj[], world: World, nowMs: number) {
+  let offset = 0
   for (let i = 0; i < objects.length; i++) {
     const obj = objects[i]
-    if (obj.lastUpdateMs === 0) {
+    objects[i - offset] = obj
+    const dt = (nowMs - obj.lastUpdateMs) * 1e-3
+    const firstSim = obj.lastUpdateMs === 0
+    obj.lastUpdateMs = nowMs
+    if (firstSim) {
       continue
     }
-    const dt = (nowMs - obj.lastUpdateMs) * 1e-3
-
-    switch (obj.type) {
-      case ObjType.FALLING_BLOCK:
-        simFallingBlock(obj as FallingBlockObj, world, dt)
-        break
-      case ObjType.MISSILE:
-        simMissile(obj as MissileObj, objects, world, dt)
-        break
+    const shouldDel = simObject(obj, objects, world, dt)
+    if (shouldDel) {
+      offset++
     }
-    // console.log('DBG ' + obj.key + ' ' + nowMs + ' dt ' + dt + ' ' + JSON.stringify(obj.location))
   }
+  if (offset > 0) {
+    objects.length -= offset
+  }
+}
+
+/**
+ * Simulates this object forward by `dt` seconds.
+ *
+ * Returns true iff the `obj` should be deleted from `objects`.
+ */
+function simObject(obj: GameObj, objects: GameObj[], world: World, dt: number) {
+  switch (obj.type) {
+    case ObjType.FALLING_BLOCK:
+      return simFallingBlock(obj as FallingBlockObj, world, dt)
+    case ObjType.MISSILE:
+      return simMissile(obj as MissileObj, objects, world, dt)
+  }
+  return false
 }
 
 function simMissile(obj: MissileObj, objects: GameObj[], world: World, dt: number) {
@@ -54,16 +77,20 @@ function simMissile(obj: MissileObj, objects: GameObj[], world: World, dt: numbe
   vel.z -= config.PHYSICS.GRAVITY * dt
 
   // Collide w world
-  if (collide(world, loc.x, loc.y, loc.z)) {
+  const exploded = collide(world, loc.x, loc.y, loc.z)
+  if (exploded) {
     obj.situation = ObjSituation.IN_GROUND
 
     // Explode some blocks
     let ix = loc.x | 0
     let iy = loc.y | 0
     let iz = (loc.z - 1) | 0
-    for (let x = ix - 2; x <= ix + 2; x++) {
-      for (let y = iy - 2; y <= iy + 2; y++) {
-        for (let z = iz - 2; z <= iz + 2; z++) {
+    const zw = 2
+    for (let z = iz - zw; z <= iz + zw; z++) {
+      const xw = zw - Math.min(1, iz - z)
+      for (let x = ix - xw; x <= ix + xw; x++) {
+        const yw = xw - Math.abs(x - ix)
+        for (let y = iy - yw; y <= iy + yw; y++) {
           const v = world.getVox(x, y, z)
           if (!vox.isSolid(v)) continue
 
@@ -74,20 +101,29 @@ function simMissile(obj: MissileObj, objects: GameObj[], world: World, dt: numbe
           const fb = new FallingBlockObj('fb-' + x + '-' + y + '-' + z)
           const loc = { x: (x + ix) / 2, y: (y + iy) / 2, z: (z + iz) / 2 }
           fb.location = loc
-          const s = 4
+          const splodiness = 4
+          const rng = 1
           fb.velocity = {
-            x: (loc.x - ix) * s,
-            y: (loc.x - ix) * s,
-            z: (loc.x - ix + 5) * s,
+            x: (loc.x - ix + rand0(rng)) * splodiness,
+            y: (loc.y - iy + rand0(rng)) * splodiness,
+            z: (loc.z - iz + 6 + rand0(rng)) * splodiness,
           }
           randomRotAxis(fb.rotAxis)
           fb.rotVel = Math.random() * 4 - 2
+          fb.typeIndex = v
 
           objects.push(fb)
         }
       }
     }
   }
+
+  return exploded
+}
+
+/** Returns a random number in (-x, x) */
+function rand0(x) {
+  return Math.random() * x * 2 - x
 }
 
 function randomRotAxis(v: Vec3) {
@@ -121,19 +157,17 @@ function simFallingBlock(block: FallingBlockObj, world: World, dt: number) {
   var negX = collide(world, loc.x - 0.5, loc.y, loc.z)
   var posX = collide(world, loc.x + 0.5, loc.y, loc.z)
 
+  let ret = false
   if (!negZ) {
     // Gravity
     vel.z -= config.PHYSICS.GRAVITY * dt
   } else if (vel2 < 1) {
     // Stopped
-    loc.x = Math.round(loc.x - 0.5) + 0.5
-    loc.y = Math.round(loc.y - 0.5) + 0.5
-    loc.z = Math.round(loc.z - 0.5) + 0.5
-    vel.x = 0
-    vel.y = 0
-    vel.z = 0
-    block.rotTheta = 0
-    block.rotVel = 0
+    const x = Math.round(loc.x - 0.5)
+    const y = Math.round(loc.y - 0.5)
+    const z = Math.round(loc.z - 0.5)
+    world.setVox(x, y, z, block.typeIndex)
+    ret = true
   } else {
     if (negZ) block.rotTheta *= 0.5
 
@@ -151,6 +185,8 @@ function simFallingBlock(block: FallingBlockObj, world: World, dt: number) {
       vel.z *= bounceDrag
     }
   }
+
+  return ret
 }
 
 export function simPlayer(player: GamePlayerState, world: World, dt: number) {

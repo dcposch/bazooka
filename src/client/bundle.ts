@@ -167,7 +167,6 @@ function handleObjects(msg: GameMsgObjects) {
   msg.objects.forEach(function(newObj: GameObj) {
     keys[newObj.key] = true
     var obj = state.objects[newObj.key]
-    console.log('WTF: ' + JSON.stringify(newObj))
     if (!obj) {
       console.log('creating obj ' + newObj.key)
       obj = state.objects[newObj.key] = createObject(newObj)
@@ -257,9 +256,6 @@ function frame(context: DefaultContext) {
     simPlayer(state.player, state.world, stepDt)
   }
   simObjects(Object.values(state.objects), state.world, nowMs)
-  for (const obj of Object.values(state.objects)) {
-    obj.lastUpdateMs = nowMs
-  }
 
   if (!state.paused) playerControls.look(state.player)
 
