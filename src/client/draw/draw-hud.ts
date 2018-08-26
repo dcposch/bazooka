@@ -36,6 +36,7 @@ export default function draw(props: HudProps) {
     mode: props.mode,
     health: props.health,
     numPlayersLeft: props.numPlayersLeft,
+    gameStatus: props.gameStatus,
   })
 }
 

@@ -81,6 +81,7 @@ class BazookaGame {
 
   sendStatus() {
     const alive = this.getNumPlayersAlive()
+    console.log('alive: ' + alive)
     this.playerConns.forEach(playerConn => {
       playerConn.conn.sendStatus(this.status, alive, this.totalPlayers)
     })
@@ -111,7 +112,8 @@ class BazookaGame {
     this.playerConns.forEach(function(pc) {
       ret += pc.player.health > 0 ? 1 : 0
     })
-    if (ret <= 1) {
+    if (ret <= 1 && this.status == GameStatus.ACTIVE) {
+      console.log('finish game')
       this.status = GameStatus.COMPLETED
     }
     return ret
