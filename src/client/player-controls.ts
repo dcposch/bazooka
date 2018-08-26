@@ -1,7 +1,7 @@
 import config from '../config'
 import env from './env'
 import vox from '../protocol/vox'
-import { GameState, PlayerMode, CameraMode, VecXYZ, ObjSituation, GameCmdSetVox } from '../types'
+import { GameState, PlayerMode, CameraMode, GameCmdSetVox } from '../types'
 import PlayerObj from '../protocol/obj/player-obj'
 
 var shell = env.shell
@@ -38,40 +38,26 @@ function interact(state: GameState) {
 }
 
 // Let the player move
-function navigate(player: PlayerObj, dt: number) {
-  var loc = player.location
-  var dir = player.direction
-  var vel = player.velocity
+function navigate(player: PlayerObj) {
+  const forward = shell.wasDown('nav-forward')
+  const back = shell.wasDown('nav-back')
+  const left = shell.wasDown('nav-left')
+  const right = shell.wasDown('nav-right')
+  const sprint = shell.wasDown('nav-sprint')
+  const jump = shell.wasDown('nav-jump')
 
-  // Directional input (WASD) always works
-  vel.x = 0
-  vel.y = 0
-  if (shell.wasDown('nav-forward')) move(vel, 1, dir.azimuth, 0)
-  if (shell.wasDown('nav-back')) move(vel, 1, dir.azimuth + Math.PI, 0)
-  if (shell.wasDown('nav-left')) move(vel, 1, dir.azimuth + Math.PI * 0.5, 0)
-  if (shell.wasDown('nav-right')) move(vel, 1, dir.azimuth + Math.PI * 1.5, 0)
-  var v2 = vel.x * vel.x + vel.y * vel.y
-  if (v2 > 0) {
-    var speed = shell.wasDown('nav-sprint') ? config.SPEED_SPRINT : config.SPEED_WALK
-    var norm = speed / Math.sqrt(vel.x * vel.x + vel.y * vel.y)
-    vel.x *= norm
-    vel.y *= norm
+  const i = player.input
+  if (
+    forward !== i.forward ||
+    back !== i.back ||
+    left !== i.left ||
+    right !== i.right ||
+    sprint !== i.sprint ||
+    jump !== i.jump
+  ) {
+    return { forward, back, left, right, sprint, jump }
   }
-  loc.x += vel.x * dt
-  loc.y += vel.y * dt
-
-  // Jumping (space) only works if we're on solid ground
-  if (shell.wasDown('nav-jump') && player.situation === 'on-ground') {
-    vel.z = shell.wasDown('nav-sprint') ? config.SPEED_SPRINT_JUMP : config.SPEED_JUMP
-    player.situation = ObjSituation.AIRBORNE
-  }
-}
-
-// Modify vector {x, y, z} by adding a vector in spherical coordinates
-function move(v: VecXYZ, r: number, azimuth: number, altitude: number) {
-  v.x += Math.cos(azimuth) * Math.cos(altitude) * r
-  v.y += Math.sin(azimuth) * Math.cos(altitude) * r
-  v.z += Math.sin(altitude) * r
+  return undefined
 }
 
 // Let the player look around

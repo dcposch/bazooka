@@ -206,6 +206,8 @@ function simPlayerNav(player: PlayerObj, dt: number) {
   var dir = player.direction
   var vel = player.velocity
 
+  // console.log('WTFBBQ ' + player.key + ' ' + JSON.stringify(player.input))
+
   // Directional input (WASD) always works
   vel.x = 0
   vel.y = 0

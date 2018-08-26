@@ -156,7 +156,6 @@ function handleObjects(msg: GameMsgObjects) {
     Object.assign(obj, newObj)
 
     if (obj.key == msg.playerKey) {
-      console.log('WTF SETTING ' + obj.key)
       state.player = obj as PlayerObj
     }
   })
@@ -198,11 +197,14 @@ function tick() {
   }
 
   // Client / server
-  // TODO: enqueue actions to send to the server
-  // TODO: create or modify any chunks we got from the server since the last tick
-  // TODO: update player state if there's data from the server
-  // TODO: update objects, other players, NPCs, etc if there's data from the server
-  if (state.socket.isReady()) {
+  playerControls.navigate
+  if (state.socket.isReady() && state.player.key !== '') {
+    const input = playerControls.navigate(state.player)
+    if (input) {
+      // console.log('WTF INPUT ' + JSON.stringify(input))
+      state.player.input = input
+    }
+
     state.socket.send({
       type: 'update',
       player: state.player,
@@ -294,7 +296,7 @@ function render() {
   })
   drawHud({
     mode: state.player.mode,
-    health: 50,
+    health: 30,
     numPlayersLeft: 17,
     gameStatus: state.gameStatus,
   })
