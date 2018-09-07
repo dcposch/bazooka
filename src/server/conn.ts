@@ -70,7 +70,7 @@ class Conn extends EventEmitter {
     }
   }
 
-  die(error: Error) {
+  die(error: { message: string }) {
     if (this.error) return
     this.error = error
     this.send({ type: 'error', error: error })

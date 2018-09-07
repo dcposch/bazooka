@@ -173,7 +173,10 @@ class BazookaGame {
       this.playerConns.forEach(function(pc) {
         const loc = pc.player.location
         if (loc && loc.z < -100) {
-          pc.conn.die(new Error('you fell'))
+          pc.conn.die({ message: 'you fell' })
+        }
+        if (pc.player.health == 0) {
+          pc.conn.die({ message: 'press f to pay respects' })
         }
       })
     }

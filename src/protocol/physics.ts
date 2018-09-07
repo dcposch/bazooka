@@ -1,5 +1,5 @@
 import config from '../config'
-import { ObjSituation, ObjType, VecXYZ } from '../types'
+import { ObjSituation, ObjType, VecXYZ, PlayerMode } from '../types'
 import FallingBlockObj from './obj/falling-block-obj'
 import World from './world'
 import MissileObj from './obj/missile-obj'
@@ -248,7 +248,8 @@ function simPlayerNav(player: PlayerObj, dt: number) {
   if (player.input.right) move(vel, 1, dir.azimuth + Math.PI * 1.5, 0)
   var v2 = vel.x * vel.x + vel.y * vel.y
   if (v2 > 0) {
-    var speed = player.input.sprint ? config.SPEED_SPRINT : config.SPEED_WALK
+    const ss = (player.mode === PlayerMode.COMMANDO ? 2 : 1) * config.SPEED_SPRINT
+    var speed = player.input.sprint ? ss : config.SPEED_WALK
     var norm = speed / Math.sqrt(vel.x * vel.x + vel.y * vel.y)
     vel.x *= norm
     vel.y *= norm
@@ -258,7 +259,8 @@ function simPlayerNav(player: PlayerObj, dt: number) {
 
   // Jumping (space) only works if we're on solid ground
   if (player.input.jump && player.situation === 'on-ground') {
-    vel.z = player.input.sprint ? config.SPEED_SPRINT_JUMP : config.SPEED_JUMP
+    const ssj = (player.mode === PlayerMode.COMMANDO ? 2 : 1) * config.SPEED_SPRINT_JUMP
+    vel.z = player.input.sprint ? ssj : config.SPEED_JUMP
     player.situation = ObjSituation.AIRBORNE
   }
 }
