@@ -39,7 +39,7 @@ export default {
   SERVER: {
     CHUNK_SEND_RADIUS: 15,
     VERSION: 0,
-    PORT: 8080,
+    PORT: 8666,
   },
   CRUMBLING: {
     ROUNDS: 10,
