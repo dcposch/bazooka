@@ -5,12 +5,13 @@
   "scripts": {
     "clean": "rimraf build",
     "build": "NODE_ENV=production parcel build --no-cache src/client/bundle.ts",
+    "build-server": "NODE_ENV=production parcel build --no-cache --target=node src/server/server.ts",
     "watch": "NODE_ENV=development parcel watch --no-cache --no-hmr --no-autoinstall src/client/bundle.ts",
     "test": "npm run lint",
     "lint": "tslint -p . -c tslint.json ./src/**/*.ts ./test/**/*.ts",
     "lint-ts": "tsc --noEmit -p .",
     "lint-css": "stylelint **/*.css --config node_modules/stylelint-config-standard/index.js",
-    "start": "NODE_ENV=production parcel build --no-cache --target=node src/server/server.ts && node dist/server"
+    "start": "npm run build-server && node dist/server"
   },
   "repository": {
     "type": "git",
